@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Router, Route, Switch, Redirect } from 'wouter';
+import { Router, Route, Switch } from 'wouter';
 
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Loading } from '@/components/loading';
@@ -25,7 +25,7 @@ function App() {
 				<Suspense fallback={<Loading />}>
 					<Switch>
 						<Layout>
-							<Route path="/yt-downloader" component={YTDownloader} />
+							<Route path="/(yt-downloader|)" component={YTDownloader} />
 							<Route path="/no-intro-outro" component={NoIntroOutro} />
 							<Route
 								path="/image-converter"
@@ -36,10 +36,6 @@ function App() {
 								path="/filename-replacer"
 								component={FilenameReplacer}
 							/>
-
-							<Route path="*">
-								<Redirect to="/yt-downloader" />
-							</Route>
 						</Layout>
 					</Switch>
 				</Suspense>
