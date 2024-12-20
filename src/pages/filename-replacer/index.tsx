@@ -22,6 +22,7 @@ const FilenameReplacer = () => {
 		defaultValues: {
 			files_path: '',
 			extension_filter: '',
+			replace_rule: '',
 		},
 	});
 
