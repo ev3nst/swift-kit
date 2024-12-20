@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const setTheme = () => {
-	const mode = localStorage.getItem('mode');
-	const theme = localStorage.getItem('theme') || 'theme-zinc';
+	const mode = localStorage.getItem('mode') || 'dark';
+	const theme = localStorage.getItem('theme') || 'zinc';
 	const borderRadius = localStorage.getItem('borderRadius') || '0.5rem';
 
 	document.documentElement.classList.toggle('dark', mode === 'dark');

@@ -1,37 +1,50 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+import { lazy, Suspense } from 'react';
+import { Router, Route, Switch, Redirect } from 'wouter';
+
+import { ErrorBoundary } from '@/components/error-boundary';
+import { Loading } from '@/components/loading';
+
+import Layout from './layout';
+import YTDownloader from './pages/yt-downloader';
+
+const NoIntroOutro = lazy(() => import('@/pages/no-intro-outro'));
+const IMGConverter = lazy(() => import('@/pages/img-converter'));
+const IMGCompressor = lazy(() => import('@/pages/img-compressor'));
+const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
+
+import { setTheme } from '@/lib/utils';
+
+import './index.css';
+
+setTheme();
 
 function App() {
-	const [count, setCount] = useState(0);
-
 	return (
-		<>
-			<div>
-				<a href="https://vite.dev" target="_blank">
-					<img src={viteLogo} className="logo" alt="Vite logo" />
-				</a>
-				<a href="https://react.dev" target="_blank">
-					<img
-						src={reactLogo}
-						className="logo react"
-						alt="React logo"
-					/>
-				</a>
-			</div>
-			<h1>Vite + React</h1>
-			<div className="card">
-				<button onClick={() => setCount(count => count + 1)}>
-					count is {count}
-				</button>
-				<p>
-					Edit <code>src/App.tsx</code> and save to test HMR
-				</p>
-			</div>
-			<p className="read-the-docs">
-				Click on the Vite and React logos to learn more
-			</p>
-		</>
+		<ErrorBoundary>
+			<Router>
+				<Suspense fallback={<Loading />}>
+					<Switch>
+						<Layout>
+							<Route path="/yt-downloader" component={YTDownloader} />
+							<Route path="/no-intro-outro" component={NoIntroOutro} />
+							<Route
+								path="/image-converter"
+								component={IMGConverter}
+							/>
+							<Route path="/image-compressor" component={IMGCompressor} />
+							<Route
+								path="/filename-replacer"
+								component={FilenameReplacer}
+							/>
+
+							<Route path="*">
+								<Redirect to="/yt-downloader" />
+							</Route>
+						</Layout>
+					</Switch>
+				</Suspense>
+			</Router>
+		</ErrorBoundary>
 	);
 }
 
