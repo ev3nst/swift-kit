@@ -1,0 +1,9 @@
+node_modules/
+src-tauri/
+*.svg
+.DS_STORE
+*.woff2
+.gitignore
+.prettierignore
+*-lock.json
+*.lock
