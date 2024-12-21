@@ -45,9 +45,10 @@ const FilenameReplacer = () => {
 		setFetchLoading(true);
 		setErrorMessage('');
 		try {
-			const { folder_path } = getValues();
+			const { folder_path, extension_filter } = getValues();
 			const files = (await invoke('fetch_files', {
 				folder_path,
+				extension_filter,
 			})) as string[];
 			setFetchedFiles(files);
 			setFetchLoading(false);
@@ -156,7 +157,7 @@ const FilenameReplacer = () => {
 									<FormLabel>Extension Filter</FormLabel>
 								</div>
 								<FormControl>
-									<Input placeholder=".txt" {...field} />
+									<Input placeholder="eg. txt" {...field} />
 								</FormControl>
 							</FormItem>
 						)}

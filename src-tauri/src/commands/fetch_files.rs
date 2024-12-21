@@ -1,8 +1,11 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[tauri::command(rename_all = "snake_case")]
-pub fn fetch_files(folder_path: String) -> Result<Vec<String>, String> {
+pub fn fetch_files(
+    folder_path: String,
+    extension_filter: Option<String>,
+) -> Result<Vec<String>, String> {
     // Check if the path exists and is a directory
     let path = Path::new(&folder_path);
     if !path.exists() {
@@ -18,8 +21,18 @@ pub fn fetch_files(folder_path: String) -> Result<Vec<String>, String> {
         Ok(entries) => {
             for entry in entries {
                 if let Ok(entry) = entry {
-                    if let Ok(file_name) = entry.file_name().into_string() {
-                        files.push(file_name);
+                    let file_name = entry.file_name();
+                    if let Some(file_str) = file_name.to_str() {
+                        // Check if extension filter is provided
+                        if let Some(ext_filter) = &extension_filter {
+                            // Only add file if it ends with the provided extension
+                            if file_str.ends_with(&format!(".{}", ext_filter)) {
+                                files.push(file_str.to_string());
+                            }
+                        } else {
+                            // If no filter, just add the file name
+                            files.push(file_str.to_string());
+                        }
                     }
                 }
             }
