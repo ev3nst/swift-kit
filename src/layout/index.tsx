@@ -1,8 +1,10 @@
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/separator';
-import { FileCode2, ImageOff, Images, Scissors, Youtube } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { Fragment, ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
+import { FileCode2, ImageOff, Images, Scissors, Youtube } from 'lucide-react';
+
+import { Separator } from '@/components/separator';
+
+import { cn } from '@/lib/utils';
 
 const tools = [
 	{
@@ -38,13 +40,15 @@ const Layout = ({ children }: { children: ReactNode }) => {
 		<div className="container mx-auto p-6">
 			<div className="flex items-center justify-center">
 				{tools.map((tool, ti) => (
-					<>
+					<Fragment key={`layout_link_${ti}`}>
 						<Link
 							href={tool.href}
 							key={tool.href}
 							className={cn(
 								'flex h-12 md:h-8 items-center justify-center rounded-lg px-4 text-center text-xs md:text-sm transition-colors hover:text-primary gap-1.5',
-								location?.startsWith(tool.href) || location === '/' && tool.href === '/yt-downloader'
+								location?.startsWith(tool.href) ||
+									(location === '/' &&
+										tool.href === '/yt-downloader')
 									? 'bg-muted text-primary'
 									: 'text-muted-foreground',
 							)}
@@ -58,7 +62,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 								className="mx-2 h-4 hidden lg:block"
 							/>
 						)}
-					</>
+					</Fragment>
 				))}
 			</div>
 			<Separator className="mt-8 mb-10" />

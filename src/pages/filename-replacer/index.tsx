@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Folder } from 'lucide-react';
+import { toast } from 'sonner';
 import { clsx } from 'clsx';
+
+import { invoke } from '@tauri-apps/api/core';
 
 import {
 	Form,
@@ -20,14 +23,93 @@ const FilenameReplacer = () => {
 	const [errorMessage, setErrorMessage] = useState('');
 	const form = useForm({
 		defaultValues: {
-			files_path: '',
+			folder_path: '',
 			extension_filter: '',
 			replace_rule: '',
+			rename_mapping: [],
 		},
 	});
 
-	function onSubmit(data) {
-		console.log(data);
+	useEffect(() => {
+		if (fetchedFiles && fetchedFiles.length > 0) {
+			const initialRenameMapping = fetchedFiles.map(() => '');
+			form.reset({
+				...form.getValues(),
+				rename_mapping: initialRenameMapping,
+			});
+		}
+	}, [fetchedFiles, form]);
+
+	const { getValues, setValue } = form;
+	async function handleFetch() {
+		setFetchLoading(true);
+		setErrorMessage('');
+		try {
+			const { folder_path } = getValues();
+			const files = (await invoke('fetch_files', {
+				folder_path,
+			})) as string[];
+			setFetchedFiles(files);
+			setFetchLoading(false);
+		} catch (error) {
+			console.error('Error:', error);
+			setErrorMessage(error);
+			setFetchLoading(false);
+			toast.error(error);
+		}
+	}
+
+	async function handleBulkRename() {
+		setProcessLoading(true);
+		setErrorMessage('');
+		try {
+			const { folder_path, replace_rule } = getValues();
+			await invoke('rename_files', {
+				folder_path: folder_path,
+				replace_rule: replace_rule,
+			});
+			setProcessLoading(false);
+			toast.success('Renaming successful.');
+			handleFetch();
+		} catch (error) {
+			console.error('Error:', error);
+			setErrorMessage(error);
+			setProcessLoading(false);
+			toast.error(error);
+		}
+	}
+
+	async function onSubmit(data) {
+		const fileReMapping = fetchedFiles.map((ff, ffi) => {
+			let new_name = (data.rename_mapping[ffi] || '') as string;
+			if (
+				new_name.length > 0 &&
+				new_name.indexOf('.') === -1 &&
+				ff.indexOf('.') !== -1
+			) {
+				const old_ext = ff.split('.')[1];
+				new_name += '.' + old_ext;
+			}
+			return [ff, new_name];
+		});
+
+		setProcessLoading(true);
+		setErrorMessage('');
+		try {
+			await invoke('rename_files', {
+				folder_path: data.folder_path,
+				rename_mapping: fileReMapping,
+			});
+			setProcessLoading(false);
+			toast.success('Renaming successful.');
+			handleFetch();
+			setValue('rename_mapping', []);
+		} catch (error) {
+			console.error('Error:', error);
+			setErrorMessage(error);
+			setProcessLoading(false);
+			toast.error(error);
+		}
 	}
 
 	return (
@@ -45,7 +127,7 @@ const FilenameReplacer = () => {
 				<div className="flex gap-4">
 					<FormField
 						control={form.control}
-						name="files_path"
+						name="folder_path"
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
@@ -87,10 +169,7 @@ const FilenameReplacer = () => {
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
-									<FormLabel>
-										Replace Rule
-										
-									</FormLabel>
+									<FormLabel>Replace Rule</FormLabel>
 								</div>
 								<FormControl>
 									<Input
@@ -104,12 +183,47 @@ const FilenameReplacer = () => {
 					<Button
 						type="button"
 						variant="secondary"
-						className={clsx('w-[200px]', fetchLoading && 'disabled')}
+						className={clsx(
+							'w-[200px]',
+							fetchLoading && 'disabled',
+						)}
 						disabled={fetchLoading}
+						onClick={handleBulkRename}
 					>
 						Bulk Replace
 					</Button>
 				</div>
+
+				{fetchedFiles.length !== 0 && (
+					<>
+						<h6 className="mt-4">
+							Fetched Files
+							<span className="text-sm text-muted-foreground ms-2">
+								(Individual Renaming)
+							</span>
+							<p className="text-sm text-muted-foreground mt-2">
+								Typing the extension of the files is optional.
+							</p>
+						</h6>
+					</>
+				)}
+				{fetchedFiles.map((ff, ffi) => (
+					<FormField
+						key={`fetched_files_${ffi}`}
+						control={form.control}
+						name={`rename_mapping[${ffi}]` as any}
+						render={({ field }) => (
+							<FormItem className="grid gap-1 flex-grow">
+								<div className="flex items-center">
+									<FormLabel>{ff}</FormLabel>
+								</div>
+								<FormControl>
+									<Input {...field} />
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+				))}
 
 				{fetchedFiles.length === 0 ? (
 					<Button
@@ -117,6 +231,7 @@ const FilenameReplacer = () => {
 						variant="secondary"
 						className={clsx('w-full', fetchLoading && 'disabled')}
 						disabled={fetchLoading}
+						onClick={handleFetch}
 					>
 						Fetch
 					</Button>
@@ -129,6 +244,11 @@ const FilenameReplacer = () => {
 					>
 						Rename
 					</Button>
+				)}
+				{errorMessage && (
+					<div className="text-center text-sm text-destructive">
+						{errorMessage}
+					</div>
 				)}
 			</form>
 		</Form>
