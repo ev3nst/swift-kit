@@ -2,7 +2,7 @@
 	"$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
 	"productName": "swift-kit",
 	"version": "0.1.0",
-	"identifier": "com.tauri.dev",
+	"identifier": "com.ev3nst.swift-kit",
 	"build": {
 		"frontendDist": "../dist",
 		"devUrl": "http://localhost:8000",
@@ -42,7 +42,8 @@
 		"resources": [
 			"./binaries/pngquant.exe",
 			"./binaries/jpegoptim.exe",
-			"./binaries/cwebp.exe"
+			"./binaries/cwebp.exe",
+			"./binaries/yt-dlp.exe"
 		]
 	}
 }

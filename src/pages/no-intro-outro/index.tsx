@@ -21,6 +21,13 @@ const NoIntroOutro = () => {
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
+	console.log(
+		setProcessLoading,
+		setFetchedVideos,
+		setFetchLoading,
+		setErrorMessage,
+	);
+
 	const form = useForm({
 		defaultValues: {
 			input_path: '',
