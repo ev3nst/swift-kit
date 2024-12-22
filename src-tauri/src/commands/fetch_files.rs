@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn fetch_files(

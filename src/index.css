@@ -827,3 +827,10 @@ body,
 	width: 100%;
 	height: 100%;
 }
+
+/* Remove the arrows for number input */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}

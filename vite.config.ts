@@ -3,6 +3,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig({
+	build: {
+		minify: 'esbuild',
+		sourcemap: false,
+		rollupOptions: {
+			input: 'index.html',
+		},
+	},
 	server: {
 		port: 8000,
 	},

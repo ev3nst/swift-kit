@@ -19,18 +19,13 @@ import {
 } from '@/components/select';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
-import { IMGDropzone } from '@/components/img-dropzone';
+import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 
-import { formatFileSize } from '@/lib/utils';
-
-interface ImageFile extends File {
-	file: File;
-	preview: string;
-}
+import { formatFileSize, getImageDetailsFromPath } from '@/lib/utils';
 
 const IMGConverter = () => {
 	const [processLoading, setProcessLoading] = useState(false);
-	const [images, setImages] = useState<ImageFile[]>([]);
+	const [images, setImages] = useState<DroppedFile[]>([]);
 
 	const form = useForm({
 		defaultValues: {
@@ -43,21 +38,39 @@ const IMGConverter = () => {
 		console.log(data);
 	}
 
-	const handleFilesStateChange = (rawFiles: File[]) => {
-		const currentImageNames = images.map(img => img.name);
-		const files = rawFiles.filter(
-			rff => !currentImageNames.includes(rff.name),
-		);
-		if (files.length === 0) return;
 
-		const imageFiles = files.filter(file => file.type.startsWith('image/'));
-		const imagePreviews = imageFiles.map(file =>
-			Object.assign(file, {
-				file,
-				preview: URL.createObjectURL(file),
-			}),
-		);
-		setImages(prevImages => [...prevImages, ...imagePreviews]);
+	const handleFilesStateChange = async (_id:string, rawFiles?: string[]) => {
+		if(typeof rawFiles === 'undefined') return;
+		try {
+			console.log(rawFiles, 'fis');
+			const rawImages = await Promise.all(
+				rawFiles.map(async ri => await getImageDetailsFromPath(ri)),
+			);
+
+			// Filter out already existing images by name
+			const currentImageNames = images.map(img => img.name);
+			const newImages = rawImages.filter(
+				rff => !currentImageNames.includes(rff.name),
+			);
+
+			if (newImages.length === 0) return;
+			const imageFiles = newImages.filter(file => {
+				return (
+					file.mime.startsWith('image/') &&
+					[
+						'image/jpeg',
+						'image/jpg',
+						'image/png',
+						'image/webp',
+					].includes(file.mime)
+				);
+			});
+
+			// Update the state with new images
+			setImages(prevImages => [...prevImages, ...imageFiles]);
+		} catch (error) {
+			console.error('Error reading files:', error);
+		}
 	};
 
 	return (
@@ -138,7 +151,7 @@ const IMGConverter = () => {
 					/>
 				</div>
 
-				<IMGDropzone handleFilesStateChange={handleFilesStateChange} />
+				<IMGDropzone id="img-converter" handleFilesStateChange={handleFilesStateChange} />
 
 				<div className="flex flex-wrap gap-4">
 					{images.map((image, index) => (

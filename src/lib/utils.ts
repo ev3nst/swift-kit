@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { cva } from 'class-variance-authority';
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -103,3 +104,28 @@ export const formatFileSize = (sizeInBytes: number): string => {
 	const size = (sizeInBytes / Math.pow(1024, sizeIndex)).toFixed(2);
 	return `${size} ${units[sizeIndex]}`;
 };
+
+export async function getImageDetailsFromPath(path: string) {
+	const url = convertFileSrc(path);
+	const name = path.split('\\').pop();
+
+	try {
+		const response = await fetch(url, { method: 'HEAD' });
+		if (response.ok) {
+			const fileSize = response.headers.get('Content-Length');
+			const mime = response.headers.get('Content-Type');
+			return {
+				path,
+				name,
+				size: fileSize ? parseInt(fileSize, 10) : null,
+				mime,
+				preview: url,
+			};
+		} else {
+			throw new Error('Failed to fetch file details.');
+		}
+	} catch (error) {
+		console.error('Error fetching file details:', error);
+		return null; // Return null if there was an error
+	}
+}

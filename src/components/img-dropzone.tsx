@@ -1,69 +1,43 @@
-import { useState, DragEvent, ChangeEvent, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Image } from 'lucide-react';
 
-const IMGDropzone = ({ handleFilesStateChange }) => {
-	const dropZoneRef = useRef<HTMLDivElement | null>(null);
-	const fileInputRef = useRef<HTMLInputElement | null>(null);
-	const [isHovered, setIsHovered] = useState(false);
+import { useDragEvent } from '@/hooks/use-drag-event';
 
-	const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		const files = Array.from(e.dataTransfer.files);
-		handleFilesStateChange(files);
-		setIsHovered(false);
-	};
+export type DroppedFile = {
+	path: string;
+	preview: string;
+	name: string;
+	size: number;
+	mime: string;
+};
 
-	const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-	};
+const IMGDropzone = ({ handleFilesStateChange, id }) => {
+	const dropZoneRef = useRef(null);
+	const { isHovered, currentFiles, addDropZoneRef, removeDropZoneRef } =
+		useDragEvent();
 
-	const handleDragEnter = () => {
-		if (dropZoneRef.current) {
-			setIsHovered(true);
-		}
-	};
+	useEffect(() => {
+		// Register this drop zone's reference when it mounts
+		addDropZoneRef(id, dropZoneRef);
 
-	const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
-		const relatedTarget = e.relatedTarget as HTMLElement;
-		if (!dropZoneRef.current?.contains(relatedTarget)) {
-			setIsHovered(false);
-		}
-	};
+		// Clean up the reference when the component unmounts
+		return () => {
+			removeDropZoneRef(id);
+		};
+	}, [id, addDropZoneRef, removeDropZoneRef]);
 
-	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-		const files = Array.from(e.target.files || []);
-		handleFilesStateChange(files);
-	};
-
-	const handleClick = () => {
-		if (fileInputRef.current) {
-			fileInputRef.current.click();
-		}
-	};
+	useEffect(() => {
+		handleFilesStateChange(id, currentFiles[id]);
+	}, [currentFiles, handleFilesStateChange, id]);
 
 	return (
-		<div className="border-2 border-dashed w-full h-[150px]">
-			<div
-				ref={dropZoneRef}
-				onDrop={handleDrop}
-				onDragOver={handleDragOver}
-				onClick={handleClick}
-				onDragEnter={handleDragEnter}
-				onDragLeave={handleDragLeave}
-				className={`w-full h-full text-center cursor-pointer relative ${isHovered ? 'bg-secondary' : ''}`}
-			>
-				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center gap-3">
-					<Image className="w-6" />
-					<p>Drag & drop images here, or click to select</p>
-				</div>
-				<input
-					ref={fileInputRef}
-					type="file"
-					accept="image/*"
-					multiple
-					onChange={handleFileChange}
-					className="hidden"
-				/>
+		<div
+			ref={dropZoneRef}
+			className={`border-2 border-dashed w-full h-[150px] relative ${isHovered ? 'bg-secondary' : ''}`}
+		>
+			<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center gap-3">
+				<Image className="w-6" />
+				<p>Drag & drop images here, or click to select</p>
 			</div>
 		</div>
 	);
