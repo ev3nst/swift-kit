@@ -23,18 +23,6 @@ import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 import { formatFileSize, getImageDetailsFromPath } from '@/lib/utils';
 import { useDragEvent } from '@/hooks/use-drag-event';
 
-async function compressImage(
-	image_path: string,
-	output_path: string,
-	quality: number = 50,
-) {
-	await invoke('compress_image', {
-		image_path,
-		output_path,
-		quality,
-	});
-}
-
 const formSchema = z.object({
 	quality: z.coerce
 		.number()
@@ -45,7 +33,7 @@ const formSchema = z.object({
 	output_path: z.string().optional().nullable(),
 });
 
-const IMGConverter = () => {
+const IMGCompressor = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [images, setImages] = useState<DroppedFile[]>([]);
 	const { handleDragFilesChange } = useDragEvent();
@@ -61,8 +49,11 @@ const IMGConverter = () => {
 	async function onSubmit(data) {
 		setProcessLoading(true);
 		const compressPromises = images.map(file => {
-			console.log(file.path, data.output_path, data.quality);
-			return compressImage(file.path, data.output_path, data.quality);
+			return invoke('compress_image', {
+				image_path: file.path,
+				output_path: data.output_path,
+				quality: data.quality,
+			});
 		});
 
 		try {
@@ -215,4 +206,4 @@ const IMGConverter = () => {
 	);
 };
 
-export default IMGConverter;
+export default IMGCompressor;
