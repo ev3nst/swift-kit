@@ -6,7 +6,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::fetch_files::fetch_files,
             commands::rename_files::rename_files,
-            commands::compress_image::compress_image
+            commands::compress_image::compress_image,
+            commands::convert_image::convert_image
         ])
         .setup(|_app| Ok(()))
         .run(tauri::generate_context!())

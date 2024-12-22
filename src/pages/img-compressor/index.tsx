@@ -20,7 +20,7 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 
-import { formatFileSize, getImageDetailsFromPath } from '@/lib/utils';
+import { getImageDetailsFromPath } from '@/lib/utils';
 import { useDragEvent } from '@/hooks/use-drag-event';
 
 const formSchema = z.object({
@@ -164,34 +164,10 @@ const IMGCompressor = () => {
 
 					<IMGDropzone
 						id="img-compressor"
+						images={images}
 						handleFilesStateChange={handleFilesStateChange}
 					/>
 
-					<div className="flex flex-wrap gap-4">
-						{images.map((image, index) => (
-							<div
-								className="space-y-3"
-								key={`img_converter_thumb_${index}`}
-							>
-								<div className="overflow-hidden rounded-md">
-									<img
-										src={image.preview}
-										alt={image.name}
-										className="h-auto w-[150px] object-cover transition-all hover:scale-105 aspect-square"
-									/>
-								</div>
-
-								<div className="space-y-2 text-sm">
-									<div className="text-xs">{image.name}</div>
-									<div className="flex justify-between">
-										<p className="text-xs text-muted-foreground">
-											{formatFileSize(image.size)}
-										</p>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
 					<Button
 						type="submit"
 						variant="secondary"

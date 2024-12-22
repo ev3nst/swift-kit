@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Folder } from 'lucide-react';
+import { toast } from 'sonner';
 import { clsx } from 'clsx';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { invoke } from '@tauri-apps/api/core';
 
 import {
 	Form,
@@ -9,6 +14,7 @@ import {
 	FormField,
 	FormItem,
 	FormLabel,
+	FormMessage,
 } from '@/components/form';
 import {
 	Select,
@@ -21,26 +27,52 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 
-import { formatFileSize, getImageDetailsFromPath } from '@/lib/utils';
+import { getImageDetailsFromPath } from '@/lib/utils';
+import { useDragEvent } from '@/hooks/use-drag-event';
+
+const formSchema = z.object({
+	convert_to: z.enum(['jpeg', 'png', 'webp', 'bmp']),
+	output_path: z.string().optional().nullable(),
+});
 
 const IMGConverter = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [images, setImages] = useState<DroppedFile[]>([]);
+	const { handleDragFilesChange } = useDragEvent();
 
-	const form = useForm({
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
 		defaultValues: {
 			convert_to: 'jpeg',
 			output_path: '',
 		},
 	});
 
-	function onSubmit(data) {
-		console.log(data);
+	async function onSubmit(data) {
+		setProcessLoading(true);
+		const convertPromisses = images.map(file => {
+			return invoke('convert_image', {
+				image_path: file.path,
+				output_path: data.output_path,
+				convert_to: data.convert_to,
+			});
+		});
+
+		try {
+			await Promise.all(convertPromisses);
+			toast.success('Image conversion is complete.');
+			setProcessLoading(false);
+			handleDragFilesChange('img-converter', []);
+			setImages([]);
+		} catch (error) {
+			console.error(error);
+			toast.error(error);
+			setProcessLoading(false);
+		}
 	}
 
-
-	const handleFilesStateChange = async (_id:string, rawFiles?: string[]) => {
-		if(typeof rawFiles === 'undefined') return;
+	const handleFilesStateChange = async (_id: string, rawFiles?: string[]) => {
+		if (typeof rawFiles === 'undefined') return;
 		try {
 			console.log(rawFiles, 'fis');
 			const rawImages = await Promise.all(
@@ -103,6 +135,7 @@ const IMGConverter = () => {
 										{...field}
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -112,7 +145,6 @@ const IMGConverter = () => {
 						render={({ field }) => (
 							<FormItem className="grid gap-1 w-[200px]">
 								<FormLabel>Convert To</FormLabel>
-
 								<Select
 									onValueChange={field.onChange}
 									defaultValue={field.value}
@@ -132,52 +164,23 @@ const IMGConverter = () => {
 										<SelectItem value="webp">
 											WebP (.webp)
 										</SelectItem>
-										<SelectItem value="svg">
-											SVG (.svg)
-										</SelectItem>
-										<SelectItem value="tif">
-											TIFF (.tiff, .tif)
-										</SelectItem>
 										<SelectItem value="bmp">
 											BMP (.bmp)
 										</SelectItem>
-										<SelectItem value="heif">
-											HEIF (.heif, .heic)
-										</SelectItem>
 									</SelectContent>
 								</Select>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
 				</div>
 
-				<IMGDropzone id="img-converter" handleFilesStateChange={handleFilesStateChange} />
+				<IMGDropzone
+					id="img-converter"
+					images={images}
+					handleFilesStateChange={handleFilesStateChange}
+				/>
 
-				<div className="flex flex-wrap gap-4">
-					{images.map((image, index) => (
-						<div
-							className="space-y-3"
-							key={`img_converter_thumb_${index}`}
-						>
-							<div className="overflow-hidden rounded-md">
-								<img
-									src={image.preview}
-									alt={image.name}
-									className="h-auto w-[150px] object-cover transition-all hover:scale-105 aspect-square"
-								/>
-							</div>
-
-							<div className="space-y-2 text-sm">
-								<div className="text-xs">{image.name}</div>
-								<div className="flex justify-between">
-									<p className="text-xs text-muted-foreground">
-										{formatFileSize(image.size)}
-									</p>
-								</div>
-							</div>
-						</div>
-					))}
-				</div>
 				<Button
 					type="submit"
 					variant="secondary"
