@@ -1,6 +1,6 @@
 import { Fragment, ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
-import { FileCode2, ImageOff, Images, Scissors, Youtube } from 'lucide-react';
+import { FileCode2, Images, Scissors, Youtube } from 'lucide-react';
 
 import { Separator } from '@/components/separator';
 
@@ -18,14 +18,9 @@ const tools = [
 		icon: Scissors,
 	},
 	{
-		name: 'IMG Converter',
-		href: '/image-converter',
+		name: 'IMG Manipulation',
+		href: '/image-manipulation/compressor',
 		icon: Images,
-	},
-	{
-		name: 'IMG Compressor',
-		href: '/image-compressor',
-		icon: ImageOff,
 	},
 	{
 		name: 'File Name Replacer',
@@ -42,18 +37,22 @@ const Layout = ({ children }: { children: ReactNode }) => {
 				{tools.map((tool, ti) => (
 					<Fragment key={`layout_link_${ti}`}>
 						<Link
-							href={tool.href}
+							to={tool.href}
 							key={tool.href}
 							className={cn(
 								'flex h-12 md:h-8 items-center justify-center rounded-lg px-4 text-center text-xs md:text-sm transition-colors hover:text-primary gap-1.5',
-								location?.startsWith(tool.href) ||
+								location?.startsWith(
+									tool.href.split('/').length === 3
+										? `/${tool.href.split('/')[1]}`
+										: tool.href,
+								) ||
 									(location === '/' &&
 										tool.href === '/yt-downloader')
 									? 'bg-muted text-primary'
 									: 'text-muted-foreground',
 							)}
 						>
-							<tool.icon className="w-3.5 h-3.5 hidden lg:block" />
+							<tool.icon className="w-3.5 h-3.5 hidden md:block" />
 							{tool.name}
 						</Link>
 						{ti + 1 !== tools.length && (
@@ -65,7 +64,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 					</Fragment>
 				))}
 			</div>
-			<Separator className="mt-8 mb-10" />
+			<Separator className="my-6" />
 			{children}
 		</div>
 	);

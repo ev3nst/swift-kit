@@ -15,7 +15,11 @@ import {
 } from '@/components/form';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
+import { PageHeader } from '@/components/page-header';
 
+const pageTitle = 'File Name Replacer';
+const pageDescription =
+	'Replace file names individually or bulk rename with replacing rules.';
 const FilenameReplacer = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [fetchedFiles, setFetchedFiles] = useState([]);
@@ -116,15 +120,7 @@ const FilenameReplacer = () => {
 	return (
 		<Form {...form}>
 			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-				<div className="grid gap-2 text-center">
-					<h1 className="text-3xl font-bold mb-5">
-						File Name Replacer
-					</h1>
-					<p className="text-balance text-muted-foreground">
-						Replace file names individually or bulk rename with
-						replacing rules.
-					</p>
-				</div>
+				<PageHeader title={pageTitle} description={pageDescription} />
 				<div className="flex gap-4">
 					<FormField
 						control={form.control}

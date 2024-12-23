@@ -14,19 +14,15 @@ import { Progress } from '@/components/progress';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { Label } from '@/components/label';
+import { PageHeader } from '@/components/page-header';
 
+const pageTitle = 'No Intro & Outro';
+const pageDescription =
+	'Process will remove intro & outro from each episode and combine all of them into single video file.';
 const NoIntroOutro = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [fetchedVideos, setFetchedVideos] = useState([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
-	const [errorMessage, setErrorMessage] = useState('');
-
-	console.log(
-		setProcessLoading,
-		setFetchedVideos,
-		setFetchLoading,
-		setErrorMessage,
-	);
 
 	const form = useForm({
 		defaultValues: {
@@ -44,15 +40,10 @@ const NoIntroOutro = () => {
 		<Form {...form}>
 			<form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
 				<div className="grid gap-6">
-					<div className="grid gap-2 text-center">
-						<h1 className="text-3xl font-bold mb-5">
-							No Intro & Outro
-						</h1>
-						<p className="text-balance text-muted-foreground">
-							Process will remove intro & outro from each episode
-							and combine all of them into single video file.
-						</p>
-					</div>
+					<PageHeader
+						title={pageTitle}
+						description={pageDescription}
+					/>
 					<div className="grid gap-5">
 						<FormField
 							control={form.control}
@@ -221,11 +212,6 @@ const NoIntroOutro = () => {
 							</Button>
 						)}
 					</div>
-					{errorMessage && (
-						<div className="text-center text-sm text-destructive">
-							{errorMessage}
-						</div>
-					)}
 				</div>
 				<div className="mt-5 flex flex-col gap-3">
 					<div>Progress:</div>

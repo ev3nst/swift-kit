@@ -19,8 +19,8 @@ import {
 } from '@/components/form';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
-
-import { MediaItem } from './media-item';
+import { PageHeader } from '@/components/page-header';
+import { MediaItem } from '@/pages/media-item';
 
 const formSchema = z.object({
 	yt_url: z.string().nonempty({ message: 'URL is required' }),
@@ -42,6 +42,9 @@ type YTFetchResponse = {
 	}[];
 };
 
+const pageTitle = 'Youtube Downloader';
+const pageDescription =
+	'Provide necessary information to start downloading process. Playlists are also supported.';
 const YTDownloader = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [ytData, setYTData] = useState<YTFetchResponse>();
@@ -105,38 +108,52 @@ const YTDownloader = () => {
 	}
 
 	return (
-		<div>
-			<Form {...form}>
-				<form
-					className="grid gap-5"
-					onSubmit={form.handleSubmit(onSubmit)}
-				>
-					<div className="grid gap-6">
-						<div className="grid gap-2 text-center">
-							<h1 className="text-3xl font-bold mb-5">
-								Youtube Downloader
-							</h1>
-							<p className="text-balance text-muted-foreground">
-								Provide necessary information to start
-								downloading process. Playlists are also
-								supported.
-							</p>
-						</div>
-						<div className="grid gap-5">
+		<Form {...form}>
+			<form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
+				<div className="grid gap-6">
+					<PageHeader
+						title={pageTitle}
+						description={pageDescription}
+					/>
+					<div className="grid gap-5">
+						<FormField
+							control={form.control}
+							name="yt_url"
+							render={({ field }) => (
+								<FormItem className="grid gap-1">
+									<FormLabel className="flex gap-2 items-center">
+										URL
+										<div className="relative">
+											<Link2 className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+										</div>
+									</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="eg. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="flex gap-4 items-start">
 							<FormField
 								control={form.control}
-								name="yt_url"
+								name="output_path"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
-										<FormLabel className="flex gap-2 items-center">
-											URL
-											<div className="relative">
-												<Link2 className="w-4 h-4 bottom-[-7px] left-0 absolute" />
-											</div>
-										</FormLabel>
+									<FormItem className="grid gap-1 flex-grow">
+										<div className="flex items-center">
+											<FormLabel className="flex gap-2 items-center">
+												Output Path
+												<div className="relative">
+													<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+												</div>
+											</FormLabel>
+										</div>
 										<FormControl>
 											<Input
-												placeholder="eg. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+												placeholder="Default downloads folder is set if left empty"
 												{...field}
 											/>
 										</FormControl>
@@ -144,89 +161,64 @@ const YTDownloader = () => {
 									</FormItem>
 								)}
 							/>
-							<div className="flex gap-4 items-start">
-								<FormField
-									control={form.control}
-									name="output_path"
-									render={({ field }) => (
-										<FormItem className="grid gap-1 flex-grow">
-											<div className="flex items-center">
-												<FormLabel className="flex gap-2 items-center">
-													Output Path
-													<div className="relative">
-														<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
-													</div>
-												</FormLabel>
-											</div>
-											<FormControl>
-												<Input
-													placeholder="Default downloads folder is set if left empty"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="download_rate"
-									render={({ field }) => (
-										<FormItem className="grid gap-1 w-[200px]">
-											<div className="flex items-center">
-												<FormLabel className="flex gap-2 items-center">
-													Download Rate
-													<div className="relative">
-														<Download className="w-4 h-4 bottom-[-7px] left-0 absolute" />
-													</div>
-												</FormLabel>
-											</div>
-											<FormControl>
-												<Input
-													placeholder="KB/s"
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
+							<FormField
+								control={form.control}
+								name="download_rate"
+								render={({ field }) => (
+									<FormItem className="grid gap-1 w-[200px]">
+										<div className="flex items-center">
+											<FormLabel className="flex gap-2 items-center">
+												Download Rate
+												<div className="relative">
+													<Download className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+												</div>
+											</FormLabel>
+										</div>
+										<FormControl>
+											<Input
+												placeholder="KB/s"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
-							<div className="flex gap-4">
-								{typeof output_path !== 'undefined' &&
-									output_path !== '' &&
-									typeof yt_url !== 'undefined' &&
-									yt_url !== '' && (
-										<Button
-											type="submit"
-											variant="secondary"
-											className={clsx(
-												'flex-grow',
-												processLoading && 'disabled',
-											)}
-											disabled={processLoading}
-										>
-											Start
-										</Button>
-									)}
-								<Button
-									type="button"
-									variant="secondary"
-									className={clsx(
-										'w-[200px]',
-										ytDataLoading && 'disabled',
-									)}
-									disabled={ytDataLoading}
-									onClick={getYTURLData}
-								>
-									Fetch YT Data
-								</Button>
-							</div>
+						<div className="flex gap-4">
+							{typeof output_path !== 'undefined' &&
+								output_path !== '' &&
+								typeof yt_url !== 'undefined' &&
+								yt_url !== '' && (
+									<Button
+										type="submit"
+										variant="secondary"
+										className={clsx(
+											'flex-grow',
+											processLoading && 'disabled',
+										)}
+										disabled={processLoading}
+									>
+										Start
+									</Button>
+								)}
+							<Button
+								type="button"
+								variant="secondary"
+								className={clsx(
+									'w-[200px]',
+									ytDataLoading && 'disabled',
+								)}
+								disabled={ytDataLoading}
+								onClick={getYTURLData}
+							>
+								Fetch YT Data
+							</Button>
 						</div>
 					</div>
-				</form>
-			</Form>
+				</div>
+			</form>
 			<div className="mt-5 flex flex-col gap-3">
 				{downloadProgress && (
 					<div>
@@ -250,7 +242,7 @@ const YTDownloader = () => {
 						))}
 				</div>
 			</div>
-		</div>
+		</Form>
 	);
 };
 

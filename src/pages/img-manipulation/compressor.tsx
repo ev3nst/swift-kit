@@ -19,9 +19,12 @@ import {
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
+import { PageHeader } from '@/components/page-header';
+import IMGManipulationLayout from '@/pages/img-manipulation/layout';
+
+import { useDragEvent } from '@/hooks/use-drag-event';
 
 import { getImageDetailsFromPath } from '@/lib/utils';
-import { useDragEvent } from '@/hooks/use-drag-event';
 
 const formSchema = z.object({
 	quality: z.coerce
@@ -33,6 +36,8 @@ const formSchema = z.object({
 	output_path: z.string().optional().nullable(),
 });
 
+const pageTitle = 'Image Compressor';
+const pageDescription = 'Compress images with desired quality.';
 const IMGCompressor = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [images, setImages] = useState<DroppedFile[]>([]);
@@ -103,20 +108,16 @@ const IMGCompressor = () => {
 	};
 
 	return (
-		<div>
+		<IMGManipulationLayout>
 			<Form {...form}>
 				<form
 					className="grid gap-4"
 					onSubmit={form.handleSubmit(onSubmit)}
 				>
-					<div className="grid gap-2 text-center">
-						<h1 className="text-3xl font-bold mb-5">
-							Image Compressor
-						</h1>
-						<p className="text-balance text-muted-foreground">
-							Compress images with desired quality.
-						</p>
-					</div>
+					<PageHeader
+						title={pageTitle}
+						description={pageDescription}
+					/>
 					<div className="flex gap-4 items-start">
 						<FormField
 							control={form.control}
@@ -178,7 +179,7 @@ const IMGCompressor = () => {
 					</Button>
 				</form>
 			</Form>
-		</div>
+		</IMGManipulationLayout>
 	);
 };
 
