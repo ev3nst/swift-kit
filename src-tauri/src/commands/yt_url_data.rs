@@ -8,6 +8,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::path::BaseDirectory;
 use tauri::Manager;
 
+use super::get_default_browser;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct YTFetchResponse {
     url: String,
@@ -75,13 +77,17 @@ pub fn yt_url_data(
         .path()
         .resolve("binaries/yt-dlp.exe", BaseDirectory::Resource)
         .map_err(|e| format!("Failed to resolve path to yt-dlp: {}", e))?;
-
+    let default_browser =
+        get_default_browser::get_default_browser().unwrap_or_else(|_| "chrome".to_string());
     let output = Command::new(yt_dlp_path)
         .arg("-j")
         .arg("--clean-info-json")
         .arg("--no-get-comments")
-        .arg("--extractor-args")
-        .arg("youtube:player_skip=webpage,configs,js;player_client=android,web")
+		.arg("--no-warnings")
+        .arg("--cookies-from-browser")
+        .arg(default_browser)
+		.arg("--extractor-args")
+		.arg("youtube:player_skip=webpage;player_client=android,ios,web")
         .arg(url.clone())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

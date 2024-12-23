@@ -7,6 +7,8 @@ use tauri::path::BaseDirectory;
 use tauri::{Emitter, Manager};
 use tokio::task;
 
+use super::get_default_browser;
+
 #[derive(Serialize)]
 pub struct DownloadResponse {
     success: bool,
@@ -30,25 +32,35 @@ pub async fn download_yt_videos(
         .resolve("binaries/yt-dlp.exe", BaseDirectory::Resource)
         .map_err(|e| format!("Failed to resolve path to yt-dlp: {}", e))?;
 
+    let ffmpeg_path = handle
+        .path()
+        .resolve("binaries/ffmpeg.exe", BaseDirectory::Resource)
+        .map_err(|e| format!("Failed to resolve path to ffmpeg: {}", e))?;
+
     let output_path = output_path.to_path_buf();
     let url = url.clone();
     let handle = handle.clone();
 
     let result = task::spawn_blocking(move || {
         let mut command = Command::new(yt_dlp_path);
+        let default_browser =
+            get_default_browser::get_default_browser().unwrap_or_else(|_| "chrome".to_string());
         command
-            .arg(url)
             .arg("-f")
-            .arg("best")
+            .arg("bestaudio[ext=m4a]+bestvideo[ext=mp4]")
             .arg("-o")
             .arg(output_path.join("%(title)s.%(ext)s").to_str().unwrap())
             .arg("--continue")
             .arg("--no-warnings")
+            .arg("--cookies-from-browser")
+            .arg(default_browser)
+            .arg("--ffmpeg-location")
+            .arg(ffmpeg_path)
+            .arg(url)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .creation_flags(0x08000000);
 
-        // ...existing code...
         if let Some(rate) = download_rate {
             if rate > 0 {
                 command.arg("--limit-rate").arg(format!("{}K", rate));

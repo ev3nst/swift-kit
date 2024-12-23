@@ -1,5 +1,8 @@
-use crate::commands::img_compressors::{jpeg, png, webp};
 use std::path::{Path, PathBuf};
+
+use super::img_compressors::png;
+use super::img_compressors::jpeg;
+use super::img_compressors::webp;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn compress_image(

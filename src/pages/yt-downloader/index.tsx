@@ -68,6 +68,7 @@ const YTDownloader = () => {
 	}, []);
 
 	const { getValues } = form;
+	const { output_path, yt_url } = getValues();
 
 	async function getYTURLData() {
 		try {
@@ -192,13 +193,28 @@ const YTDownloader = () => {
 								/>
 							</div>
 
-							{typeof ytData === 'undefined' ||
-							typeof ytData.content_type === 'undefined' ? (
+							<div className="flex gap-4">
+								{typeof output_path !== 'undefined' &&
+									output_path !== '' &&
+									typeof yt_url !== 'undefined' &&
+									yt_url !== '' && (
+										<Button
+											type="submit"
+											variant="secondary"
+											className={clsx(
+												'flex-grow',
+												processLoading && 'disabled',
+											)}
+											disabled={processLoading}
+										>
+											Start
+										</Button>
+									)}
 								<Button
 									type="button"
 									variant="secondary"
 									className={clsx(
-										'w-full',
+										'w-[200px]',
 										ytDataLoading && 'disabled',
 									)}
 									disabled={ytDataLoading}
@@ -206,19 +222,7 @@ const YTDownloader = () => {
 								>
 									Fetch YT Data
 								</Button>
-							) : (
-								<Button
-									type="submit"
-									variant="secondary"
-									className={clsx(
-										'w-full',
-										processLoading && 'disabled',
-									)}
-									disabled={processLoading}
-								>
-									Start
-								</Button>
-							)}
+							</div>
 						</div>
 					</div>
 				</form>

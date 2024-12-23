@@ -43,7 +43,8 @@
 			"./binaries/pngquant.exe",
 			"./binaries/jpegoptim.exe",
 			"./binaries/cwebp.exe",
-			"./binaries/yt-dlp.exe"
+			"./binaries/yt-dlp.exe",
+			"./binaries/ffmpeg.exe"
 		]
 	}
 }
