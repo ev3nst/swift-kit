@@ -4,10 +4,9 @@ use std::path::Path;
 #[tauri::command(rename_all = "snake_case")]
 pub fn rename_files(
     folder_path: String,
-    rename_mapping: Option<Vec<(String, String)>>, // Individual file renames
-    replace_rule: Option<String>, // The pattern to replace (e.g., "asd-,")
+    rename_mapping: Option<Vec<(String, String)>>,
+    replace_rule: Option<String>, 
 ) -> Result<Vec<String>, String> {
-    // Ensure that only one of rename_mapping or replace_rule is provided
     if rename_mapping.is_some() && replace_rule.is_some() {
         return Err("Please choose either individual renaming or bulk renaming, not both.".to_string());
     }
@@ -20,14 +19,12 @@ pub fn rename_files(
         return Err("The provided path is not a directory.".to_string());
     }
 
-    let mut renamed_files = Vec::new();
-
     // If rename_mapping is provided, use it for individual renaming
+    let mut renamed_files = Vec::new();
     if let Some(mapping) = rename_mapping {
         for (old_name, new_name) in mapping {
             if new_name.is_empty() {
-                println!("Skipping renaming for {} as the new name is empty", old_name);
-                continue; // Skip renaming if the new name is empty
+                continue; 
             }
 
             let old_path = path.join(&old_name);

@@ -73,11 +73,13 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "image",
+ "lazy_static",
  "mozjpeg",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
+ "tokio",
  "trash",
 ]
 

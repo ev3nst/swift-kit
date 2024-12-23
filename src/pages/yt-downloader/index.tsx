@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Download, Folder, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 import {
 	Form,
@@ -16,7 +17,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/components/form';
-import { Progress } from '@/components/progress';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 
@@ -40,14 +40,13 @@ type YTFetchResponse = {
 		thumbnail: string;
 		uploader: string;
 	}[];
-	yt_dlp_execution?: string;
-	json_parse_execution?: string;
 };
 
 const YTDownloader = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [ytData, setYTData] = useState<YTFetchResponse>();
 	const [ytDataLoading, setYTDataLoading] = useState(false);
+	const [downloadProgress, setDownloadProgress] = useState<string>('');
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -58,6 +57,16 @@ const YTDownloader = () => {
 		},
 	});
 
+	useEffect(() => {
+		const unlisten = listen<string>('download-progress', event => {
+			setDownloadProgress(event.payload);
+		});
+
+		return () => {
+			unlisten.then(f => f());
+		};
+	}, []);
+
 	const { getValues } = form;
 
 	async function getYTURLData() {
@@ -66,23 +75,27 @@ const YTDownloader = () => {
 			const { yt_url } = getValues();
 			const data: YTFetchResponse = await invoke('yt_url_data', {
 				url: yt_url,
+				drop_cache: false,
 			});
-			console.log(data, 'data');
 			setYTData(data);
 			setYTDataLoading(false);
 		} catch (error) {
 			console.error(error);
 			toast.error(error);
-			setProcessLoading(false);
+			setYTDataLoading(false);
 		}
 	}
 
-	function onSubmit(data) {
-		// yet to be implemented
+	async function onSubmit(data) {
 		try {
 			setProcessLoading(true);
-			console.log(data, 'data');
-			setProcessLoading(true);
+			await invoke('download_yt_videos', {
+				url: data.yt_url,
+				output_path: data.output_path,
+				download_rate: data.download_rate,
+			});
+			toast.success('Download completed successfully');
+			setProcessLoading(false);
 		} catch (error) {
 			console.error(error);
 			toast.error(error);
@@ -106,13 +119,6 @@ const YTDownloader = () => {
 								Provide necessary information to start
 								downloading process. Playlists are also
 								supported.
-							</p>
-
-							<p className="text-destructive">
-								YT DLP: {ytData?.yt_dlp_execution}
-							</p>
-							<p className="text-destructive">
-								JSON PARSE: {ytData?.json_parse_execution}
 							</p>
 						</div>
 						<div className="grid gap-5">
@@ -218,11 +224,14 @@ const YTDownloader = () => {
 				</form>
 			</Form>
 			<div className="mt-5 flex flex-col gap-3">
-				<div>Progress:</div>
-				<Progress value={0} />
-				<Button className="w-[120px]" type="button" variant="secondary">
-					View Details
-				</Button>
+				{downloadProgress && (
+					<div>
+						<h2 className="text-md font-bold">Download Progress</h2>
+						<div className="rounded-md text-sm text-green-500">
+							{downloadProgress}
+						</div>
+					</div>
+				)}
 				<div className="flex flex-wrap pb-4 gap-4">
 					{typeof ytData !== 'undefined' &&
 						typeof ytData.content_type !== 'undefined' &&

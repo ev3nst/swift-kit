@@ -25,7 +25,6 @@ pub fn fetch_files(
                     if let Some(file_str) = file_name.to_str() {
                         // Check if extension filter is provided
                         if let Some(ext_filter) = &extension_filter {
-                            // Only add file if it ends with the provided extension
                             if file_str.ends_with(&format!(".{}", ext_filter)) {
                                 files.push(file_str.to_string());
                             }

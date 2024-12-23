@@ -834,3 +834,12 @@ input[type='number']::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
+
+/* input autocomplete colors */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	-webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+	-webkit-text-fill-color: white !important;
+}

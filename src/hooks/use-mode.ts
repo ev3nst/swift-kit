@@ -8,7 +8,7 @@ export const useMode = (): [
 ] => {
 	const [mode, setMode] = useState(() => {
 		const savedMode = localStorage.getItem('mode') as AvailableModes | null;
-		return savedMode || 'light';
+		return savedMode || 'dark';
 	});
 
 	useEffect(() => {
