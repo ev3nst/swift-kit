@@ -1,6 +1,23 @@
+import { useEffect, useState } from 'react';
 import { Loader } from 'lucide-react';
 
 const Loading = () => {
+	const [loading, setLoading] = useState(true);
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			setLoading(false);
+		}, 500);
+
+		
+		return () => {
+			clearTimeout(timeout);
+		  };
+	}, []);
+
+	if (loading) {
+		return <></>;
+	}
+
 	return (
 		<div className="flex items-center justify-center min-h-screen">
 			<div className="text-center animate-pulse">

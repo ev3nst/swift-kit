@@ -20,7 +20,6 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 import { PageHeader } from '@/components/page-header';
-import IMGManipulationLayout from '@/pages/img-manipulation/layout';
 
 import { useDragEvent } from '@/hooks/use-drag-event';
 
@@ -108,78 +107,73 @@ const IMGCompressor = () => {
 	};
 
 	return (
-		<IMGManipulationLayout>
-			<Form {...form}>
-				<form
-					className="grid gap-4"
-					onSubmit={form.handleSubmit(onSubmit)}
+		<Form {...form}>
+			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+				<PageHeader title={pageTitle} description={pageDescription} />
+				<div className="flex gap-4 items-start">
+					<FormField
+						control={form.control}
+						name="output_path"
+						render={({ field }) => (
+							<FormItem className="grid gap-1 flex-grow">
+								<div className="flex items-center">
+									<FormLabel className="flex gap-2 items-center">
+										Output Path
+										<div className="relative">
+											<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+										</div>
+									</FormLabel>
+								</div>
+								<FormControl>
+									<Input
+										placeholder="Defaults to downloads folder if left empty"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="quality"
+						render={({ field }) => (
+							<FormItem className="grid gap-1 w-[200px]">
+								<div className="flex items-center">
+									<FormLabel>Quality</FormLabel>
+								</div>
+								<FormControl>
+									<Input
+										type="number"
+										placeholder="Quality (0-100)"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<IMGDropzone
+					id="img-compressor"
+					images={images}
+					handleFilesStateChange={handleFilesStateChange}
+				/>
+
+				<Button
+					type="submit"
+					variant="secondary"
+					className={clsx(
+						'w-full',
+						(processLoading || images.length === 0) && 'disabled',
+					)}
+					disabled={processLoading || images.length === 0}
 				>
-					<PageHeader
-						title={pageTitle}
-						description={pageDescription}
-					/>
-					<div className="flex gap-4 items-start">
-						<FormField
-							control={form.control}
-							name="output_path"
-							render={({ field }) => (
-								<FormItem className="grid gap-1 flex-grow">
-									<div className="flex items-center">
-										<FormLabel className="flex gap-2 items-center">
-											Output Path
-											<div className="relative">
-												<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
-											</div>
-										</FormLabel>
-									</div>
-									<FormControl>
-										<Input
-											placeholder="Defaults to downloads folder if left empty"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="quality"
-							render={({ field }) => (
-								<FormItem className="grid gap-1 w-[200px]">
-									<div className="flex items-center">
-										<FormLabel>Quality</FormLabel>
-									</div>
-									<FormControl>
-										<Input
-											type="number"
-											placeholder="Quality (0-100)"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
-
-					<IMGDropzone
-						id="img-compressor"
-						images={images}
-						handleFilesStateChange={handleFilesStateChange}
-					/>
-
-					<Button
-						type="submit"
-						variant="secondary"
-						className={clsx('w-full', processLoading && 'disabled')}
-						disabled={processLoading}
-					>
-						Start
-					</Button>
-				</form>
-			</Form>
-		</IMGManipulationLayout>
+					Start
+				</Button>
+			</form>
+		</Form>
 	);
 };
 

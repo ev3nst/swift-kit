@@ -93,13 +93,12 @@ export const DragEventProvider: React.FC<DragEventProviderProps> = ({
 	}, []);
 
 	useEffect(() => {
-		// Set up the drag events when the app loads
 		const cleanup = setupDragEvents();
-
 		return () => {
 			cleanup();
 		};
-	}, [setupDragEvents]);
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	const addDropZoneRef = (
 		id: string,

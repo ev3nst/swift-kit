@@ -9,28 +9,30 @@ import { cn } from '@/lib/utils';
 const img_tools = [
 	{
 		name: 'Compressor',
-		href: '/image-manipulation/compressor',
+		href: '/compressor',
 		icon: FileDown,
 	},
 	{
 		name: 'Converter',
-		href: '/image-manipulation/converter',
+		href: '/converter',
 		icon: ImageOff,
 	},
 	{
 		name: 'Crop',
-		href: '/image-manipulation/crop',
+		href: '/crop',
 		icon: Crop,
 	},
 	{
 		name: 'Resize',
-		href: '/image-manipulation/resize',
+		href: '/resize',
 		icon: Scaling,
 	},
 ];
 
 const IMGManipulationLayout = ({ children }: { children: ReactNode }) => {
+	
 	const [location] = useLocation();
+	console.log(location, 'IMGManipulationLayout');
 	return (
 		<div className="container mx-auto">
 			<div className="flex items-center justify-center mb-4 gap-2">

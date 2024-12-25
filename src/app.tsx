@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Router, Route, Switch } from 'wouter';
+import { Router, Route } from 'wouter';
 
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/sonner';
@@ -7,6 +7,7 @@ import { Loading } from '@/components/loading';
 import { DragEventProvider } from '@/components/drag-provider';
 
 import Layout from '@/layout';
+import IMGManipulationLayout from '@/pages/img-manipulation/layout';
 
 import YTDownloader from '@/pages/yt-downloader';
 const NoIntroOutro = lazy(() => import('@/pages/no-intro-outro'));
@@ -31,34 +32,39 @@ function App() {
 						},
 					}}
 				/>
-				<Router>
-					<Suspense fallback={<Loading />}>
-						<Switch>
-							<Layout>
-								<Route
-									path="/(yt-downloader|)"
-									component={YTDownloader}
-								/>
-								<Route
-									path="/no-intro-outro"
-									component={NoIntroOutro}
-								/>
-									<Route
-										path="/image-manipulation/converter"
-										component={IMGConverter}
-									/>
-									<Route
-										path="/image-manipulation/compressor"
-										component={IMGCompressor}
-									/>
-								<Route
-									path="/filename-replacer"
-									component={FilenameReplacer}
-								/>
-							</Layout>
-						</Switch>
-					</Suspense>
-				</Router>
+				<Layout>
+					<Router>
+						<Suspense fallback={<Loading />}>
+							<Route
+								path="/(yt-downloader|)"
+								component={YTDownloader}
+							/>
+							<Route
+								path="/no-intro-outro"
+								component={NoIntroOutro}
+							/>
+							<Route
+								path="/filename-replacer"
+								component={FilenameReplacer}
+							/>
+
+							<Route path="/image-manipulation" nest>
+								<IMGManipulationLayout>
+									<Suspense fallback={<Loading />}>
+										<Route
+											path="/converter"
+											component={IMGConverter}
+										/>
+										<Route
+											path="/compressor"
+											component={IMGCompressor}
+										/>
+									</Suspense>
+								</IMGManipulationLayout>
+							</Route>
+						</Suspense>
+					</Router>
+				</Layout>
 			</ErrorBoundary>
 		</DragEventProvider>
 	);

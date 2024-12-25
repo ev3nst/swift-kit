@@ -117,6 +117,7 @@ const FilenameReplacer = () => {
 		}
 	}
 
+	const { folder_path } = getValues();
 	return (
 		<Form {...form}>
 			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -226,8 +227,12 @@ const FilenameReplacer = () => {
 					<Button
 						type="button"
 						variant="secondary"
-						className={clsx('w-full', fetchLoading && 'disabled')}
-						disabled={fetchLoading}
+						className={clsx(
+							'w-full',
+							(fetchLoading || folder_path.length === 0) &&
+								'disabled',
+						)}
+						disabled={fetchLoading || folder_path.length === 0}
 						onClick={handleFetch}
 					>
 						Fetch

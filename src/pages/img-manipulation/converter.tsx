@@ -27,7 +27,6 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
 import { PageHeader } from '@/components/page-header';
-import IMGManipulationLayout from '@/pages/img-manipulation/layout';
 
 import { useDragEvent } from '@/hooks/use-drag-event';
 
@@ -110,93 +109,88 @@ const IMGConverter = () => {
 	};
 
 	return (
-		<IMGManipulationLayout>
-			<Form {...form}>
-				<form
-					className="grid gap-4"
-					onSubmit={form.handleSubmit(onSubmit)}
-				>
-					<PageHeader
-						title={pageTitle}
-						description={pageDescription}
+		<Form {...form}>
+			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+				<PageHeader title={pageTitle} description={pageDescription} />
+				<div className="flex gap-4">
+					<FormField
+						control={form.control}
+						name="output_path"
+						render={({ field }) => (
+							<FormItem className="grid gap-1 flex-grow">
+								<div className="flex items-center">
+									<FormLabel className="flex gap-2 items-center">
+										Output Path
+										<div className="relative">
+											<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+										</div>
+									</FormLabel>
+								</div>
+								<FormControl>
+									<Input
+										placeholder="Defaults to downloads folder if left empty"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-					<div className="flex gap-4">
-						<FormField
-							control={form.control}
-							name="output_path"
-							render={({ field }) => (
-								<FormItem className="grid gap-1 flex-grow">
-									<div className="flex items-center">
-										<FormLabel className="flex gap-2 items-center">
-											Output Path
-											<div className="relative">
-												<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
-											</div>
-										</FormLabel>
-									</div>
+					<FormField
+						control={form.control}
+						name="convert_to"
+						render={({ field }) => (
+							<FormItem className="grid gap-1 w-[200px]">
+								<FormLabel>Convert To</FormLabel>
+								<Select
+									onValueChange={field.onChange}
+									defaultValue={field.value}
+								>
 									<FormControl>
-										<Input
-											placeholder="Defaults to downloads folder if left empty"
-											{...field}
-										/>
+										<SelectTrigger>
+											<SelectValue placeholder="Default: jpeg" />
+										</SelectTrigger>
 									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="convert_to"
-							render={({ field }) => (
-								<FormItem className="grid gap-1 w-[200px]">
-									<FormLabel>Convert To</FormLabel>
-									<Select
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Default: jpeg" />
-											</SelectTrigger>
-										</FormControl>
-										<SelectContent>
-											<SelectItem value="jpeg">
-												JPEG (.jpg, .jpeg)
-											</SelectItem>
-											<SelectItem value="png">
-												PNG (.png)
-											</SelectItem>
-											<SelectItem value="webp">
-												WebP (.webp)
-											</SelectItem>
-											<SelectItem value="bmp">
-												BMP (.bmp)
-											</SelectItem>
-										</SelectContent>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
-
-					<IMGDropzone
-						id="img-converter"
-						images={images}
-						handleFilesStateChange={handleFilesStateChange}
+									<SelectContent>
+										<SelectItem value="jpeg">
+											JPEG (.jpg, .jpeg)
+										</SelectItem>
+										<SelectItem value="png">
+											PNG (.png)
+										</SelectItem>
+										<SelectItem value="webp">
+											WebP (.webp)
+										</SelectItem>
+										<SelectItem value="bmp">
+											BMP (.bmp)
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
+				</div>
 
-					<Button
-						type="submit"
-						variant="secondary"
-						className={clsx('w-full', processLoading && 'disabled')}
-						disabled={processLoading}
-					>
-						Start
-					</Button>
-				</form>
-			</Form>
-		</IMGManipulationLayout>
+				<IMGDropzone
+					id="img-converter"
+					images={images}
+					handleFilesStateChange={handleFilesStateChange}
+				/>
+
+				<Button
+					type="submit"
+					variant="secondary"
+					className={clsx(
+						'w-full',
+						(processLoading || images.length === 0) && 'disabled',
+					)}
+					disabled={processLoading || images.length === 0}
+				>
+					Start
+				</Button>
+			</form>
+		</Form>
 	);
 };
 

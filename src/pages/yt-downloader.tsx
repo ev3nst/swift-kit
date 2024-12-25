@@ -22,8 +22,20 @@ import { Input } from '@/components/input';
 import { PageHeader } from '@/components/page-header';
 import { MediaItem } from '@/pages/media-item';
 
+function isValidUrl(url) {
+	try {
+		new URL(url);
+		return true;
+	} catch (_e) {
+		return false;
+	}
+}
+
 const formSchema = z.object({
-	yt_url: z.string().nonempty({ message: 'URL is required' }),
+	yt_url: z
+		.string()
+		.nonempty({ message: 'URL is required' })
+		.url({ message: 'Must be a valid URL.' }),
 	download_rate: z.coerce.number().optional().nullable(),
 	output_path: z.string().nonempty({ message: 'Output path is required' }),
 });
@@ -70,13 +82,13 @@ const YTDownloader = () => {
 		};
 	}, []);
 
-	const { getValues } = form;
-	const { output_path, yt_url } = getValues();
+	const { getValues, watch } = form;
+	const { output_path } = getValues();
+	const yt_url = watch('yt_url');
 
 	async function getYTURLData() {
 		try {
 			setYTDataLoading(true);
-			const { yt_url } = getValues();
 			const data: YTFetchResponse = await invoke('yt_url_data', {
 				url: yt_url,
 				drop_cache: false,
@@ -106,7 +118,6 @@ const YTDownloader = () => {
 			setProcessLoading(false);
 		}
 	}
-
 	return (
 		<Form {...form}>
 			<form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)}>
@@ -196,9 +207,14 @@ const YTDownloader = () => {
 										variant="secondary"
 										className={clsx(
 											'flex-grow',
-											processLoading && 'disabled',
+											(processLoading ||
+												!isValidUrl(yt_url)) &&
+												'disabled',
 										)}
-										disabled={processLoading}
+										disabled={
+											processLoading ||
+											!isValidUrl(yt_url)
+										}
 									>
 										Start
 									</Button>
@@ -208,9 +224,10 @@ const YTDownloader = () => {
 								variant="secondary"
 								className={clsx(
 									'w-[200px]',
-									ytDataLoading && 'disabled',
+									(ytDataLoading || !isValidUrl(yt_url)) &&
+										'disabled',
 								)}
-								disabled={ytDataLoading}
+								disabled={ytDataLoading || !isValidUrl(yt_url)}
 								onClick={getYTURLData}
 							>
 								Fetch YT Data

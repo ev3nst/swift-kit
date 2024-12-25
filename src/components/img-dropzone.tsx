@@ -49,7 +49,7 @@ const IMGDropzone = ({
 			>
 				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center gap-3">
 					<Image className="w-6" />
-					<p>Drag & drop images here, or click to select</p>
+					<p>Drag & drop images here</p>
 				</div>
 			</div>
 
