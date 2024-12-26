@@ -6,6 +6,18 @@
 	font-style: normal italic;
 }
 
+@font-face {
+	font-family: 'Sankofa Display';
+	src: url('/fonts/sankofa-display/SankofaDisplay.woff2') format('woff2');
+	font-weight: 100 900;
+	font-stretch: 75% 100%;
+	font-style: normal italic;
+}
+
+.font-sankofa {
+	font-family: 'Sankofa Display';
+}
+
 .italic {
 	transform: skewX(
 		-12deg
@@ -842,4 +854,8 @@ input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
 	-webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
 	-webkit-text-fill-color: white !important;
+}
+
+.app-drag-region {
+	app-region: drag;
 }

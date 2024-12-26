@@ -26,6 +26,9 @@ pub async fn download_yt_videos(
     if !output_path.is_dir() {
         return Err(format!("Invalid output path: {}", output_path.display()));
     }
+    let output_path = output_path.to_path_buf();
+    let url = url.clone();
+    let handle = handle.clone();
 
     let yt_dlp_path = handle
         .path()
@@ -36,10 +39,6 @@ pub async fn download_yt_videos(
         .path()
         .resolve("binaries/ffmpeg.exe", BaseDirectory::Resource)
         .map_err(|e| format!("Failed to resolve path to ffmpeg: {}", e))?;
-
-    let output_path = output_path.to_path_buf();
-    let url = url.clone();
-    let handle = handle.clone();
 
     let result = task::spawn_blocking(move || {
         let mut command = Command::new(yt_dlp_path);
@@ -103,7 +102,6 @@ pub async fn download_yt_videos(
         });
 
         let output = child.wait_with_output().map_err(|e| e.to_string())?;
-
         if output.status.success() {
             Ok(DownloadResponse {
                 success: true,
@@ -113,7 +111,6 @@ pub async fn download_yt_videos(
             let stderr = String::from_utf8(output.stderr).map_err(|e| e.to_string())?;
             Err(stderr)
         }
-        // ...existing code...
     })
     .await;
 

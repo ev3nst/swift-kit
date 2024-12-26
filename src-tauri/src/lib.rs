@@ -8,6 +8,7 @@ pub fn run() {
             commands::rename_files::rename_files,
             commands::compress_image::compress_image,
             commands::convert_image::convert_image,
+			commands::resize_image::resize_image,
             commands::yt_url_data::yt_url_data,
             commands::download_yt_videos::download_yt_videos
         ])

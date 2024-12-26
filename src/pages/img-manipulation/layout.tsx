@@ -23,16 +23,14 @@ const img_tools = [
 		icon: Crop,
 	},
 	{
-		name: 'Resize',
-		href: '/resize',
+		name: 'Resizer',
+		href: '/resizer',
 		icon: Scaling,
 	},
 ];
 
 const IMGManipulationLayout = ({ children }: { children: ReactNode }) => {
-	
 	const [location] = useLocation();
-	console.log(location, 'IMGManipulationLayout');
 	return (
 		<div className="container mx-auto">
 			<div className="flex items-center justify-center mb-4 gap-2">
@@ -43,13 +41,13 @@ const IMGManipulationLayout = ({ children }: { children: ReactNode }) => {
 							key={tool.href}
 							title={tool.name}
 							className={cn(
-								'flex h-9 items-center justify-center rounded-lg px-2 text-center text-xs md:text-sm transition-colors hover:text-sky-400 gap-1.5',
+								'flex h-9 items-center justify-center rounded-lg px-2 text-center text-xs md:text-sm transition-colors hover:text-sky-400',
 								location?.startsWith(tool.href)
 									? 'bg-muted text-sky-400'
 									: 'text-muted-foreground',
 							)}
 						>
-							<tool.icon className="w-5 h-5 hidden md:block" />
+							<tool.icon className="w-4 h-4 md:w-5 md:h-5" />
 						</Link>
 						{ti + 1 !== img_tools.length && (
 							<Separator

@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { Router, Route } from 'wouter';
 
+import { DragEventProvider } from '@/components/drag-provider';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/sonner';
 import { Loading } from '@/components/loading';
-import { DragEventProvider } from '@/components/drag-provider';
 
 import Layout from '@/layout';
 import IMGManipulationLayout from '@/pages/img-manipulation/layout';
@@ -13,6 +13,8 @@ import YTDownloader from '@/pages/yt-downloader';
 const NoIntroOutro = lazy(() => import('@/pages/no-intro-outro'));
 const IMGConverter = lazy(() => import('@/pages/img-manipulation/converter'));
 const IMGCompressor = lazy(() => import('@/pages/img-manipulation/compressor'));
+const IMGResizer = lazy(() => import('@/pages/img-manipulation/resizer'));
+
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 
 import { setTheme } from '@/lib/utils';
@@ -58,6 +60,10 @@ function App() {
 										<Route
 											path="/compressor"
 											component={IMGCompressor}
+										/>
+										<Route
+											path="/resizer"
+											component={IMGResizer}
 										/>
 									</Suspense>
 								</IMGManipulationLayout>

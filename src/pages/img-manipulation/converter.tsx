@@ -33,7 +33,7 @@ import { useDragEvent } from '@/hooks/use-drag-event';
 import { getImageDetailsFromPath } from '@/lib/utils';
 
 const formSchema = z.object({
-	convert_to: z.enum(['jpeg', 'png', 'webp', 'bmp']),
+	convert_to: z.enum(['jpeg', 'png', 'webp', 'bmp', 'ico']),
 	output_path: z.string().optional().nullable(),
 });
 
@@ -163,6 +163,9 @@ const IMGConverter = () => {
 										</SelectItem>
 										<SelectItem value="bmp">
 											BMP (.bmp)
+										</SelectItem>
+										<SelectItem value="ico">
+											ICO (.ico)
 										</SelectItem>
 									</SelectContent>
 								</Select>
