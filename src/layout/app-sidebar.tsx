@@ -10,6 +10,7 @@ import {
 	ShieldPlusIcon,
 	VideoIcon,
 } from 'lucide-react';
+import { Link } from 'wouter';
 
 import {
 	Sidebar,
@@ -41,22 +42,22 @@ const data = {
 			items: [
 				{
 					name: 'Media',
-					url: '#',
+					to: '/media',
 					icon: GemIcon,
 				},
 				{
 					name: 'Downloader',
-					url: '#',
+					to: '/downloader',
 					icon: DownloadIcon,
 				},
 				{
 					name: 'URL Gatherer',
-					url: '#',
+					to: '/url-gatherer',
 					icon: LinkIcon,
 				},
 				{
 					name: 'Notes',
-					url: '#',
+					to: '/notes',
 					icon: NotebookIcon,
 				},
 			],
@@ -66,17 +67,17 @@ const data = {
 			items: [
 				{
 					name: 'File Name Replacer',
-					url: '#',
+					to: '/filename-replacer',
 					icon: FilePenIcon,
 				},
 				{
 					name: 'Image Manipulator',
-					url: '#',
+					to: '/image-manipulator',
 					icon: ImageIcon,
 				},
 				{
 					name: 'Video Manipulator',
-					url: '#',
+					to: '/video-manipulator',
 					icon: VideoIcon,
 				},
 			],
@@ -86,12 +87,12 @@ const data = {
 			items: [
 				{
 					name: 'Security',
-					url: '#',
+					to: '/security',
 					icon: ShieldPlusIcon,
 				},
 				{
 					name: 'Keychain',
-					url: '#',
+					to: '/keychain',
 					icon: KeyIcon,
 				},
 			],
@@ -105,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar className="bg-background" collapsible="icon" {...props}>
 			<SidebarHeader>
-				<a className="py-1 flex items-center gap-4" href="/">
+				<Link className="py-1 flex items-center gap-4" to="/">
 					<img
 						src="/logo.svg"
 						className={
@@ -115,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					{state === 'expanded' && (
 						<img src="/logo.png" className="h-6" />
 					)}
-				</a>
+				</Link>
 			</SidebarHeader>
 			<SidebarSeparator className="mx-0" />
 			<SidebarContent>
@@ -131,10 +132,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										tooltip={item.name}
 										asChild
 									>
-										<a href={item.url}>
+										<Link to={item.to}>
 											<item.icon />
 											<span>{item.name}</span>
-										</a>
+										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							))}

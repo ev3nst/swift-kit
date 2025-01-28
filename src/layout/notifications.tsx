@@ -1,3 +1,4 @@
+import { Link } from 'wouter';
 import { BellIcon } from 'lucide-react';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/popover';
@@ -111,8 +112,8 @@ function NotificationsSummary() {
 			<Separator />
 			<div className="flex flex-1 flex-col max-h-[450px] overflow-auto">
 				{data.map(item => (
-					<a
-						href="#"
+					<Link
+						to="#"
 						key={item.email}
 						className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
 					>
@@ -124,14 +125,14 @@ function NotificationsSummary() {
 						<span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
 							{item.teaser}
 						</span>
-					</a>
+					</Link>
 				))}
 			</div>
 			<Separator />
 			<div className="w-full text-center px-4 py-2 text-sm ">
-				<a className="text-primary" href="#">
+				<Link to="#" className="text-primary">
 					View all
-				</a>
+				</Link>
 			</div>
 		</div>
 	);
