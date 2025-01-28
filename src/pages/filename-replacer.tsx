@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Folder } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
@@ -10,9 +12,19 @@ import {
 	FormField,
 	FormItem,
 	FormLabel,
+	FormMessage,
 } from '@/components/form';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
+
+const filenameReplacerSchema = z.object({
+	folder_path: z.string().min(1, {
+		message: 'Folder path is required.',
+	}),
+	extension_filter: z.string().nullable(),
+	replace_rule: z.string().nullable(),
+	rename_mapping: z.array(z.object({})).nullable(),
+});
 
 const FilenameReplacer = () => {
 	const [processLoading, setProcessLoading] = useState(false);
@@ -20,6 +32,7 @@ const FilenameReplacer = () => {
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 	const form = useForm({
+		resolver: zodResolver(filenameReplacerSchema),
 		defaultValues: {
 			folder_path: '',
 			extension_filter: '',
@@ -130,6 +143,7 @@ const FilenameReplacer = () => {
 										{...field}
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -144,6 +158,7 @@ const FilenameReplacer = () => {
 								<FormControl>
 									<Input placeholder="eg. txt" {...field} />
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -163,6 +178,7 @@ const FilenameReplacer = () => {
 										{...field}
 									/>
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
@@ -206,6 +222,7 @@ const FilenameReplacer = () => {
 								<FormControl>
 									<Input {...field} />
 								</FormControl>
+								<FormMessage />
 							</FormItem>
 						)}
 					/>
