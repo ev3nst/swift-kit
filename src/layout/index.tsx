@@ -6,18 +6,11 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from '@/components/sidebar';
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from '@/components/breadcrumb';
 import { Button } from '@/components/button';
 import { Separator } from '@/components/separator';
 
 import { AppSidebar } from './app-sidebar';
+import { Breadcrumbs } from './breadcrumbs';
 import { Notifications } from './notifications';
 
 const Layout = ({ children }: { children: ReactNode }) => {
@@ -42,21 +35,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 							orientation="vertical"
 							className="mr-2 h-4"
 						/>
-						<Breadcrumb>
-							<BreadcrumbList>
-								<BreadcrumbItem className="hidden lg:block">
-									<BreadcrumbLink href="#">
-										Building Your Application
-									</BreadcrumbLink>
-								</BreadcrumbItem>
-								<BreadcrumbSeparator className="hidden lg:block" />
-								<BreadcrumbItem>
-									<BreadcrumbPage>
-										Data Fetching
-									</BreadcrumbPage>
-								</BreadcrumbItem>
-							</BreadcrumbList>
-						</Breadcrumb>
+						<Breadcrumbs />
 					</div>
 					<div className="flex gap-2 items-center">
 						<div className="flex gap-2">
