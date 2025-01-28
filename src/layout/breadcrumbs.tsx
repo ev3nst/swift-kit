@@ -14,9 +14,7 @@ export const Breadcrumbs = () => {
 	const [location] = useLocation();
 	const pathSegments = location.split('/').filter(Boolean);
 	const formatText = text =>
-		text
-			.replace(/-/g, ' ')
-			.replace(/\b\w/g, char => char.toUpperCase());
+		text.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 	return (
 		<Breadcrumb>
@@ -36,7 +34,9 @@ export const Breadcrumbs = () => {
 									</BreadcrumbPage>
 								) : (
 									<BreadcrumbLink asChild>
-										<Link to={href}>{formatText(segment)}</Link>
+										<Link to={href}>
+											{formatText(segment)}
+										</Link>
 									</BreadcrumbLink>
 								)}
 							</BreadcrumbItem>
