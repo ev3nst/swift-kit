@@ -8,6 +8,7 @@ import { Loading } from '@/components/loading';
 import Layout from '@/layout';
 
 const Placeholder = lazy(() => import('@/pages/placeholder'));
+const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 
 function App() {
 	return (
@@ -30,7 +31,7 @@ function App() {
 						<Route path="/notes" component={Placeholder} />
 						<Route
 							path="/filename-replacer"
-							component={Placeholder}
+							component={FilenameReplacer}
 						/>
 						<Route
 							path="/image-manipulator"
