@@ -89,9 +89,13 @@ const FilenameReplacer = () => {
 		}
 	}
 
-	async function onSubmit(data) {
+	async function onSubmit(data: z.infer<typeof filenameReplacerSchema>) {
 		const fileReMapping = fetchedFiles.map((ff, ffi) => {
-			let new_name = (data.rename_mapping[ffi] || '') as string;
+			let new_name = (
+				data.rename_mapping && data.rename_mapping[ffi] !== null
+					? data.rename_mapping[ffi]
+					: ''
+			) as string;
 			if (
 				new_name.length > 0 &&
 				new_name.indexOf('.') === -1 &&
@@ -131,7 +135,7 @@ const FilenameReplacer = () => {
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
 									<FormLabel className="flex gap-2 items-center">
-										Files Path
+										Folder Path
 										<div className="relative">
 											<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
 										</div>
