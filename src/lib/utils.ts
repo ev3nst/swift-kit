@@ -13,6 +13,14 @@ export const buttonVariants = cva(
 			variant: {
 				default:
 					'bg-primary text-primary-foreground shadow hover:bg-primary/90',
+				'default-outline':
+					'border border-input bg-background shadow hover:bg-accent hover:text-accent-foreground',
+				success: 'bg-green-700 text-white shadow hover:bg-green-600',
+				info: 'bg-blue-700 text-white shadow hover:bg-blue-600',
+				'success-outline':
+					'border border-green-500 text-green-500 hover:border-green-600 hover:bg-green-600 hover:text-white',
+				'info-outline':
+					'border border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-600 hover:text-white',
 				destructive:
 					'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
 				outline:

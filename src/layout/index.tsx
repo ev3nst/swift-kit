@@ -69,21 +69,21 @@ const Layout = ({ children }: { children: ReactNode }) => {
 						<div className="flex gap-1">
 							<Button
 								variant="ghost"
-								className="clickable-content h-8 w-8 px-0"
+								className="h-8 w-8 px-0"
 								onClick={handleMinimize}
 							>
 								<MinusIcon className="h-[1rem] w-[1rem] " />
 							</Button>
 							<Button
 								variant="ghost"
-								className="clickable-content h-8 w-8 px-0"
+								className="h-8 w-8 px-0"
 								onClick={handleMaximize}
 							>
 								<SquareIcon className="h-[0.85rem] w-[0.85rem] " />
 							</Button>
 							<Button
 								variant="ghost"
-								className="clickable-content h-8 w-8 px-0 hover:bg-red-800"
+								className="h-8 w-8 px-0 hover:bg-red-800"
 								onClick={handleClose}
 							>
 								<XIcon className="h-[1.2rem] w-[1.2rem] " />

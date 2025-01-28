@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link, useLocation } from 'wouter';
 import {
 	DownloadIcon,
 	FilePenIcon,
@@ -10,7 +11,6 @@ import {
 	ShieldPlusIcon,
 	VideoIcon,
 } from 'lucide-react';
-import { Link } from 'wouter';
 
 import {
 	Sidebar,
@@ -102,6 +102,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { state } = useSidebar();
+	const [location] = useLocation();
 
 	return (
 		<Sidebar className="bg-background" collapsible="icon" {...props}>
@@ -131,6 +132,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 									<SidebarMenuButton
 										tooltip={item.name}
 										asChild
+										isActive={location.startsWith(item.to)}
 									>
 										<Link to={item.to}>
 											<item.icon />
