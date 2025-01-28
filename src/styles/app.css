@@ -93,6 +93,7 @@
 	}
 }
 
+/* Native Scrollbar */
 ::-webkit-scrollbar {
 	@apply w-1.5 h-1.5;
 }
@@ -105,6 +106,7 @@
 	@apply bg-border border-[1px] border-transparent border-solid;
 }
 
+/* Personalized normalization */
 html,
 body,
 #root {
