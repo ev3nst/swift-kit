@@ -12,6 +12,8 @@
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.10.0",
+		"@maskito/kit": "^3.2.1",
+		"@maskito/react": "^3.2.1",
 		"@radix-ui/react-alert-dialog": "^1.1.5",
 		"@radix-ui/react-avatar": "^1.1.2",
 		"@radix-ui/react-checkbox": "^1.1.3",

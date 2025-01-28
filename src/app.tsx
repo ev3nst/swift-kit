@@ -7,8 +7,11 @@ import { Loading } from '@/components/loading';
 
 import Layout from '@/layout';
 
-const Placeholder = lazy(() => import('@/pages/placeholder'));
+const Media = lazy(() => import('@/pages/media/index'));
+const Movie = lazy(() => import('@/pages/media/movie'));
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
+
+const Placeholder = lazy(() => import('@/pages/placeholder'));
 
 function App() {
 	return (
@@ -25,7 +28,18 @@ function App() {
 			<Layout>
 				<Router>
 					<Suspense fallback={<Loading />}>
-						<Route path="/(media|)" component={Placeholder} />
+						<Route path="/media" nest>
+							<Media>
+								<Route path="(movies|)" component={Movie} />
+								<Route path="animes" component={Placeholder} />
+								<Route
+									path="tv-series"
+									component={Placeholder}
+								/>
+								<Route path="games" component={Placeholder} />
+							</Media>
+						</Route>
+
 						<Route path="/downloader" component={Placeholder} />
 						<Route path="/url-gatherer" component={Placeholder} />
 						<Route path="/notes" component={Placeholder} />
