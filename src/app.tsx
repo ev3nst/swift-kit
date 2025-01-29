@@ -10,6 +10,7 @@ import Layout from '@/layout';
 const Media = lazy(() => import('@/pages/media/index'));
 const Movie = lazy(() => import('@/pages/media/movie'));
 const Downloader = lazy(() => import('@/pages/downloader'));
+const Notes = lazy(() => import('@/pages/notes'));
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 
 const Placeholder = lazy(() => import('@/pages/placeholder'));
@@ -43,7 +44,7 @@ function App() {
 
 						<Route path="/downloader" component={Downloader} />
 						<Route path="/url-gatherer" component={Placeholder} />
-						<Route path="/notes" component={Placeholder} />
+						<Route path="/notes" component={Notes} />
 						<Route
 							path="/filename-replacer"
 							component={FilenameReplacer}

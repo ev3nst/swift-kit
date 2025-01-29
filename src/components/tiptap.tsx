@@ -40,8 +40,8 @@ function MenuBar() {
 	}
 
 	return (
-		<div className="control-group mb-5 border-b border-input pb-2">
-			<div className="button-group">
+		<div className="control-group mb-3">
+			<div className="flex button-group">
 				<Button
 					variant="ghost"
 					size="sm"
