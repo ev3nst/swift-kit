@@ -129,53 +129,57 @@ export function NotesPagination({
 	};
 
 	return (
-		<div className='flex gap-2 items-center'>
-			<p className='text-sm text-muted-foreground'>Total: 12</p>
+		<div className="flex gap-2 items-center">
+			<p className="text-sm text-muted-foreground">Total: 12</p>
 			<Pagination>
-			<PaginationContent>
-				<PaginationItem>
-					<PaginationLink
-						href="#"
-						onClick={handleFirst}
-						className={currentPage === 1 ? 'disabled' : ''}
-					>
-						<ChevronsLeftIcon />
-					</PaginationLink>
-				</PaginationItem>
+				<PaginationContent>
+					<PaginationItem>
+						<PaginationLink
+							href="#"
+							onClick={handleFirst}
+							className={currentPage === 1 ? 'disabled' : ''}
+						>
+							<ChevronsLeftIcon />
+						</PaginationLink>
+					</PaginationItem>
 
-				<PaginationItem>
-					<PaginationLink
-						href="#"
-						onClick={handlePrevious}
-						className={currentPage === 1 ? 'disabled' : ''}
-					>
-						<ChevronLeftIcon />
-					</PaginationLink>
-				</PaginationItem>
+					<PaginationItem>
+						<PaginationLink
+							href="#"
+							onClick={handlePrevious}
+							className={currentPage === 1 ? 'disabled' : ''}
+						>
+							<ChevronLeftIcon />
+						</PaginationLink>
+					</PaginationItem>
 
-				{renderPageLinks()}
+					{renderPageLinks()}
 
-				<PaginationItem>
-					<PaginationLink
-						href="#"
-						onClick={handleNext}
-						className={currentPage === totalPages ? 'disabled' : ''}
-					>
-						<ChevronRightIcon />
-					</PaginationLink>
-				</PaginationItem>
+					<PaginationItem>
+						<PaginationLink
+							href="#"
+							onClick={handleNext}
+							className={
+								currentPage === totalPages ? 'disabled' : ''
+							}
+						>
+							<ChevronRightIcon />
+						</PaginationLink>
+					</PaginationItem>
 
-				<PaginationItem>
-					<PaginationLink
-						href="#"
-						onClick={handleLast}
-						className={currentPage === totalPages ? 'disabled' : ''}
-					>
-						<ChevronsRightIcon />
-					</PaginationLink>
-				</PaginationItem>
-			</PaginationContent>
-		</Pagination>
+					<PaginationItem>
+						<PaginationLink
+							href="#"
+							onClick={handleLast}
+							className={
+								currentPage === totalPages ? 'disabled' : ''
+							}
+						>
+							<ChevronsRightIcon />
+						</PaginationLink>
+					</PaginationItem>
+				</PaginationContent>
+			</Pagination>
 		</div>
 	);
 }
