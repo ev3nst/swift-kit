@@ -43,7 +43,6 @@ function App() {
 						</Route>
 
 						<Route path="/downloader" component={Downloader} />
-						<Route path="/url-gatherer" component={Placeholder} />
 						<Route path="/notes" component={Notes} />
 						<Route
 							path="/filename-replacer"

@@ -6,7 +6,6 @@ import {
 	GemIcon,
 	ImageIcon,
 	KeyIcon,
-	LinkIcon,
 	NotebookIcon,
 	ShieldPlusIcon,
 	VideoIcon,
@@ -49,11 +48,6 @@ const data = {
 					name: 'Downloader',
 					to: '/downloader',
 					icon: DownloadIcon,
-				},
-				{
-					name: 'URL Gatherer',
-					to: '/url-gatherer',
-					icon: LinkIcon,
 				},
 				{
 					name: 'Notes',
