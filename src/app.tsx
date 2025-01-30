@@ -12,6 +12,18 @@ import Media from './pages/media';
 const Movie = lazy(() => import('@/pages/media/movie'));
 const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
+
+// File Systems
+import VideoManipulation from './pages/video-manipulation';
+const NoIntroOutro = lazy(
+	() => import('@/pages/video-manipulation/no-intro-outro'),
+);
+const BulkInterpolation = lazy(
+	() => import('@/pages/video-manipulation/bulk-interpolation'),
+);
+const CutAndMerge = lazy(
+	() => import('@/pages/video-manipulation/cut-and-merge'),
+);
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 
 const Placeholder = lazy(() => import('@/pages/placeholder'));
@@ -53,10 +65,22 @@ function App() {
 							path="/image-manipulator"
 							component={Placeholder}
 						/>
-						<Route
-							path="/video-manipulator"
-							component={Placeholder}
-						/>
+						<Route path="/video-manipulation" nest>
+							<VideoManipulation>
+								<Route
+									path="(no-intro-outro|)"
+									component={NoIntroOutro}
+								/>
+								<Route
+									path="bulk-interpolation"
+									component={BulkInterpolation}
+								/>
+								<Route
+									path="cut-and-merge"
+									component={CutAndMerge}
+								/>
+							</VideoManipulation>
+						</Route>
 						<Route path="/security" component={Placeholder} />
 						<Route path="/keychain" component={Placeholder} />
 					</Suspense>

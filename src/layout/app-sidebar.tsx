@@ -66,7 +66,7 @@ const data = {
 				},
 				{
 					name: 'Video Manipulator',
-					to: '/video-manipulator',
+					to: '/video-manipulation',
 					icon: VideoIcon,
 				},
 				{
