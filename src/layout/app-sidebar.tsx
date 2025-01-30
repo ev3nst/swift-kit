@@ -60,11 +60,6 @@ const data = {
 			groupName: 'File Systems',
 			items: [
 				{
-					name: 'File Name Replacer',
-					to: '/filename-replacer',
-					icon: FilePenIcon,
-				},
-				{
 					name: 'Image Manipulator',
 					to: '/image-manipulator',
 					icon: ImageIcon,
@@ -73,6 +68,11 @@ const data = {
 					name: 'Video Manipulator',
 					to: '/video-manipulator',
 					icon: VideoIcon,
+				},
+				{
+					name: 'File Name Replacer',
+					to: '/filename-replacer',
+					icon: FilePenIcon,
 				},
 			],
 		},

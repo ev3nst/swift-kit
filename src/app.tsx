@@ -7,7 +7,8 @@ import { Loading } from '@/components/loading';
 
 import Layout from '@/layout';
 
-const Media = lazy(() => import('@/pages/media/index'));
+// Source & Content
+import Media from './pages/media';
 const Movie = lazy(() => import('@/pages/media/movie'));
 const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
