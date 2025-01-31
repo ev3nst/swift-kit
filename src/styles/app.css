@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.italic {
-	transform: skewX(
-		-12deg
-	); /* Apply a skew transformation to emulate slanting */
-}
-
 @layer base {
 	:root {
 		--background: 0 0% 100%;
