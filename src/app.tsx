@@ -14,6 +14,7 @@ const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
 
 // File Systems
+const ImageManipulator = lazy(() => import('@/pages/image-manipulator'));
 import VideoManipulation from './pages/video-manipulation';
 const NoIntroOutro = lazy(
 	() => import('@/pages/video-manipulation/no-intro-outro'),
@@ -63,7 +64,7 @@ function App() {
 						/>
 						<Route
 							path="/image-manipulator"
-							component={Placeholder}
+							component={ImageManipulator}
 						/>
 						<Route path="/video-manipulation" nest>
 							<VideoManipulation>
