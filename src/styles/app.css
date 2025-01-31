@@ -108,6 +108,12 @@ body,
 	height: 100%;
 }
 
+/* Fixed the stupid scrollbar removing "feature" of radix */
+html body[data-scroll-locked] {
+	overflow: visible !important;
+	margin-right: 0 !important;
+}
+
 /* Remove the arrows for number input */
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
