@@ -27,6 +27,8 @@ const CutAndMerge = lazy(
 );
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 
+// Security
+const Keychain = lazy(() => import('@/pages/keychain'));
 const Placeholder = lazy(() => import('@/pages/placeholder'));
 
 function App() {
@@ -83,7 +85,7 @@ function App() {
 							</VideoManipulation>
 						</Route>
 						<Route path="/security" component={Placeholder} />
-						<Route path="/keychain" component={Placeholder} />
+						<Route path="/keychain" component={Keychain} />
 					</Suspense>
 				</Router>
 			</Layout>
