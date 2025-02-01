@@ -40,7 +40,9 @@ export function Nav() {
 						className={cn(
 							'flex items-center justify-center px-3 py-2 text-center text-xs md:text-sm transition-colors rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus-visible:z-10 border-r last:border-r-0',
 							wouterLocation?.startsWith(tool.href) ||
-								(location.pathname === '/media' && ti === 0)
+								((location.pathname === '/media' ||
+									location.pathname === '/') &&
+									ti === 0)
 								? 'bg-muted'
 								: 'text-muted-foreground',
 						)}

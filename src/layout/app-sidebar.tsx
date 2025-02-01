@@ -96,14 +96,14 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { state } = useSidebar();
-	const [location] = useLocation();
+	const [wouterLocation] = useLocation();
 
 	return (
 		<Sidebar className="bg-background" collapsible="icon" {...props}>
 			<SidebarHeader>
 				<Link className="py-1 flex items-center gap-4" to="/">
 					<img
-						src="/logo.svg"
+						src="/logo-square.svg"
 						className={
 							state === 'expanded' ? 'h-7 ms-2' : 'h-6 ms-0.5'
 						}
@@ -115,18 +115,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarHeader>
 			<SidebarSeparator className="mx-0" />
 			<SidebarContent>
-				{data.nav.map(group => (
+				{data.nav.map((group, groupIndex) => (
 					<SidebarGroup key={`sidebar-${group.groupName}`}>
 						<SidebarGroupLabel>{group.groupName}</SidebarGroupLabel>
 						<SidebarMenu>
-							{group.items.map(item => (
+							{group.items.map((item, itemIndex) => (
 								<SidebarMenuItem
 									key={`sidebar-${group.groupName}-${item.name}`}
 								>
 									<SidebarMenuButton
 										tooltip={item.name}
 										asChild
-										isActive={location.startsWith(item.to)}
+										isActive={
+											wouterLocation.startsWith(
+												item.to,
+											) ||
+											(location.pathname === '/' &&
+												itemIndex === 0 &&
+												groupIndex === 0)
+										}
 									>
 										<Link to={item.to}>
 											<item.icon />

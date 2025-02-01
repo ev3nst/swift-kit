@@ -11,8 +11,8 @@ import {
 } from '@/components/breadcrumb';
 
 export const Breadcrumbs = () => {
-	const [location] = useLocation();
-	const pathSegments = location.split('/').filter(Boolean);
+	const [wouterLocation] = useLocation();
+	const pathSegments = wouterLocation.split('/').filter(Boolean);
 	const formatText = text =>
 		text.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
@@ -20,7 +20,9 @@ export const Breadcrumbs = () => {
 		<Breadcrumb>
 			<BreadcrumbList>
 				{pathSegments.map((segment, index) => {
-					const href = `/${pathSegments.slice(0, index + 1).join('/')}`;
+					const href = `/${pathSegments
+						.slice(0, index + 1)
+						.join('/')}`;
 					const isLast = index === pathSegments.length - 1;
 
 					return (
@@ -46,6 +48,10 @@ export const Breadcrumbs = () => {
 						</React.Fragment>
 					);
 				})}
+
+				{location.pathname === '/' && (
+					<BreadcrumbPage>Media</BreadcrumbPage>
+				)}
 			</BreadcrumbList>
 		</Breadcrumb>
 	);

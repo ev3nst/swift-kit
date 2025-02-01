@@ -46,7 +46,7 @@ function App() {
 			<Layout>
 				<Router>
 					<Suspense fallback={<Loading />}>
-						<Route path="/media" nest>
+						<Route path="(media|)" nest>
 							<Media>
 								<Route path="(movies|)" component={Movie} />
 								<Route path="animes" component={Placeholder} />
