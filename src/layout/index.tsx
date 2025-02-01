@@ -33,7 +33,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 		<SidebarProvider>
 			<AppSidebar />
 			<SidebarInset>
-				<header className="flex h-[3.25rem] shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 app-drag-region">
+				<header className="flex h-[3.29rem] shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 app-drag-region fixed bg-background z-10 left-[256px] right-0 border-b">
 					<div className="flex items-center gap-2">
 						<SidebarTrigger className="-ml-1" />
 						<Separator
@@ -76,7 +76,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 					</div>
 				</header>
 				<Separator />
-				<div className="flex flex-1 flex-col gap-4 p-4 relative">
+				<div className="flex flex-1 flex-col gap-4 p-4 relative pt-[4.4rem]">
 					{children}
 					<ul className="animated-bg">
 						<li></li>
