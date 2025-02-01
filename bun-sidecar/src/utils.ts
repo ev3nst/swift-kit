@@ -12,7 +12,7 @@ export async function checkIfFolderExists(folder_path: string) {
 		throw new Error(
 			`Failed to access folder: ${folderAbsolutePath}. ${
 				error instanceof Error ? error.message : ''
-			}`
+			}`,
 		);
 	}
 

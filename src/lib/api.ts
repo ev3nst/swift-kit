@@ -22,7 +22,7 @@ class BunApi {
 			args: [folder_path, extension_filter],
 		});
 
-		console.log(response, 'res')
+		console.log(response, 'res');
 		return JSON.parse(response) as IFileMeta[];
 	}
 
@@ -48,7 +48,11 @@ class BunApi {
 	): Promise<void> {
 		await invoke(BunApi.sidecarName, {
 			command: 'rename_files',
-			args: [folder_path, JSON.stringify(rename_mapping), extension_filter],
+			args: [
+				folder_path,
+				JSON.stringify(rename_mapping),
+				extension_filter,
+			],
 		});
 	}
 }

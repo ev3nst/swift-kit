@@ -8,7 +8,7 @@ export async function bulk_rename(
 	folder_path: string,
 	search: string,
 	replace: string,
-	extension_filter?: string
+	extension_filter?: string,
 ): Promise<any> {
 	const folderAbsolutePath = await checkIfFolderExists(folder_path);
 	const raw_files: string[] = await readdir(folderAbsolutePath);
@@ -42,7 +42,7 @@ export async function bulk_rename(
 		files.length
 	) {
 		throw new Error(
-			`Renaming would result in duplicates therefore process has been stopped.`
+			`Renaming would result in duplicates therefore process has been stopped.`,
 		);
 	}
 
@@ -50,17 +50,17 @@ export async function bulk_rename(
 		try {
 			const checkFilePath = resolve(
 				folderAbsolutePath,
-				files[rmi].newFilePath
+				files[rmi].newFilePath,
 			);
 
 			if (!checkFilePath.startsWith(folderAbsolutePath)) {
 				throw new Error(
-					`Security Error: Attempt to escape target directory blocked.`
+					`Security Error: Attempt to escape target directory blocked.`,
 				);
 			}
 			await access(checkFilePath);
 			throw new Error(
-				`Error: Target file already exists. Rename aborted. ${checkFilePath}`
+				`Error: Target file already exists. Rename aborted. ${checkFilePath}`,
 			);
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -74,7 +74,7 @@ export async function bulk_rename(
 			throw new Error(
 				`Error renaming ${file.oldFilePath} to ${file.newFilePath}: ${
 					(err as Error).message
-				}`
+				}`,
 			);
 		}
 	});

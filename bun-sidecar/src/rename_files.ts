@@ -10,7 +10,7 @@ export async function rename_files(
 		old: string;
 		new: string;
 	}[],
-	extension_filter?: string
+	extension_filter?: string,
 ): Promise<any> {
 	const folderAbsolutePath = await checkIfFolderExists(folder_path);
 	const raw_files: string[] = await readdir(folderAbsolutePath);
@@ -28,7 +28,7 @@ export async function rename_files(
 		rename_mapping.length
 	) {
 		throw new Error(
-			`Rename mapping has duplicate records therefore renaming process is stopped.`
+			`Rename mapping has duplicate records therefore renaming process is stopped.`,
 		);
 	}
 
@@ -36,18 +36,18 @@ export async function rename_files(
 		try {
 			const checkFilePath = resolve(
 				folderAbsolutePath,
-				rename_mapping[rmi].new
+				rename_mapping[rmi].new,
 			);
 
 			if (!checkFilePath.startsWith(folderAbsolutePath)) {
 				throw new Error(
-					`Security Error: Attempt to escape target directory blocked.`
+					`Security Error: Attempt to escape target directory blocked.`,
 				);
 			}
 
 			await access(checkFilePath);
 			throw new Error(
-				`Error: Target file already exists. Rename aborted. ${checkFilePath}`
+				`Error: Target file already exists. Rename aborted. ${checkFilePath}`,
 			);
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -77,7 +77,7 @@ export async function rename_files(
 		const oldFilePath = resolve(folderAbsolutePath, file);
 		const newFilePath = resolve(
 			folderAbsolutePath,
-			rename_mapping[findIndex].new
+			rename_mapping[findIndex].new,
 		);
 
 		files.push({
@@ -93,7 +93,7 @@ export async function rename_files(
 			throw new Error(
 				`Error renaming ${file.oldFilePath} to ${file.newFilePath}: ${
 					(err as Error).message
-				}`
+				}`,
 			);
 		}
 	});
