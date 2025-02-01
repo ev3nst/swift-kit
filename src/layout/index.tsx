@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { XIcon, SquareIcon, MinusIcon } from 'lucide-react';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 import {
 	SidebarInset,
@@ -14,21 +15,25 @@ import { Breadcrumbs } from './breadcrumbs';
 import { Notifications } from './notifications';
 
 const Layout = ({ children }: { children: ReactNode }) => {
-	const handleMinimize = () => {
-		console.log('handleMinimize');
+	const appWindow = getCurrentWindow();
+
+	const handleMinimize = async () => {
+		await appWindow.minimize();
 	};
-	const handleMaximize = () => {
-		console.log('handleMaximize');
+
+	const handleMaximize = async () => {
+		await appWindow.toggleMaximize();
 	};
-	const handleClose = () => {
-		console.log('handleClose');
+
+	const handleClose = async () => {
+		await appWindow.close();
 	};
 
 	return (
 		<SidebarProvider>
 			<AppSidebar />
 			<SidebarInset>
-				<header className="flex h-[3.25rem] shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4">
+				<header className="flex h-[3.25rem] shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 app-drag-region">
 					<div className="flex items-center gap-2">
 						<SidebarTrigger className="-ml-1" />
 						<Separator

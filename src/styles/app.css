@@ -250,3 +250,7 @@ input:-webkit-autofill:active {
 		border-radius: 70%;
 	}
 }
+
+.app-drag-region {
+	app-region: drag;
+}

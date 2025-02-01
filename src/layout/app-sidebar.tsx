@@ -100,7 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<Sidebar className="bg-background" collapsible="icon" {...props}>
-			<SidebarHeader>
+			<SidebarHeader className="app-drag-region">
 				<Link className="py-1 flex items-center gap-4" to="/">
 					<img
 						src="/logo-square.svg"

@@ -2,6 +2,8 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
+const host = process.env.TAURI_DEV_HOST;
+
 // https://vite.dev/config/
 export default defineConfig({
 	build: {
@@ -11,12 +13,22 @@ export default defineConfig({
 			input: 'index.html',
 		},
 	},
+	clearScreen: false,
 	server: {
-		port: 8000,
-		strictPort: true
-	},
-	preview: {
-		port: 8000,
+		port: 1420,
+		strictPort: true,
+		host: host || false,
+		hmr: host
+			? {
+					protocol: 'ws',
+					host,
+					port: 1421,
+				}
+			: undefined,
+		watch: {
+			// 3. tell vite to ignore watching `src-tauri`
+			ignored: ['**/src-tauri/**'],
+		},
 	},
 	plugins: [react()],
 	resolve: {
