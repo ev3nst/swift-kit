@@ -17,26 +17,29 @@ import {
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 
+import bunApi, { type IFileMeta } from '@/lib/api';
+
 const filenameReplacerSchema = z.object({
 	folder_path: z.string().min(1, {
 		message: 'Folder path is required.',
 	}),
-	extension_filter: z.string().nullable(),
-	replace_rule: z.string().nullable(),
-	rename_mapping: z.array(z.object({})).nullable(),
+	extension_filter: z.string().optional(),
+	search: z.string().optional(),
+	replace: z.string().optional(),
+	rename_mapping: z.any().optional(),
 });
 
 const FilenameReplacer = () => {
 	const [processLoading, setProcessLoading] = useState(false);
-	const [fetchedFiles, setFetchedFiles] = useState<string[]>([]);
+	const [fetchedFiles, setFetchedFiles] = useState<IFileMeta[]>([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
-	const [errorMessage, setErrorMessage] = useState('');
 	const form = useForm({
 		resolver: zodResolver(filenameReplacerSchema),
 		defaultValues: {
 			folder_path: '',
 			extension_filter: '',
-			replace_rule: '',
+			search: '',
+			replace: '',
 			rename_mapping: [],
 		},
 	});
@@ -54,17 +57,16 @@ const FilenameReplacer = () => {
 	const { getValues, setValue } = form;
 	async function handleFetch() {
 		setFetchLoading(true);
-		setErrorMessage('');
 		try {
 			const { folder_path, extension_filter } = getValues();
-			console.log('folder_path:', folder_path);
-			console.log('extension_filter:', extension_filter);
-			const files: any = []; // get files from the folder_path
+			const files = await bunApi.fetch_files(
+				folder_path,
+				extension_filter,
+			);
 			setFetchedFiles(files);
 			setFetchLoading(false);
 		} catch (error) {
 			console.error('Error:', error);
-			setErrorMessage(String(error));
 			setFetchLoading(false);
 			toast.error(String(error));
 		}
@@ -72,52 +74,64 @@ const FilenameReplacer = () => {
 
 	async function handleBulkRename() {
 		setProcessLoading(true);
-		setErrorMessage('');
 		try {
-			const { folder_path, replace_rule } = getValues();
-			console.log('folder_path:', folder_path);
-			console.log('replace_rule:', replace_rule);
-			// rename files with replace_rule
+			const { folder_path, search, replace, extension_filter } =
+				getValues();
+			await bunApi.bulk_rename(
+				folder_path,
+				search,
+				replace,
+				extension_filter,
+			);
 			setProcessLoading(false);
 			toast.success('Renaming successful.');
 			handleFetch();
 		} catch (error) {
 			console.error('Error:', error);
-			setErrorMessage(String(error));
 			setProcessLoading(false);
 			toast.error(String(error));
 		}
 	}
 
 	async function onSubmit(data: z.infer<typeof filenameReplacerSchema>) {
-		const fileReMapping = fetchedFiles.map((ff, ffi) => {
-			let new_name = (
-				data.rename_mapping && data.rename_mapping[ffi] !== null
-					? data.rename_mapping[ffi]
-					: ''
-			) as string;
-			if (
-				new_name.length > 0 &&
-				new_name.indexOf('.') === -1 &&
-				ff.indexOf('.') !== -1
-			) {
-				const old_ext = ff.split('.')[1];
-				new_name += '.' + old_ext;
-			}
-			return [ff, new_name];
-		});
+		const fileReMapping = fetchedFiles
+			.map((ff, ffi) => {
+				let new_name = (
+					data.rename_mapping && data.rename_mapping[ffi] !== null
+						? data.rename_mapping[ffi]
+						: ''
+				) as string;
+				if (
+					new_name.length > 0 &&
+					new_name.indexOf('.') === -1 &&
+					ff.filename.indexOf('.') !== -1
+				) {
+					const old_ext = ff.filename.split('.')[1];
+					new_name += '.' + old_ext;
+				}
 
+				if (new_name.length > 0) {
+					return {
+						old: ff.filename,
+						new: new_name,
+					};
+				}
+			})
+			.filter(value => value !== undefined && value !== null);
 		setProcessLoading(true);
-		setErrorMessage('');
 		try {
-			console.log(fileReMapping, 'fileReMapping');
+			const resp = await bunApi.rename_files(
+				data.folder_path,
+				fileReMapping,
+				data.extension_filter,
+			);
+			console.log(resp, 'resp');
 			setProcessLoading(false);
 			toast.success('Renaming successful.');
 			handleFetch();
 			setValue('rename_mapping', []);
 		} catch (error) {
 			console.error('Error:', error);
-			setErrorMessage(String(error));
 			setProcessLoading(false);
 			toast.error(String(error));
 		}
@@ -170,17 +184,29 @@ const FilenameReplacer = () => {
 				<div className="flex gap-4 items-end">
 					<FormField
 						control={form.control}
-						name="replace_rule"
+						name="search"
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
-									<FormLabel>Replace Rule</FormLabel>
+									<FormLabel>Search</FormLabel>
 								</div>
 								<FormControl>
-									<Input
-										placeholder="eg. MyFiles - , Myfiles - "
-										{...field}
-									/>
+									<Input placeholder="" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="replace"
+						render={({ field }) => (
+							<FormItem className="grid gap-1 flex-grow">
+								<div className="flex items-center">
+									<FormLabel>Replace</FormLabel>
+								</div>
+								<FormControl>
+									<Input placeholder="Replace" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -199,6 +225,20 @@ const FilenameReplacer = () => {
 						Bulk Replace
 					</Button>
 				</div>
+
+				<Button
+					type="button"
+					variant="secondary"
+					className={clsx(
+						'w-full',
+						(fetchLoading || folder_path.length === 0) &&
+							'disabled',
+					)}
+					disabled={fetchLoading || folder_path.length === 0}
+					onClick={handleFetch}
+				>
+					Fetch
+				</Button>
 
 				{fetchedFiles.length !== 0 && (
 					<>
@@ -221,7 +261,7 @@ const FilenameReplacer = () => {
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
-									<FormLabel>{ff}</FormLabel>
+									<FormLabel>{ff.filename}</FormLabel>
 								</div>
 								<FormControl>
 									<Input {...field} />
@@ -232,21 +272,7 @@ const FilenameReplacer = () => {
 					/>
 				))}
 
-				{fetchedFiles.length === 0 ? (
-					<Button
-						type="button"
-						variant="secondary"
-						className={clsx(
-							'w-full',
-							(fetchLoading || folder_path.length === 0) &&
-								'disabled',
-						)}
-						disabled={fetchLoading || folder_path.length === 0}
-						onClick={handleFetch}
-					>
-						Fetch
-					</Button>
-				) : (
+				{fetchedFiles.length !== 0 && (
 					<Button
 						type="submit"
 						variant="secondary"
@@ -255,11 +281,6 @@ const FilenameReplacer = () => {
 					>
 						Rename
 					</Button>
-				)}
-				{errorMessage && (
-					<div className="text-center text-sm text-destructive">
-						{errorMessage}
-					</div>
 				)}
 			</form>
 		</Form>

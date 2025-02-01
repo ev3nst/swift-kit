@@ -3,12 +3,15 @@
 	"module": "index.ts",
 	"type": "module",
 	"scripts": {
-		"build": "bun build ./index.ts --compile --outfile swift-kit-bun-sidecar && bun run build.ts"
+		"build": "bun build ./src/index.ts --compile --outfile swift-kit-bun-sidecar && bun run build.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"sanitize-filename": "^1.6.3"
 	}
 }

@@ -11,4 +11,7 @@ if (!match) {
 }
 
 const targetTriple = match[1];
-fs.renameSync(`swift-kit-bun-sidecar${ext}`, `../src-tauri/binaries/swift-kit-bun-sidecar-${targetTriple}${ext}`);
+fs.renameSync(
+	`swift-kit-bun-sidecar${ext}`,
+	`../src-tauri/binaries/swift-kit-bun-sidecar-${targetTriple}${ext}`,
+);
