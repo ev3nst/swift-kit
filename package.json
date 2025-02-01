@@ -4,6 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
+		"start": "cd bun-sidecar && bun run build && cd .. && bun run tauri dev",
 		"dev": "vite",
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",

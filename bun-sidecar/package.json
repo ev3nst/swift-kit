@@ -1,0 +1,14 @@
+{
+	"name": "swift-kit-bun-sidecar",
+	"module": "index.ts",
+	"type": "module",
+	"scripts": {
+		"build": "bun build ./index.ts --compile --outfile swift-kit-bun-sidecar && bun run build.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
+}
