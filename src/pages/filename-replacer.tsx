@@ -120,12 +120,11 @@ const FilenameReplacer = () => {
 			.filter(value => value !== undefined && value !== null);
 		setProcessLoading(true);
 		try {
-			const resp = await bunApi.rename_files(
+			await bunApi.rename_files(
 				data.folder_path,
 				fileReMapping,
 				data.extension_filter,
 			);
-			console.log(resp, 'resp');
 			setProcessLoading(false);
 			toast.success('Renaming successful.');
 			handleFetch();

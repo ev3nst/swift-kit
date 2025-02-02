@@ -1,4 +1,4 @@
-import { EditorProvider, useCurrentEditor } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import TextStyle from '@tiptap/extension-text-style';
@@ -32,9 +32,7 @@ import {
 import { Button } from '@/components/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/popover';
 
-function MenuBar() {
-	const { editor } = useCurrentEditor();
-
+function MenuBar({ editor }) {
 	if (!editor) {
 		return null;
 	}
@@ -283,6 +281,20 @@ const extensions = [
 	}),
 ];
 
-export function Tiptap() {
-	return <EditorProvider slotBefore={<MenuBar />} extensions={extensions} />;
+export function Tiptap({ value, onChange }) {
+	const editor = useEditor({
+		extensions,
+		content: value,
+		onUpdate: ({ editor }) => {
+			const html = editor.getHTML();
+			onChange(html);
+		},
+	});
+
+	return (
+		<div>
+			<MenuBar editor={editor} />
+			<EditorContent editor={editor} />
+		</div>
+	);
 }

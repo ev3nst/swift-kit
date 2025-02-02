@@ -62,7 +62,7 @@ export class Note {
 		);
 	}
 
-	static async insert(data: RawModel<Note>): Promise<Note> {
+	static async insert(data: Pick<Note, 'title' | 'content'>): Promise<Note> {
 		const result = await db.execute(
 			'INSERT INTO notes (title, content) VALUES (?, ?)',
 			[data.title, data.content],
