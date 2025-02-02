@@ -31,6 +31,7 @@
 		"@radix-ui/react-tabs": "^1.1.2",
 		"@radix-ui/react-tooltip": "^1.1.7",
 		"@tanstack/react-table": "^8.20.6",
+		"@tauri-apps/plugin-sql": "^2.2.0",
 		"@tiptap/extension-color": "^2.11.3",
 		"@tiptap/extension-list-item": "^2.11.3",
 		"@tiptap/extension-table": "^2.11.3",
