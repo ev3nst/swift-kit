@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
-import { type ButtonProps } from '@/components/button';
+import { Button, type ButtonProps } from '@/components/button';
 
-import { buttonVariants, cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 const Pagination = ({ className, ...props }: React.ComponentProps<'nav'>) => (
 	<nav role="navigation" aria-label="pagination" {...props} />
@@ -31,7 +31,7 @@ PaginationItem.displayName = 'PaginationItem';
 type PaginationLinkProps = {
 	isActive?: boolean;
 } & Pick<ButtonProps, 'size'> &
-	React.ComponentProps<'a'>;
+	React.ComponentProps<'button'>;
 
 const PaginationLink = ({
 	className,
@@ -39,15 +39,10 @@ const PaginationLink = ({
 	size = 'icon',
 	...props
 }: PaginationLinkProps) => (
-	<a
+	<Button
+		variant={isActive ? 'outline' : 'ghost'}
 		aria-current={isActive ? 'page' : undefined}
-		className={cn(
-			buttonVariants({
-				variant: isActive ? 'outline' : 'ghost',
-				size,
-			}),
-			className,
-		)}
+		size={size}
 		{...props}
 	/>
 );
