@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	FilePlus2,
 	FileX,
@@ -32,15 +32,22 @@ import { Button } from '@/components/button';
 import { buttonVariants } from '@/lib/utils';
 
 type NotesPaginationProps = {
-	totalItems: number;
+	items: {
+		id: number;
+		title: string;
+	}[];
 };
 
-export function NotesPagination({
-	totalItems,
-}: NotesPaginationProps): JSX.Element {
-	const itemsPerPage = 1; // Fixed number of items per page
-	const totalPages = Math.ceil(totalItems / itemsPerPage);
+import { Note } from '@/lib/db';
+
+export function NotesPagination({ items }: NotesPaginationProps): JSX.Element {
+	const itemsPerPage = 1;
+	const totalPages = Math.ceil(items.length / itemsPerPage);
 	const [currentPage, setCurrentPage] = useState<number>(1);
+
+	if (items.length === 0) {
+		return <></>;
+	}
 
 	const handlePrevious = (): void => {
 		if (currentPage > 1) {
@@ -48,7 +55,8 @@ export function NotesPagination({
 		}
 	};
 
-	const handleNext = (): void => {
+	const handleNext = async () => {
+		console.log(await Note.getAll());
 		if (currentPage < totalPages) {
 			setCurrentPage(currentPage + 1);
 		}
@@ -130,7 +138,9 @@ export function NotesPagination({
 
 	return (
 		<div className="flex gap-2 items-center">
-			<p className="text-sm text-muted-foreground">Total: 12</p>
+			<p className="text-sm text-muted-foreground">
+				Total: {items.length}
+			</p>
 			<Pagination>
 				<PaginationContent>
 					<PaginationItem>
@@ -185,6 +195,12 @@ export function NotesPagination({
 }
 
 function Notes() {
+	const [notes, setNotes] = useState<Pick<Note, 'id' | 'title'>[]>([]);
+
+	useEffect(() => {
+		(async () => setNotes(await Note.getAll()))();
+	}, []);
+
 	return (
 		<div className="flex overflow-y-auto">
 			<div className="w-full flex flex-col">
@@ -244,7 +260,7 @@ function Notes() {
 							</AlertDialogContent>
 						</AlertDialog>
 					</div>
-					<NotesPagination totalItems={12} />
+					<NotesPagination items={notes} />
 				</div>
 				<Tiptap />
 			</div>
