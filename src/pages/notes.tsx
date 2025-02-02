@@ -202,68 +202,62 @@ function Notes() {
 	}, []);
 
 	return (
-		<div className="flex overflow-y-auto">
-			<div className="w-full flex flex-col">
-				<div className="mb-4 flex justify-between w-full">
-					<div className="flex">
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									variant="outline"
-									size="icon"
-									className=" px-0 me-2"
-									onClick={() => console.log('create new')}
-								>
-									<FilePlus2 className="h-[1rem] w-[1rem]" />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>Create New</p>
-							</TooltipContent>
-						</Tooltip>
+		<div className="flex flex-col">
+			<div className="mb-4 flex justify-between">
+				<div className="flex">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								variant="outline"
+								size="icon"
+								className=" px-0 me-2"
+								onClick={() => console.log('create new')}
+							>
+								<FilePlus2 className="h-[1rem] w-[1rem]" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Create New</p>
+						</TooltipContent>
+					</Tooltip>
 
-						<AlertDialog>
-							<AlertDialogTrigger asChild>
-								<Button
-									variant="outline"
-									size="icon"
-									className=" px-0 me-2"
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button
+								variant="outline"
+								size="icon"
+								className=" px-0 me-2"
+							>
+								<FileX className="h-[1rem] w-[1rem]" />
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>
+									Are you absolutely sure?
+								</AlertDialogTitle>
+								<AlertDialogDescription>
+									This action cannot be undone. This will
+									permanently delete current active note.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogAction
+									className={buttonVariants({
+										variant: 'destructive',
+									})}
+									onClick={() => console.log('note remove')}
 								>
-									<FileX className="h-[1rem] w-[1rem]" />
-								</Button>
-							</AlertDialogTrigger>
-							<AlertDialogContent>
-								<AlertDialogHeader>
-									<AlertDialogTitle>
-										Are you absolutely sure?
-									</AlertDialogTitle>
-									<AlertDialogDescription>
-										This action cannot be undone. This will
-										permanently delete current active note.
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								<AlertDialogFooter>
-									<AlertDialogCancel>
-										Cancel
-									</AlertDialogCancel>
-									<AlertDialogAction
-										className={buttonVariants({
-											variant: 'destructive',
-										})}
-										onClick={() =>
-											console.log('note remove')
-										}
-									>
-										Delete
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
-					</div>
-					<NotesPagination items={notes} />
+									Delete
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 				</div>
-				<Tiptap />
+				<NotesPagination items={notes} />
 			</div>
+			<Tiptap />
 		</div>
 	);
 }

@@ -61,7 +61,7 @@ const FilenameReplacer = () => {
 			const { folder_path, extension_filter } = getValues();
 			const files = await bunApi.fetch_files(
 				folder_path,
-				extension_filter
+				extension_filter,
 			);
 			setFetchedFiles(files);
 			setFetchLoading(false);
@@ -81,7 +81,7 @@ const FilenameReplacer = () => {
 				folder_path,
 				search,
 				replace,
-				extension_filter
+				extension_filter,
 			);
 			setProcessLoading(false);
 			toast.success('Renaming successful.');
@@ -123,7 +123,7 @@ const FilenameReplacer = () => {
 			const resp = await bunApi.rename_files(
 				data.folder_path,
 				fileReMapping,
-				data.extension_filter
+				data.extension_filter,
 			);
 			console.log(resp, 'resp');
 			setProcessLoading(false);
@@ -252,7 +252,7 @@ const FilenameReplacer = () => {
 						variant="secondary"
 						className={clsx(
 							'w-[200px]',
-							fetchLoading && 'disabled'
+							fetchLoading && 'disabled',
 						)}
 						disabled={fetchLoading}
 						onClick={handleBulkRename}
@@ -266,7 +266,8 @@ const FilenameReplacer = () => {
 					variant="secondary"
 					className={clsx(
 						'w-full',
-						(fetchLoading || folder_path.length === 0) && 'disabled'
+						(fetchLoading || folder_path.length === 0) &&
+							'disabled',
 					)}
 					disabled={fetchLoading || folder_path.length === 0}
 					onClick={handleFetch}
