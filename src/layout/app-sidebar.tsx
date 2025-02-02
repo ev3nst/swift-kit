@@ -26,6 +26,7 @@ import {
 } from '@/components/sidebar';
 
 import { useSidebar } from '@/hooks/use-sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { NavUser } from './nav-user';
 
@@ -97,6 +98,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { state } = useSidebar();
 	const [wouterLocation] = useLocation();
+	const isMobile = useIsMobile();
 
 	return (
 		<Sidebar className="bg-background" collapsible="icon" {...props}>
@@ -108,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							state === 'expanded' ? 'h-7 ms-2' : 'h-6 ms-0.5'
 						}
 					/>
-					{state === 'expanded' && (
+					{(state === 'expanded' || isMobile) && (
 						<img src="/logo.png" className="h-6" />
 					)}
 				</Link>
