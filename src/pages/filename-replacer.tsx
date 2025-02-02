@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Folder } from 'lucide-react';
+import { ArrowRightIcon, Folder } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 
@@ -61,7 +61,7 @@ const FilenameReplacer = () => {
 			const { folder_path, extension_filter } = getValues();
 			const files = await bunApi.fetch_files(
 				folder_path,
-				extension_filter,
+				extension_filter
 			);
 			setFetchedFiles(files);
 			setFetchLoading(false);
@@ -81,7 +81,7 @@ const FilenameReplacer = () => {
 				folder_path,
 				search,
 				replace,
-				extension_filter,
+				extension_filter
 			);
 			setProcessLoading(false);
 			toast.success('Renaming successful.');
@@ -123,7 +123,7 @@ const FilenameReplacer = () => {
 			const resp = await bunApi.rename_files(
 				data.folder_path,
 				fileReMapping,
-				data.extension_filter,
+				data.extension_filter
 			);
 			console.log(resp, 'resp');
 			setProcessLoading(false);
@@ -138,6 +138,41 @@ const FilenameReplacer = () => {
 	}
 
 	const { folder_path } = getValues();
+	function previewNameChange(originalFilename: string, mapIndex: number) {
+		const { search, replace, rename_mapping } = form.watch();
+		let finalFilename = originalFilename;
+		if (search.length > 0) {
+			finalFilename = finalFilename.replace(search, replace);
+		}
+
+		if (
+			typeof rename_mapping !== 'undefined' &&
+			rename_mapping !== null &&
+			typeof rename_mapping[mapIndex] !== 'undefined' &&
+			(rename_mapping[mapIndex] as string).length > 0
+		) {
+			finalFilename = rename_mapping[mapIndex];
+			if (
+				finalFilename.indexOf('.') === -1 &&
+				originalFilename.indexOf('.') !== -1
+			) {
+				finalFilename += `.${originalFilename.split('.')[1]}`;
+			}
+		}
+
+		if (originalFilename !== finalFilename) {
+			return (
+				<FormLabel className="flex items-center gap-3">
+					<div className="text-red-500">{originalFilename}</div>
+					<ArrowRightIcon className="h-3 w-3" />
+					<div className="text-green-500">{finalFilename}</div>
+				</FormLabel>
+			);
+		}
+
+		return <FormLabel>{originalFilename}</FormLabel>;
+	}
+
 	return (
 		<Form {...form}>
 			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -217,7 +252,7 @@ const FilenameReplacer = () => {
 						variant="secondary"
 						className={clsx(
 							'w-[200px]',
-							fetchLoading && 'disabled',
+							fetchLoading && 'disabled'
 						)}
 						disabled={fetchLoading}
 						onClick={handleBulkRename}
@@ -231,13 +266,12 @@ const FilenameReplacer = () => {
 					variant="secondary"
 					className={clsx(
 						'w-full',
-						(fetchLoading || folder_path.length === 0) &&
-							'disabled',
+						(fetchLoading || folder_path.length === 0) && 'disabled'
 					)}
 					disabled={fetchLoading || folder_path.length === 0}
 					onClick={handleFetch}
 				>
-					Fetch
+					{fetchedFiles.length > 0 ? 'Re-Fetch' : 'Fetch'}
 				</Button>
 
 				{fetchedFiles.length !== 0 && (
@@ -261,7 +295,7 @@ const FilenameReplacer = () => {
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<div className="flex items-center">
-									<FormLabel>{ff.filename}</FormLabel>
+									{previewNameChange(ff.filename, ffi)}
 								</div>
 								<FormControl>
 									<Input {...field} />
