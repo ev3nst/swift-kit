@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -29,17 +30,18 @@ import {
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Textarea } from '@/components/textarea';
+
+import { Credential } from '@/lib/models/credential';
+
 import { platforms } from './platforms';
-import { useState } from 'react';
 
 const createSchema = z.object({
-	id: z.number().nullable().optional(),
 	platform: z.string(),
 	username: z.string(),
 	password: z.string(),
-	secret_question: z.any().nullable(),
-	secret_question_answer: z.string().nullable(),
-	note: z.string().nullable(),
+	secret_question: z.any().optional(),
+	secret_question_answer: z.string().optional(),
+	note: z.string().optional(),
 });
 
 const platformNames = Object.keys(platforms);
@@ -52,14 +54,27 @@ const emptyCredentialValues = {
 	note: '',
 };
 
-export function CreateForm() {
+export function CreateForm({ currentCredId, onSubmitCb }) {
+	const [mode, setMode] = useState('create');
 	const [upsertFormOpen, setUpsertFormOpen] = useState(false);
 	const form = useForm({
 		resolver: zodResolver(createSchema),
 		defaultValues: { ...emptyCredentialValues },
 	});
+	const { reset, getValues, setValue } = form;
 
-	const { reset, getValues } = form;
+	useEffect(() => {
+		if (currentCredId !== 0) {
+			(async () => {
+				const fetchedCred = await Credential.get(currentCredId);
+				Object.entries(fetchedCred).forEach(([key, value]) => {
+					setValue(key as any, value);
+				});
+				setMode('update');
+				setUpsertFormOpen(true);
+			})();
+		}
+	}, [currentCredId, setValue]);
 
 	const closeDialog = () => {
 		setUpsertFormOpen(false);
@@ -67,7 +82,30 @@ export function CreateForm() {
 	};
 
 	async function onSubmit(data: z.infer<typeof createSchema>) {
-		console.log(data, 'data');
+		if (mode === 'create') {
+			await Credential.insert(data);
+		} else {
+			console.log('update?');
+			const fetchedCred = await Credential.get(currentCredId);
+			const {
+				platform,
+				username,
+				password,
+				secret_question,
+				secret_question_answer,
+				note,
+			} = getValues();
+			fetchedCred.platform = platform;
+			fetchedCred.username = username;
+			fetchedCred.password = password;
+			fetchedCred.secret_question = secret_question;
+			fetchedCred.secret_question_answer = secret_question_answer;
+			fetchedCred.note = note;
+			console.log(fetchedCred, 'before update');
+			await fetchedCred.update();
+		}
+
+		await onSubmitCb();
 		closeDialog();
 	}
 
@@ -82,7 +120,12 @@ export function CreateForm() {
 			}}
 		>
 			<DialogTrigger asChild>
-				<Button variant="info">
+				<Button
+					variant="info"
+					onClick={() => {
+						setMode('create');
+					}}
+				>
 					New
 					<PlusIcon className="h-3" />
 				</Button>
@@ -109,15 +152,22 @@ export function CreateForm() {
 									name="platform"
 									render={({ field }) => (
 										<FormItem className="grid gap-1">
-											<FormLabel className="flex gap-2 items-center text-sky-600">
+											<FormLabel className="flex gap-1 items-center text-sky-600">
 												Platform
+												<span className="text-destructive">
+													*
+												</span>
 												<div className="relative">
 													<Share2Icon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 												</div>
 											</FormLabel>
-											{platformNames.filter(
-												pn => pn === platform,
-											).length !== 0 ? (
+											{(currentCredId !== 0 &&
+												platformNames.filter(
+													pn =>
+														pn.toLocaleLowerCase() ===
+														platform,
+												).length !== 0) ||
+											platform === '' ? (
 												<Select
 													onValueChange={
 														field.onChange
@@ -169,13 +219,11 @@ export function CreateForm() {
 									name="username"
 									render={({ field }) => (
 										<FormItem className="grid gap-1">
-											<FormLabel className="flex gap-2 items-center text-sky-600">
-												<div>
-													Username
-													<span className="ms-1 text-destructive">
-														*
-													</span>
-												</div>
+											<FormLabel className="flex gap-1 items-center text-sky-600">
+												Username
+												<span className="text-destructive">
+													*
+												</span>
 												<div className="relative">
 													<UserIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 												</div>
@@ -192,8 +240,11 @@ export function CreateForm() {
 									name="password"
 									render={({ field }) => (
 										<FormItem className="grid gap-1">
-											<FormLabel className="flex gap-2 items-center text-sky-600">
+											<FormLabel className="flex gap-1 items-center text-sky-600">
 												Password
+												<span className="text-destructive">
+													*
+												</span>
 												<div className="relative">
 													<KeyIcon className="w-4 h-4 bottom-[-7px] left-0 absolute" />
 												</div>

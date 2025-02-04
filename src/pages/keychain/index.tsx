@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	InfoIcon,
-	TrashIcon,
 	ClipboardIcon,
 	EllipsisVerticalIcon,
+	XIcon,
 } from 'lucide-react';
-import { Button } from '@/components/button';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
+import { Button } from '@/components/button';
 import {
 	Table,
 	TableBody,
@@ -15,20 +16,45 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/table';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/alert-dialog';
 import { Input } from '@/components/input';
+
+import { Credential } from '@/lib/models/credential';
 
 import { CreateForm } from './create';
 import { platforms } from './platforms';
+import { toast } from 'sonner';
+import { buttonVariants } from '@/lib/utils';
 
 export function Keychain() {
+	const [_, forceRender] = useState(0);
+	const [credentials, setCredentials] = useState<
+		Pick<Credential, 'id' | 'platform' | 'username' | 'password'>[]
+	>([]);
+	const [currentCredId, setCurrentCredId] = useState(0);
 	const [platformFilter, setPlatformFilter] = useState('');
 	const [usernameFilter, setUsernameFilter] = useState('');
+
+	useEffect(() => {
+		(async () => setCredentials(await Credential.getAll()))();
+	}, []);
+
 	const renderPlatform = (platformValue: string) => {
 		const platformData = Object.values(platforms).find(
-			p => p.value === platformValue.toLocaleLowerCase(),
+			p => p.value === platformValue.toLocaleLowerCase()
 		);
 		const platformName = Object.keys(platforms).find(
-			pName => pName.toLocaleLowerCase() === platformValue,
+			pName => pName.toLocaleLowerCase() === platformValue
 		);
 
 		return (
@@ -36,7 +62,7 @@ export function Keychain() {
 				{platformData?.icon ?? <EllipsisVerticalIcon className="w-4" />}
 				{platformValue === 'wifi'
 					? 'Wi-Fi'
-					: (platformName ?? platformValue)}
+					: platformName ?? platformValue}
 			</div>
 		);
 	};
@@ -67,7 +93,13 @@ export function Keychain() {
 						/>
 					</div>
 				</div>
-				<CreateForm />
+				<CreateForm
+					key={`credential_modal_${_}`}
+					currentCredId={currentCredId}
+					onSubmitCb={async () => {
+						setCredentials(await Credential.getAll());
+					}}
+				/>
 			</div>
 
 			<Table>
@@ -82,10 +114,10 @@ export function Keychain() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{Array.from({ length: 8 }).map(cred => (
-						<TableRow key={`keychain-table-${cred}`}>
+					{credentials.map(cred => (
+						<TableRow key={`keychain-table-${cred.id}`}>
 							<TableCell className="font-medium">
-								{renderPlatform('Gmail')}
+								{renderPlatform(cred.platform)}
 							</TableCell>
 							<TableCell>
 								<div className="flex items-center">
@@ -93,10 +125,16 @@ export function Keychain() {
 										className="me-2"
 										variant="ghost"
 										size="icon"
+										onClick={async () => {
+											await writeText(cred.username);
+											toast.success(
+												'Copied to clipboard!'
+											);
+										}}
 									>
 										<ClipboardIcon />
 									</Button>
-									<div>test@example.com</div>
+									<div>{cred.username}</div>
 								</div>
 							</TableCell>
 							<TableCell>
@@ -105,10 +143,16 @@ export function Keychain() {
 										className="me-2"
 										variant="ghost"
 										size="icon"
+										onClick={async () => {
+											await writeText(cred.password);
+											toast.success(
+												'Copied to clipboard!'
+											);
+										}}
 									>
 										<ClipboardIcon />
 									</Button>
-									<div>123123</div>
+									<div>{cred.password}</div>
 								</div>
 							</TableCell>
 							<TableCell className="text-right">
@@ -117,18 +161,64 @@ export function Keychain() {
 										className="me-1"
 										variant="outline"
 										size="icon"
-										onClick={() => {}}
+										onClick={() => {
+											setCurrentCredId(cred.id);
+											forceRender(_ + 1);
+										}}
 									>
 										<InfoIcon />
 									</Button>
-									<Button
-										className="text-red-500 hover:text-red-600"
-										variant="outline"
-										size="icon"
-										onClick={() => {}}
-									>
-										<TrashIcon />
-									</Button>
+
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button
+												className="text-red-500 hover:text-red-600"
+												variant="outline"
+												size="icon"
+											>
+												<XIcon />
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>
+													Are you absolutely sure?
+												</AlertDialogTitle>
+												<AlertDialogDescription>
+													This action cannot be
+													undone. This will
+													permanently delete the
+													selected credential record.
+												</AlertDialogDescription>
+											</AlertDialogHeader>
+											<AlertDialogFooter>
+												<AlertDialogCancel>
+													Cancel
+												</AlertDialogCancel>
+												<AlertDialogAction
+													className={buttonVariants({
+														variant: 'destructive',
+													})}
+													onClick={async () => {
+														const fetchedCred =
+															await Credential.get(
+																cred.id
+															);
+														await (
+															fetchedCred as Credential
+														).delete();
+														const credentialsList =
+															await Credential.getAll();
+														setCredentials(
+															credentialsList
+														);
+													}}
+												>
+													Delete
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
 								</div>
 							</TableCell>
 						</TableRow>

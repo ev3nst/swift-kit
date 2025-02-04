@@ -27,7 +27,7 @@ export const platforms = {
 		icon: <LinkedinIcon className="text-blue-400 w-5" />,
 	},
 	'Wi-fi': {
-		value: 'wifi',
+		value: 'wi-fi',
 		icon: <WifiIcon className="text-blue-300 w-5" />,
 	},
 	Router: {

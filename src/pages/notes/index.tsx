@@ -63,7 +63,7 @@ function Notes() {
 							key={`notes_${item.id}`}
 							className={cn(
 								'flex items-center gap-2 rounded-lg border h-11 px-3 text-sm transition-all hover:bg-accent',
-								item.id === note?.id && 'bg-muted'
+								item.id === note?.id && 'bg-muted',
 							)}
 							onClick={async () => {
 								const fetchNote = await Note.get(item.id);
@@ -78,7 +78,7 @@ function Notes() {
 												'ml-auto text-sm',
 												item.id === note?.id
 													? 'text-foreground'
-													: 'text-muted-foreground'
+													: 'text-muted-foreground',
 											)}
 										>
 											{item.id === note.id
@@ -104,7 +104,7 @@ function Notes() {
 						disabled={!note.id}
 						onChange={e => {
 							const findIndex = notes.findIndex(
-								ns => ns.id === note.id
+								ns => ns.id === note.id,
 							);
 							notes[findIndex].title = e.currentTarget.value;
 							setNote({
@@ -176,7 +176,7 @@ function Notes() {
 										setNotes(notesList);
 										if (notesList.length > 0) {
 											setNote(
-												await Note.get(notesList[0].id)
+												await Note.get(notesList[0].id),
 											);
 										} else {
 											setNote({

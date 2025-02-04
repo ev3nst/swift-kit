@@ -1,4 +1,4 @@
-import { db, type RawModel } from "@/lib/db";
+import { db, type RawModel } from '@/lib/db';
 
 export class Note {
 	id!: number;
