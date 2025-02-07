@@ -51,10 +51,10 @@ export function Keychain() {
 
 	const renderPlatform = (platformValue: string) => {
 		const platformData = Object.values(platforms).find(
-			p => p.value === platformValue.toLocaleLowerCase()
+			p => p.value === platformValue.toLocaleLowerCase(),
 		);
 		const platformName = Object.keys(platforms).find(
-			pName => pName.toLocaleLowerCase() === platformValue
+			pName => pName.toLocaleLowerCase() === platformValue,
 		);
 
 		return (
@@ -62,7 +62,7 @@ export function Keychain() {
 				{platformData?.icon ?? <EllipsisVerticalIcon className="w-4" />}
 				{platformValue === 'wifi'
 					? 'Wi-Fi'
-					: platformName ?? platformValue}
+					: (platformName ?? platformValue)}
 			</div>
 		);
 	};
@@ -128,7 +128,7 @@ export function Keychain() {
 										onClick={async () => {
 											await writeText(cred.username);
 											toast.success(
-												'Copied to clipboard!'
+												'Copied to clipboard!',
 											);
 										}}
 									>
@@ -146,7 +146,7 @@ export function Keychain() {
 										onClick={async () => {
 											await writeText(cred.password);
 											toast.success(
-												'Copied to clipboard!'
+												'Copied to clipboard!',
 											);
 										}}
 									>
@@ -202,7 +202,7 @@ export function Keychain() {
 													onClick={async () => {
 														const fetchedCred =
 															await Credential.get(
-																cred.id
+																cred.id,
 															);
 														await (
 															fetchedCred as Credential
@@ -210,7 +210,7 @@ export function Keychain() {
 														const credentialsList =
 															await Credential.getAll();
 														setCredentials(
-															credentialsList
+															credentialsList,
 														);
 													}}
 												>

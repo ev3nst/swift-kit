@@ -22,7 +22,6 @@ class BunApi {
 			args: [folder_path, extension_filter],
 		});
 
-		console.log(response, 'res');
 		return JSON.parse(response) as IFileMeta[];
 	}
 
@@ -54,6 +53,19 @@ class BunApi {
 				extension_filter,
 			],
 		});
+	}
+
+	async img_convert(
+		img_path: string,
+		to: string,
+		output_folder?: string,
+	): Promise<string> {
+		const response: string = await invoke(BunApi.sidecarName, {
+			command: 'img_convert',
+			args: [img_path, to, output_folder],
+		});
+
+		return response;
 	}
 }
 

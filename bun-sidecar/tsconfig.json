@@ -12,6 +12,7 @@
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
+		"skipLibCheck": true,
 		/* Linting */
 		"strict": true,
 		"noUnusedLocals": true,
@@ -19,5 +20,5 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true
 	},
-	"include": ["src"]
+	"include": ["src"],
 }
