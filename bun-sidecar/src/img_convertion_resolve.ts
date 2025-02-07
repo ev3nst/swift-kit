@@ -12,7 +12,7 @@ const isValidImage = (imgPath: string): boolean => {
 export async function img_convertion_resolve(
 	img_path: string,
 	to: string,
-	output_folder?: string
+	output_folder?: string,
 ): Promise<{
 	img_path: string;
 	output_path: string;
@@ -49,13 +49,13 @@ export async function img_convertion_resolve(
 	const sanitizedOutputDir = await checkIfFolderExists(outputDir);
 	const outputFileName = `${basename(
 		sanitizedImgPath,
-		extname(sanitizedImgPath)
+		extname(sanitizedImgPath),
 	)}.${to}`;
 	const outputPath = resolve(sanitizedOutputDir, outputFileName);
 
 	if (await exists(outputPath)) {
 		throw new Error(
-			`File with the name '${outputFileName}' already exists in the output folder. Choose a different output folder or file name.`
+			`File with the name '${outputFileName}' already exists in the output folder. Choose a different output folder or file name.`,
 		);
 	}
 

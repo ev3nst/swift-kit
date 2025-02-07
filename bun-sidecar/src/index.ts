@@ -10,7 +10,7 @@ switch (command) {
 	case 'fetch_files':
 		const result = await fetch_files(
 			process.argv[3],
-			process.argv[4] ?? ''
+			process.argv[4] ?? '',
 		);
 		process.stdout.write(JSON.stringify(result));
 		break;
@@ -19,7 +19,7 @@ switch (command) {
 			process.argv[3],
 			process.argv[4],
 			process.argv[5],
-			process.argv[6] ?? ''
+			process.argv[6] ?? '',
 		);
 		process.stdout.write('true');
 		break;
@@ -27,7 +27,7 @@ switch (command) {
 		await rename_files(
 			process.argv[3],
 			JSON.parse(process.argv[4]),
-			process.argv[5] ?? ''
+			process.argv[5] ?? '',
 		);
 		process.stdout.write('true');
 		break;
@@ -35,7 +35,7 @@ switch (command) {
 		const resolved = await img_convertion_resolve(
 			process.argv[3],
 			process.argv[4],
-			process.argv[5] ?? ''
+			process.argv[5] ?? '',
 		);
 		process.stdout.write(JSON.stringify(resolved));
 		break;
