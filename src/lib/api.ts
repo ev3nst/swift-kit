@@ -25,7 +25,12 @@ class API {
 		replace: string,
 		extension_filter?: string
 	): Promise<void> {
-		throw new Error('to be implemented');
+		await invoke('bulk_rename', {
+			folder_path,
+			search,
+			replace,
+			extension_filter,
+		});
 	}
 
 	async rename_files(
