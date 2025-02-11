@@ -9,6 +9,7 @@ pub async fn image_resize(
     width: Option<String>,
     height: Option<String>,
     output_folder: Option<String>,
+    file_name: Option<String>,
 ) -> Result<String, String> {
     let input_path = Path::new(&img_path);
     if !input_path.exists() || !input_path.is_file() {
@@ -49,18 +50,13 @@ pub async fn image_resize(
     } else {
         output_folder.unwrap()
     };
+	
+    let output_file_name = file_name
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| input_path.file_stem().unwrap_or_default().to_string_lossy().to_string());
 
     let output_path = Path::new(&output_folder).join(
-        input_path
-            .file_stem()
-            .ok_or("Invalid file name")?
-            .to_string_lossy()
-            .to_string()
-            + "."
-            + input_path
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or(""),
+        format!("{}.{}", output_file_name, input_path.extension().and_then(|s| s.to_str()).unwrap_or("")),
     );
 
     let mut output_file = File::create(&output_path).map_err(|e| e.to_string())?;

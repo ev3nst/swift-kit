@@ -61,8 +61,8 @@ const data = {
 			groupName: 'File Systems',
 			items: [
 				{
-					name: 'Image Manipulator',
-					to: '/image-manipulator',
+					name: 'Image Manipulation',
+					to: '/image-manipulation',
 					icon: ImageIcon,
 				},
 				{

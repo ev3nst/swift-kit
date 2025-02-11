@@ -3,22 +3,15 @@ import { Image } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 
 import { Button } from '@/components/button';
+import type { FileMeta } from '@/components/native-file-input';
 
 import { useDragEvent } from '@/hooks/use-drag-event';
 
 import { formatFileSize } from '@/lib/utils';
 
-export type DroppedFile = {
-	path: string;
-	preview: string;
-	name: string;
-	size: number;
-	mime: string;
-};
-
 type IMGDropzoneProps = {
 	id: string;
-	images: DroppedFile[];
+	images: FileMeta[];
 	handleFilesStateChange: (id: string, filePaths: string[]) => void;
 };
 

@@ -17,7 +17,14 @@ const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
 
 // File Systems
-const ImageManipulator = lazy(() => import('@/pages/image-manipulator'));
+import ImageManipulation from './pages/image-manipulation';
+const ImageManipulator = lazy(
+	() => import('@/pages/image-manipulation/image-manipulator'),
+);
+const IconGenerator = lazy(
+	() => import('@/pages/image-manipulation/icon-generator'),
+);
+
 import VideoManipulation from './pages/video-manipulation';
 const NoIntroOutro = lazy(
 	() => import('@/pages/video-manipulation/no-intro-outro'),
@@ -93,10 +100,20 @@ function App() {
 								path="/filename-replacer"
 								component={FilenameReplacer}
 							/>
-							<Route
-								path="/image-manipulator"
-								component={ImageManipulator}
-							/>
+
+							<Route path="/image-manipulation" nest>
+								<ImageManipulation>
+									<Route
+										path="(manipulator|)"
+										component={ImageManipulator}
+									/>
+									<Route
+										path="/icon-generator"
+										component={IconGenerator}
+									/>
+								</ImageManipulation>
+							</Route>
+
 							<Route path="/video-manipulation" nest>
 								<VideoManipulation>
 									<Route

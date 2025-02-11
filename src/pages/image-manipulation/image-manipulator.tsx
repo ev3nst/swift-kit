@@ -21,16 +21,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/select';
-import { IMGDropzone, type DroppedFile } from '@/components/img-dropzone';
+import { IMGDropzone } from '@/components/img-dropzone';
+import type { FileMeta } from '@/components/native-file-input';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Label } from '@/components/label';
+import { Loading } from '@/components/loading';
 
 import { useDragEvent } from '@/hooks/use-drag-event';
 
-import { getImageDetailsFromPath } from '@/lib/utils';
+import { resolveImageDetails } from '@/lib/utils';
 import api from '@/lib/api';
-import { Loading } from '@/components/loading';
 
 const imgManipulatorSchema = z.object({
 	width: z.coerce.number().optional(),
@@ -48,7 +49,7 @@ const imgManipulatorSchema = z.object({
 
 const ImageManipulator = () => {
 	const [processLoading, setProcessLoading] = useState(false);
-	const [images, setImages] = useState<DroppedFile[]>([]);
+	const [images, setImages] = useState<FileMeta[]>([]);
 	const { handleDragFilesChange } = useDragEvent();
 
 	const form = useForm<z.infer<typeof imgManipulatorSchema>>({
@@ -62,33 +63,9 @@ const ImageManipulator = () => {
 		},
 	});
 
-	const handleFilesStateChange = async (_id: string, rawFiles?: string[]) => {
-		if (typeof rawFiles === 'undefined') return;
+	const handleFilesStateChange = async (_id: string, rawFiles: string[]) => {
 		try {
-			const rawImages = await Promise.all(
-				rawFiles.map(async ri => await getImageDetailsFromPath(ri)),
-			);
-
-			// Filter out already existing images by name
-			const currentImageNames = images.map(img => img.name);
-			const newImages = rawImages.filter(
-				rff => !currentImageNames.includes(rff.name),
-			);
-
-			if (newImages.length === 0) return;
-			const imageFiles = newImages.filter(file => {
-				return (
-					file.mime.startsWith('image/') &&
-					[
-						'image/jpeg',
-						'image/jpg',
-						'image/png',
-						'image/webp',
-					].includes(file.mime)
-				);
-			});
-
-			// Update the state with new images
+			const imageFiles = await resolveImageDetails(images, rawFiles);
 			setImages(prevImages => [...prevImages, ...imageFiles]);
 		} catch (error) {
 			console.error('Error reading files:', error);
@@ -185,7 +162,7 @@ const ImageManipulator = () => {
 								</div>
 								<FormControl>
 									<Input
-										placeholder="Defaults to downloads folder if left empty"
+										placeholder="Defaults to folder of the original files & overwrite"
 										{...field}
 									/>
 								</FormControl>

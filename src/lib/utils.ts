@@ -3,6 +3,8 @@ import { twMerge } from 'tailwind-merge';
 import { cva } from 'class-variance-authority';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
+import type { FileMeta } from '@/components/native-file-input';
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
@@ -102,17 +104,62 @@ export const formatFileSize = (sizeInBytes: number): string => {
 	return `${size} ${units[sizeIndex]}`;
 };
 
-export async function getImageDetailsFromPath(path: string) {
-	const url = convertFileSrc(path);
+export async function getFileDetailsFromPath(path: string): Promise<FileMeta> {
 	const name = path.split('\\').pop() as string;
+	const url = convertFileSrc(path);
 	const response = await fetch(url, { method: 'HEAD' });
 	const fileSize = response.headers.get('Content-Length') as string;
 	const mime = response.headers.get('Content-Type') as string;
-	return {
+
+	const fileDetails: FileMeta = {
 		path,
 		name,
 		size: parseInt(fileSize, 10),
 		mime,
-		preview: url,
 	};
+
+	if (mime?.startsWith('image/')) {
+		fileDetails.preview = url;
+		await new Promise<void>((resolve, reject) => {
+			const img = new Image();
+			img.onload = () => {
+				fileDetails.width = img.width;
+				fileDetails.height = img.height;
+				resolve();
+			};
+			img.onerror = reject;
+			img.src = url;
+		});
+	}
+
+	return fileDetails;
+}
+
+export async function resolveImageDetails(
+	currentImages: FileMeta[],
+	filePaths: string[],
+): Promise<FileMeta[]> {
+	const rawImages = await Promise.all(
+		filePaths.map(async ri => {
+			return await getFileDetailsFromPath(ri);
+		}),
+	);
+
+	// Filter out already existing images by name
+	const currentImageNames = currentImages.map(img => img.name);
+	const newImages = rawImages.filter(
+		rff => !currentImageNames.includes(rff.name),
+	);
+
+	if (newImages.length === 0) return [];
+	const imageFiles = newImages.filter(file => {
+		return (
+			file.mime.startsWith('image/') &&
+			['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+				file.mime,
+			)
+		);
+	});
+
+	return imageFiles;
 }

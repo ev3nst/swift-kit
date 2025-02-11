@@ -77,12 +77,14 @@ class API {
 		width?: number,
 		height?: number,
 		output_folder?: string,
+		file_name?: string,
 	): Promise<string> {
 		return invoke('image_resize', {
 			img_path,
 			width: String(width),
 			height: String(height),
 			output_folder,
+			file_name,
 		});
 	}
 
