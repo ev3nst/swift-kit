@@ -33,6 +33,11 @@ pub fn fetch_files(
             .file_name()
             .into_string()
             .map_err(|e| e.to_string_lossy().into_owned())?;
+
+        if filename.starts_with('.') {
+            continue;
+        }
+
         if let Some(ref ext_filter) = extension_filter {
             if !filename.ends_with(ext_filter) {
                 continue;
@@ -54,6 +59,7 @@ pub fn fetch_files(
             Ok(time) => format!("{:?}", time),
             Err(e) => format!("Error: {}", e),
         };
+
         files.push(FileMeta {
             filename,
             size: metadata.len(),

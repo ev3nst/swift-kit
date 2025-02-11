@@ -2,6 +2,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 mod bulk_rename;
 mod fetch_files;
+mod rename_files;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -103,7 +104,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             fetch_files::fetch_files,
-            bulk_rename::bulk_rename
+            bulk_rename::bulk_rename,
+			rename_files::rename_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -41,7 +41,11 @@ class API {
 		}[],
 		extension_filter?: string
 	): Promise<void> {
-		throw new Error('to be implemented');
+        await invoke('rename_files', {
+            folder_path,
+            rename_mapping,
+            extension_filter,
+        });
 	}
 
 	async img_convert(
