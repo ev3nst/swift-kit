@@ -50,14 +50,32 @@ pub async fn image_resize(
     } else {
         output_folder.unwrap()
     };
-	
+
+    let invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+    if let Some(ref name) = file_name {
+        if name.is_empty() || name.chars().any(|c| invalid_chars.contains(&c)) {
+            return Err("Invalid file name".into());
+        }
+    }
+
     let output_file_name = file_name
         .filter(|name| !name.is_empty())
-        .unwrap_or_else(|| input_path.file_stem().unwrap_or_default().to_string_lossy().to_string());
+        .unwrap_or_else(|| {
+            input_path
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string()
+        });
 
-    let output_path = Path::new(&output_folder).join(
-        format!("{}.{}", output_file_name, input_path.extension().and_then(|s| s.to_str()).unwrap_or("")),
-    );
+    let output_path = Path::new(&output_folder).join(format!(
+        "{}.{}",
+        output_file_name,
+        input_path
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+    ));
 
     let mut output_file = File::create(&output_path).map_err(|e| e.to_string())?;
     resized_img

@@ -48,7 +48,12 @@ pub async fn image_convert(
     let mut temp_file_path = None;
 
     if output_format == ImageFormat::Ico {
-        if input_path.extension().and_then(|s| s.to_str()).unwrap_or("") != "png" {
+        if input_path
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            != "png"
+        {
             img = img.to_rgba8().into();
         }
         let (width, height) = img.dimensions();
@@ -56,15 +61,14 @@ pub async fn image_convert(
             return Err("Image must be square for ICO format".into());
         }
         if width > 256 || height > 256 {
-            temp_file_path = Some(input_path.with_file_name(
-                format!(
+            temp_file_path = Some(input_path.with_file_name(format!(
                     "{}.tmp.{}",
                     input_path.file_stem().ok_or("Invalid file name")?.to_string_lossy(),
                     input_path.extension().and_then(|s| s.to_str()).unwrap_or("")
-                ),
-            ));
+                )));
             img = img.resize_exact(256, 256, image::imageops::FilterType::Lanczos3);
-            img.save(temp_file_path.as_ref().unwrap()).map_err(|e| e.to_string())?;
+            img.save(temp_file_path.as_ref().unwrap())
+                .map_err(|e| e.to_string())?;
             img = image::open(temp_file_path.as_ref().unwrap()).map_err(|e| e.to_string())?;
         }
     }
