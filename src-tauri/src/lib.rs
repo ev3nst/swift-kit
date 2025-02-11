@@ -1,5 +1,7 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+mod fetch_files;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let migrations = vec![
@@ -98,7 +100,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![fetch_files::fetch_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

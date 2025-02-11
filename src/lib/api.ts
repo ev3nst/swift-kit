@@ -1,8 +1,8 @@
+import { invoke } from '@tauri-apps/api/core';
+
 export type IFileMeta = {
 	filename: string;
 	size: number;
-	isDirectory: boolean;
-	isFile: boolean;
 	birthtime: string;
 	mtime: string;
 	atime: string;
@@ -11,16 +11,19 @@ export type IFileMeta = {
 class API {
 	async fetch_files(
 		folder_path: string,
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<IFileMeta[]> {
-		throw new Error('to be implemented');
+		return invoke('fetch_files', {
+			folder_path,
+			extension_filter,
+		});
 	}
 
 	async bulk_rename(
 		folder_path: string,
 		search: string,
 		replace: string,
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<void> {
 		throw new Error('to be implemented');
 	}
@@ -31,7 +34,7 @@ class API {
 			old: string;
 			new: string;
 		}[],
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<void> {
 		throw new Error('to be implemented');
 	}
@@ -39,7 +42,7 @@ class API {
 	async img_convert(
 		img_path: string,
 		to: string,
-		output_folder?: string,
+		output_folder?: string
 	): Promise<string> {
 		throw new Error('to be implemented');
 	}
@@ -56,7 +59,7 @@ class API {
 			intro_end: string;
 			outro_start: string;
 			outro_end: string;
-		}[],
+		}[]
 	) {
 		throw new Error('to be implemented');
 	}
