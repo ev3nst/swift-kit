@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { FilePlus2, FileX } from 'lucide-react';
 
 import {
@@ -14,8 +14,10 @@ import {
 } from '@/components/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/tooltip';
 import { Button } from '@/components/button';
-import { Tiptap } from '@/components/tiptap';
 import { Input } from '@/components/input';
+import { Loading } from '@/components/loading';
+
+const Tiptap = lazy(() => import('@/components/tiptap'));
 
 import { Note } from '@/lib/models/note';
 import { buttonVariants, cn } from '@/lib/utils';
@@ -54,15 +56,15 @@ function Notes() {
 	};
 
 	return (
-		<div className="grid grid-cols-4 gap-4">
-			<div className="min-w-[250px] col-span-1 flex flex-col gap-2">
+		<div className="grid grid-cols-6 gap-4">
+			<div className="col-span-2 flex flex-col gap-2">
 				{notes
 					.sort((n, n2) => n.id - n2.id)
 					.map(item => (
 						<button
 							key={`notes_${item.id}`}
 							className={cn(
-								'flex items-center gap-2 rounded-lg border h-11 px-3 text-sm transition-all hover:bg-accent',
+								'flex items-center gap-2 rounded-lg border h-11 px-3 transition-all hover:bg-accent',
 								item.id === note?.id && 'bg-muted',
 							)}
 							onClick={async () => {
@@ -70,28 +72,19 @@ function Notes() {
 								setNote(fetchNote);
 							}}
 						>
-							<div className="flex w-full flex-col gap-1">
-								<div className="flex items-center">
-									<div className="flex items-center gap-2">
-										<div
-											className={cn(
-												'ml-auto text-sm',
-												item.id === note?.id
-													? 'text-foreground'
-													: 'text-muted-foreground',
-											)}
-										>
-											{item.id === note.id
-												? note.title
-												: item.title}
-										</div>
-									</div>
-								</div>
+							<div
+								className={
+									item.id === note?.id
+										? 'text-foreground'
+										: 'text-muted-foreground'
+								}
+							>
+								{item.id === note.id ? note.title : item.title}
 							</div>
 						</button>
 					))}
 			</div>
-			<div className="col-span-3">
+			<div className="col-span-4">
 				<div className="flex gap-3 mb-4">
 					<Input
 						key={`note_title_${note.id}`}
@@ -193,11 +186,13 @@ function Notes() {
 					</AlertDialog>
 				</div>
 				{note.id && (
-					<Tiptap
-						key={`note_tiptap_${note.id}`}
-						value={note.content}
-						onChange={handleEditorChange}
-					/>
+					<Suspense fallback={<Loading />}>
+						<Tiptap
+							key={`note_tiptap_${note.id}`}
+							value={note.content}
+							onChange={handleEditorChange}
+						/>
+					</Suspense>
 				)}
 			</div>
 		</div>

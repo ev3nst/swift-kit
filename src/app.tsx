@@ -1,10 +1,12 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Router, Route } from 'wouter';
 
 import { ErrorBoundary } from '@/components/error-boundary';
 import { DragEventProvider } from '@/components/drag-provider';
 import { Toaster } from '@/components/sonner';
 import { Loading } from '@/components/loading';
+
+import { dbWrapper } from '@/lib/db';
 
 import Layout from '@/layout';
 
@@ -33,6 +35,25 @@ const Keychain = lazy(() => import('@/pages/keychain'));
 const Placeholder = lazy(() => import('@/pages/placeholder'));
 
 function App() {
+	const [dbInitialized, setDbInitialized] = useState(false);
+
+	useEffect(() => {
+		(async () => {
+			await dbWrapper.initialize();
+			setDbInitialized(true);
+		})();
+	}, []);
+
+	useEffect(() => {
+		import('./styles/tiptap.css');
+		import('./styles/animated-bg.css');
+		import('./styles/react-color.css');
+	}, []);
+
+	if (dbInitialized === false) {
+		return <Loading />;
+	}
+
 	return (
 		<ErrorBoundary>
 			<DragEventProvider>

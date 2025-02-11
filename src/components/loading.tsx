@@ -19,6 +19,7 @@ const Loading = ({
 		return () => {
 			clearTimeout(timeout);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	if (loading) {

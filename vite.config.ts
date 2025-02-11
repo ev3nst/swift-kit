@@ -7,7 +7,7 @@ const host = process.env.TAURI_DEV_HOST;
 // https://vite.dev/config/
 export default defineConfig({
 	build: {
-		minify: 'esbuild',
+		minify: 'terser',
 		sourcemap: false,
 		rollupOptions: {
 			input: 'index.html',

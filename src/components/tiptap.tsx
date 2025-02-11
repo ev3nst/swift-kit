@@ -1,4 +1,5 @@
-import { EditorContent, useEditor } from '@tiptap/react';
+import { useRef } from 'react';
+import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import TextStyle from '@tiptap/extension-text-style';
@@ -7,7 +8,8 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import StarterKit from '@tiptap/starter-kit';
-import { TwitterPicker } from 'react-color';
+import { Sketch } from '@uiw/react-color';
+
 import {
 	BoldIcon,
 	CodeIcon,
@@ -32,7 +34,19 @@ import {
 import { Button } from '@/components/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/popover';
 
-function MenuBar({ editor }) {
+function MenuBar({ editor }: { editor: Editor }) {
+	const timeoutRef = useRef<any>(null);
+	const handleColorChange = color => {
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+		}
+
+		timeoutRef.current = setTimeout(() => {
+			console.log('color changed', color.hex);
+			editor.chain().setColor(color.hex).run();
+		}, 400);
+	};
+
 	if (!editor) {
 		return null;
 	}
@@ -232,26 +246,22 @@ function MenuBar({ editor }) {
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className="w-auto max-w-full border-0 bg-none">
-					<TwitterPicker
-						onChange={colorObj => {
-							editor.chain().focus().setColor(colorObj.hex).run();
-						}}
-					/>
+					<Sketch onChange={color => handleColorChange(color)} />
 				</PopoverContent>
 			</Popover>
 			<Button
 				variant="ghost"
 				size="sm"
-				onClick={() => editor.chain().focus().undo().run()}
-				disabled={!editor.can().chain().focus().undo().run()}
+				onClick={() => editor.chain().undo().run()}
+				disabled={!editor.can().chain().undo().run()}
 			>
 				<UndoIcon className="w-4" />
 			</Button>
 			<Button
 				variant="ghost"
 				size="sm"
-				onClick={() => editor.chain().focus().redo().run()}
-				disabled={!editor.can().chain().focus().redo().run()}
+				onClick={() => editor.chain().redo().run()}
+				disabled={!editor.can().chain().redo().run()}
 			>
 				<RedoIcon className="w-4" />
 			</Button>
@@ -281,7 +291,7 @@ const extensions = [
 	}),
 ];
 
-export function Tiptap({ value, onChange }) {
+export default function Tiptap({ value, onChange }) {
 	const editor = useEditor({
 		extensions,
 		content: value,
@@ -293,7 +303,7 @@ export function Tiptap({ value, onChange }) {
 
 	return (
 		<div>
-			<MenuBar editor={editor} />
+			<MenuBar editor={editor as Editor} />
 			<EditorContent editor={editor} />
 		</div>
 	);

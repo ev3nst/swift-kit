@@ -1,4 +1,4 @@
-import { db, type RawModel } from '@/lib/db';
+import { dbWrapper, type RawModel } from '@/lib/db';
 
 export class Note {
 	id!: number;
@@ -22,7 +22,7 @@ export class Note {
 	}
 
 	static async get(id: number): Promise<Note> {
-		const result = await db.select<RawModel<Note>[]>(
+		const result = await dbWrapper.db.select<RawModel<Note>[]>(
 			'SELECT * FROM notes WHERE id = ?',
 			[id],
 		);
@@ -41,7 +41,9 @@ export class Note {
 			? `SELECT id, title, created_at FROM notes WHERE id IN (SELECT docid FROM notes_fts WHERE notes_fts MATCH ?) ORDER BY id ASC`
 			: 'SELECT id, title, created_at FROM notes ORDER BY id ASC';
 
-		const results = await db.select<RawModel<Note>[]>(query, [searchTerm]);
+		const results = await dbWrapper.db.select<RawModel<Note>[]>(query, [
+			searchTerm,
+		]);
 		return results.map(
 			rs =>
 				new Note(
@@ -55,7 +57,7 @@ export class Note {
 	}
 
 	static async insert(data: Pick<Note, 'title' | 'content'>): Promise<Note> {
-		const result = await db.execute(
+		const result = await dbWrapper.db.execute(
 			'INSERT INTO notes (title, content) VALUES (?, ?)',
 			[data.title, data.content],
 		);
@@ -69,13 +71,13 @@ export class Note {
 	}
 
 	async update(): Promise<void> {
-		await db.execute(
+		await dbWrapper.db.execute(
 			'UPDATE notes SET title = ?, content = ? WHERE id = ?',
 			[this.title, this.content, this.id],
 		);
 	}
 
 	async delete(): Promise<void> {
-		await db.execute('DELETE FROM notes WHERE id = ?', [this.id]);
+		await dbWrapper.db.execute('DELETE FROM notes WHERE id = ?', [this.id]);
 	}
 }

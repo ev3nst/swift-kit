@@ -1,4 +1,4 @@
-import { db, type RawModel } from '@/lib/db';
+import { dbWrapper, type RawModel } from '@/lib/db';
 
 export class Credential {
 	id!: number;
@@ -34,7 +34,7 @@ export class Credential {
 	}
 
 	static async get(id: number): Promise<Credential> {
-		const result = await db.select<RawModel<Credential>[]>(
+		const result = await dbWrapper.db.select<RawModel<Credential>[]>(
 			'SELECT * FROM credentials WHERE id = ?',
 			[id],
 		);
@@ -57,9 +57,10 @@ export class Credential {
 			? `SELECT id, platform, username, password, created_at FROM credentials WHERE id IN (SELECT docid FROM credentials_fts WHERE credentials_fts MATCH ?) ORDER BY id ASC`
 			: 'SELECT id, platform, username, password, created_at FROM credentials ORDER BY id ASC';
 
-		const results = await db.select<RawModel<Credential>[]>(query, [
-			searchTerm,
-		]);
+		const results = await dbWrapper.db.select<RawModel<Credential>[]>(
+			query,
+			[searchTerm],
+		);
 		return results.map(
 			rs =>
 				new Credential(
@@ -85,7 +86,7 @@ export class Credential {
 				>
 			>,
 	): Promise<Credential> {
-		const result = await db.execute(
+		const result = await dbWrapper.db.execute(
 			'INSERT INTO credentials (platform, username, password, secret_question,secret_question_answer, note) VALUES (?, ?, ?, ?, ?, ?)',
 			[
 				data.platform,
@@ -106,7 +107,7 @@ export class Credential {
 	}
 
 	async update(): Promise<void> {
-		await db.execute(
+		await dbWrapper.db.execute(
 			'UPDATE credentials SET platform = ?, username = ?, password = ?, secret_question = ?, secret_question_answer = ?, note = ? WHERE id = ?',
 			[
 				this.platform,
@@ -121,6 +122,8 @@ export class Credential {
 	}
 
 	async delete(): Promise<void> {
-		await db.execute('DELETE FROM credentials WHERE id = ?', [this.id]);
+		await dbWrapper.db.execute('DELETE FROM credentials WHERE id = ?', [
+			this.id,
+		]);
 	}
 }

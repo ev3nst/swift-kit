@@ -1,4 +1,4 @@
-import { db, type RawModel } from '@/lib/db';
+import { dbWrapper, type RawModel } from '@/lib/db';
 
 export class Setting {
 	id!: number;
@@ -41,7 +41,7 @@ export class Setting {
 	}
 
 	static async get(name: string): Promise<Setting | undefined> {
-		const result = await db.select<RawModel<Setting>[]>(
+		const result = await dbWrapper.db.select<RawModel<Setting>[]>(
 			'SELECT * FROM settings WHERE name = ?',
 			[name],
 		);
@@ -61,13 +61,13 @@ export class Setting {
 	static async insert(
 		data: Pick<Setting, 'name' | 'value' | 'description'>,
 	): Promise<Setting> {
-		const result = await db.execute(
+		const result = await dbWrapper.db.execute(
 			'INSERT INTO settings (name, value, description) VALUES (?, ?, ?)',
 			[data.name, data.value, data.description],
 		);
 
 		if (result.lastInsertId) {
-			const data = await db.select<RawModel<Setting>[]>(
+			const data = await dbWrapper.db.select<RawModel<Setting>[]>(
 				'SELECT * FROM settings WHERE id = ?',
 				[result.lastInsertId],
 			);
@@ -86,7 +86,7 @@ export class Setting {
 	}
 
 	async update(): Promise<void> {
-		await db.execute(
+		await dbWrapper.db.execute(
 			'UPDATE settings SET name = ?, value = ?, description = ? WHERE id = ?',
 			[this.name, this.value, this.description, this.id],
 		);
