@@ -50,6 +50,9 @@ const NoIntroOutro = () => {
 		console.log(setFetchLoading);
 	}
 
+	const { getValues } = form;
+	const { input_path } = getValues();
+
 	return (
 		<Form {...form}>
 			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -122,8 +125,11 @@ const NoIntroOutro = () => {
 				<Button
 					type="button"
 					variant="secondary"
-					className={fetchLoading ? 'disabled' : ''}
-					disabled={fetchLoading}
+					className={fetchLoading || !input_path ? 'disabled' : ''}
+					disabled={fetchLoading || !input_path}
+					onClick={async () => {
+						console.log('predicton?');
+					}}
 				>
 					Fetch
 				</Button>

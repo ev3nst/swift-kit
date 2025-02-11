@@ -1,5 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
-
 export type IFileMeta = {
 	filename: string;
 	size: number;
@@ -10,19 +8,12 @@ export type IFileMeta = {
 	atime: string;
 };
 
-class BunApi {
-	static sidecarName: string = 'bunsidecar';
-
+class API {
 	async fetch_files(
 		folder_path: string,
 		extension_filter?: string,
 	): Promise<IFileMeta[]> {
-		const response: string = await invoke(BunApi.sidecarName, {
-			command: 'fetch_files',
-			args: [folder_path, extension_filter],
-		});
-
-		return JSON.parse(response) as IFileMeta[];
+		throw new Error('to be implemented');
 	}
 
 	async bulk_rename(
@@ -31,10 +22,7 @@ class BunApi {
 		replace: string,
 		extension_filter?: string,
 	): Promise<void> {
-		await invoke(BunApi.sidecarName, {
-			command: 'bulk_rename',
-			args: [folder_path, search, replace, extension_filter],
-		});
+		throw new Error('to be implemented');
 	}
 
 	async rename_files(
@@ -45,14 +33,7 @@ class BunApi {
 		}[],
 		extension_filter?: string,
 	): Promise<void> {
-		await invoke(BunApi.sidecarName, {
-			command: 'rename_files',
-			args: [
-				folder_path,
-				JSON.stringify(rename_mapping),
-				extension_filter,
-			],
-		});
+		throw new Error('to be implemented');
 	}
 
 	async img_convert(
@@ -60,15 +41,27 @@ class BunApi {
 		to: string,
 		output_folder?: string,
 	): Promise<string> {
-		const response: string = await invoke(BunApi.sidecarName, {
-			command: 'img_convert',
-			args: [img_path, to, output_folder],
-		});
+		throw new Error('to be implemented');
+	}
 
-		return response;
+	async intro_outro_prediction(episodesFolder: string) {
+		throw new Error('to be implemented');
+	}
+
+	async no_intro_outro(
+		episodesFolder: string,
+		episodesData: {
+			filename: string;
+			intro_start: string;
+			intro_end: string;
+			outro_start: string;
+			outro_end: string;
+		}[],
+	) {
+		throw new Error('to be implemented');
 	}
 }
 
-const bunApi = new BunApi();
+const api = new API();
 
-export default bunApi;
+export default api;

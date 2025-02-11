@@ -1,44 +1,36 @@
-use tauri_plugin_shell::ShellExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
-
-#[tauri::command]
-async fn bunsidecar(
-    app: tauri::AppHandle,
-    command: String,
-    args: Vec<String>,
-) -> Result<String, String> {
-    // Create the sidecar command
-    let mut sidecar_command = app
-        .shell()
-        .sidecar("swift-kit-bun-sidecar")
-        .map_err(|e| format!("Failed to create sidecar: {}", e))?
-        .arg(command);
-
-    for arg in args {
-        sidecar_command = sidecar_command.arg(arg);
-    }
-
-    // Run the command
-    let output = sidecar_command
-        .output()
-        .await
-        .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
-
-    // Check if command failed
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Sidecar error: {}", stderr));
-    }
-
-    // Convert stdout to string
-    String::from_utf8(output.stdout).map_err(|e| format!("Invalid UTF-8 output: {}", e))
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let migrations = vec![
         Migration {
             version: 1,
+            description: "create_settings_table",
+            sql: r#"
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+    			name TEXT NOT NULL UNIQUE CHECK(length(name) <= 255),
+                description TEXT NOT NULL CHECK(length(description) <= 255),
+                value TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            -- Indexes for performance on commonly queried fields
+            CREATE INDEX idx_name ON settings (name);
+
+            -- Trigger to automatically update the `updated_at` field on updates
+            CREATE TRIGGER settings_updated_at
+            AFTER UPDATE ON settings
+            FOR EACH ROW
+            BEGIN
+                UPDATE settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            END;
+            "#,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
             description: "create_notes_table",
             sql: r#"
             CREATE TABLE IF NOT EXISTS notes (
@@ -63,7 +55,7 @@ pub fn run() {
             kind: MigrationKind::Up,
         },
         Migration {
-            version: 2,
+            version: 3,
             description: "create_credentials_table",
             sql: r#"
             CREATE TABLE IF NOT EXISTS credentials (
@@ -106,7 +98,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![bunsidecar])
+        .invoke_handler(tauri::generate_handler![])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

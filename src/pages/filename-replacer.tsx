@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 
-import bunApi, { type IFileMeta } from '@/lib/api';
+import api, { type IFileMeta } from '@/lib/api';
 
 const filenameReplacerSchema = z.object({
 	folder_path: z.string().min(1, {
@@ -59,10 +59,7 @@ const FilenameReplacer = () => {
 		setFetchLoading(true);
 		try {
 			const { folder_path, extension_filter } = getValues();
-			const files = await bunApi.fetch_files(
-				folder_path,
-				extension_filter,
-			);
+			const files = await api.fetch_files(folder_path, extension_filter);
 			setFetchedFiles(files);
 			setFetchLoading(false);
 		} catch (error) {
@@ -77,7 +74,7 @@ const FilenameReplacer = () => {
 		try {
 			const { folder_path, search, replace, extension_filter } =
 				getValues();
-			await bunApi.bulk_rename(
+			await api.bulk_rename(
 				folder_path,
 				search,
 				replace,
@@ -120,7 +117,7 @@ const FilenameReplacer = () => {
 			.filter(value => value !== undefined && value !== null);
 		setProcessLoading(true);
 		try {
-			await bunApi.rename_files(
+			await api.rename_files(
 				data.folder_path,
 				fileReMapping,
 				data.extension_filter,

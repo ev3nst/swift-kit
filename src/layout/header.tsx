@@ -9,6 +9,7 @@ import { useSidebar } from '@/hooks/use-sidebar';
 
 import { Breadcrumbs } from './breadcrumbs';
 import { Notifications } from './notifications';
+import { Settings } from './settings';
 
 export function Header() {
 	const { state } = useSidebar();
@@ -39,6 +40,7 @@ export function Header() {
 			<div className="flex gap-2 items-center">
 				<div className="flex gap-2">
 					<Notifications />
+					<Settings />
 				</div>
 				<Separator orientation="vertical" className="mr-2 h-4" />
 				<div className="flex gap-1">
