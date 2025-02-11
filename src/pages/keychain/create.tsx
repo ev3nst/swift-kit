@@ -85,7 +85,6 @@ export function CreateForm({ currentCredId, onSubmitCb }) {
 		if (mode === 'create') {
 			await Credential.insert(data);
 		} else {
-			console.log('update?');
 			const fetchedCred = await Credential.get(currentCredId);
 			const {
 				platform,
@@ -101,7 +100,6 @@ export function CreateForm({ currentCredId, onSubmitCb }) {
 			fetchedCred.secret_question = secret_question;
 			fetchedCred.secret_question_answer = secret_question_answer;
 			fetchedCred.note = note;
-			console.log(fetchedCred, 'before update');
 			await fetchedCred.update();
 		}
 

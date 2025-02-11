@@ -32,6 +32,7 @@
 		"@tanstack/react-table": "^8.20.6",
 		"@tauri-apps/api": "^2.2.0",
 		"@tauri-apps/plugin-clipboard-manager": "^2.2.1",
+		"@tauri-apps/plugin-dialog": "^2.2.0",
 		"@tauri-apps/plugin-opener": "^2.2.5",
 		"@tauri-apps/plugin-sql": "^2.2.0",
 		"@tiptap/extension-color": "^2.11.3",
