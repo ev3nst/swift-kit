@@ -36,6 +36,7 @@ const CutAndMerge = lazy(
 	() => import('@/pages/video-manipulation/cut-and-merge'),
 );
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
+const Finder = lazy(() => import('@/pages/finder'));
 
 // Security
 const Keychain = lazy(() => import('@/pages/keychain'));
@@ -118,6 +119,7 @@ function App() {
 									path="/filename-replacer"
 									component={FilenameReplacer}
 								/>
+								<Route path="/finder" component={Finder} />
 								<Route path="/image-manipulation" nest>
 									<ImageManipulation>
 										<Route

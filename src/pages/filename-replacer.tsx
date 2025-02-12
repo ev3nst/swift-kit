@@ -33,7 +33,7 @@ const FilenameReplacer = () => {
 	const [processLoading, setProcessLoading] = useState(false);
 	const [fetchedFiles, setFetchedFiles] = useState<IFileMeta[]>([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
-	const form = useForm({
+	const form = useForm<z.infer<typeof filenameReplacerSchema>>({
 		resolver: zodResolver(filenameReplacerSchema),
 		defaultValues: {
 			folder_path: '',
@@ -70,10 +70,11 @@ const FilenameReplacer = () => {
 	}
 
 	async function handleBulkRename() {
+		const { folder_path, search, replace, extension_filter } = getValues();
+		if (typeof search !== 'string') return;
+
 		setProcessLoading(true);
 		try {
-			const { folder_path, search, replace, extension_filter } =
-				getValues();
 			await api.bulk_rename(
 				folder_path,
 				search,
@@ -137,8 +138,8 @@ const FilenameReplacer = () => {
 	function previewNameChange(originalFilename: string, mapIndex: number) {
 		const { search, replace, rename_mapping } = form.watch();
 		let finalFilename = originalFilename;
-		if (search.length > 0) {
-			finalFilename = finalFilename.replace(search, replace);
+		if (typeof search === 'string' && search.length > 0) {
+			finalFilename = finalFilename.replace(search, replace ?? '');
 		}
 
 		if (

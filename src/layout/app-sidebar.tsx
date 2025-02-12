@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import {
 	DownloadIcon,
 	FilePenIcon,
+	FileSearchIcon,
 	GemIcon,
 	ImageIcon,
 	KeyIcon,
@@ -74,6 +75,11 @@ const data = {
 					name: 'File Name Replacer',
 					to: '/filename-replacer',
 					icon: FilePenIcon,
+				},
+				{
+					name: 'Finder',
+					to: '/finder',
+					icon: FileSearchIcon,
 				},
 			],
 		},

@@ -43,7 +43,7 @@ class API {
 	async bulk_rename(
 		folder_path: string,
 		search: string,
-		replace: string,
+		replace?: string,
 		extension_filter?: string,
 	): Promise<void> {
 		await invoke('bulk_rename', {
@@ -66,6 +66,23 @@ class API {
 			folder_path,
 			rename_mapping,
 			extension_filter,
+		});
+	}
+
+	async get_available_disks(): Promise<string[]> {
+		return invoke('get_available_disks');
+	}
+
+	async finder(search_term: string, disk?: string): Promise<string[]> {
+		return invoke('finder', {
+			search_term,
+			disk,
+		});
+	}
+
+	async highlight_file(file_path: string): Promise<string[]> {
+		return invoke('highlight_file', {
+			file_path,
 		});
 	}
 

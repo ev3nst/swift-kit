@@ -1,6 +1,9 @@
 mod bulk_rename;
 mod fetch_files;
+mod finder;
+mod get_available_disks;
 mod get_video_details;
+mod highlight_file;
 mod image_compress;
 mod image_convert;
 mod image_resize;
@@ -29,7 +32,10 @@ pub fn run() {
             image_compress::image_compress,
             image_resize::image_resize,
             get_video_details::get_video_details,
-            intro_outro_prediction::intro_outro_prediction
+            intro_outro_prediction::intro_outro_prediction,
+            get_available_disks::get_available_disks,
+            finder::finder,
+            highlight_file::highlight_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
