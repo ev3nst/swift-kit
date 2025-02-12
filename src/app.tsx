@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Router, Route } from 'wouter';
+import { Route, useLocation, Switch } from 'wouter';
 
 import { ErrorBoundary } from '@/components/error-boundary';
 import { DragEventProvider } from '@/components/drag-provider';
@@ -8,16 +8,16 @@ import { Loading } from '@/components/loading';
 
 import { dbWrapper } from '@/lib/db';
 
-import Layout from '@/layout';
+const Layout = lazy(() => import('@/layout'));
 
 // Source & Content
-import Media from './pages/media';
+const Media = lazy(() => import('@/pages/media'));
 const Movie = lazy(() => import('@/pages/media/movie'));
 const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
 
 // File Systems
-import ImageManipulation from './pages/image-manipulation';
+const ImageManipulation = lazy(() => import('@/pages/image-manipulation'));
 const ImageManipulator = lazy(
 	() => import('@/pages/image-manipulation/image-manipulator'),
 );
@@ -25,7 +25,7 @@ const IconGenerator = lazy(
 	() => import('@/pages/image-manipulation/icon-generator'),
 );
 
-import VideoManipulation from './pages/video-manipulation';
+const VideoManipulation = lazy(() => import('@/pages/video-manipulation'));
 const NoIntroOutro = lazy(
 	() => import('@/pages/video-manipulation/no-intro-outro'),
 );
@@ -43,10 +43,12 @@ const Placeholder = lazy(() => import('@/pages/placeholder'));
 
 function App() {
 	const [dbInitialized, setDbInitialized] = useState(false);
+	const [location, navigate] = useLocation();
 
 	useEffect(() => {
 		(async () => {
 			await dbWrapper.initialize();
+
 			setDbInitialized(true);
 		})();
 	}, []);
@@ -56,6 +58,10 @@ function App() {
 		import('./styles/animated-bg.css');
 		import('./styles/react-color.css');
 	}, []);
+
+	if (!location.startsWith('/app')) {
+		navigate('/app');
+	}
 
 	if (dbInitialized === false) {
 		return <Loading />;
@@ -73,68 +79,76 @@ function App() {
 						},
 					}}
 				/>
-				<Layout>
-					<Router>
-						<Suspense fallback={<Loading />}>
-							<Route path="(media|)" nest>
-								<Media>
-									<Route path="(movies|)" component={Movie} />
-									<Route
-										path="animes"
-										component={Placeholder}
-									/>
-									<Route
-										path="tv-series"
-										component={Placeholder}
-									/>
-									<Route
-										path="games"
-										component={Placeholder}
-									/>
-								</Media>
-							</Route>
-
-							<Route path="/downloader" component={Downloader} />
-							<Route path="/notes" component={Notes} />
-							<Route
-								path="/filename-replacer"
-								component={FilenameReplacer}
-							/>
-
-							<Route path="/image-manipulation" nest>
-								<ImageManipulation>
-									<Route
-										path="(manipulator|)"
-										component={ImageManipulator}
-									/>
-									<Route
-										path="/icon-generator"
-										component={IconGenerator}
-									/>
-								</ImageManipulation>
-							</Route>
-
-							<Route path="/video-manipulation" nest>
-								<VideoManipulation>
-									<Route
-										path="(no-intro-outro|)"
-										component={NoIntroOutro}
-									/>
-									<Route
-										path="bulk-interpolation"
-										component={BulkInterpolation}
-									/>
-									<Route
-										path="cut-and-merge"
-										component={CutAndMerge}
-									/>
-								</VideoManipulation>
-							</Route>
-							<Route path="/security" component={Placeholder} />
-							<Route path="/keychain" component={Keychain} />
-						</Suspense>
-					</Router>
-				</Layout>
+				<Switch>
+					<Suspense fallback={<Loading />}>
+						<Route path="/app" nest>
+							<Layout>
+								<Route path="(media|)" nest>
+									<Media>
+										<Route
+											path="(movies|)"
+											component={Movie}
+										/>
+										<Route
+											path="animes"
+											component={Placeholder}
+										/>
+										<Route
+											path="tv-series"
+											component={Placeholder}
+										/>
+										<Route
+											path="games"
+											component={Placeholder}
+										/>
+									</Media>
+								</Route>
+								<Route
+									path="/downloader"
+									component={Downloader}
+								/>
+								<Route path="/notes" component={Notes} />
+								<Route
+									path="/filename-replacer"
+									component={FilenameReplacer}
+								/>
+								<Route path="/image-manipulation" nest>
+									<ImageManipulation>
+										<Route
+											path="(manipulator|)"
+											component={ImageManipulator}
+										/>
+										<Route
+											path="/icon-generator"
+											component={IconGenerator}
+										/>
+									</ImageManipulation>
+								</Route>
+								<Route path="/video-manipulation" nest>
+									<VideoManipulation>
+										<Route
+											path="(no-intro-outro|)"
+											component={NoIntroOutro}
+										/>
+										<Route
+											path="bulk-interpolation"
+											component={BulkInterpolation}
+										/>
+										<Route
+											path="cut-and-merge"
+											component={CutAndMerge}
+										/>
+									</VideoManipulation>
+								</Route>
+								<Route
+									path="/security"
+									component={Placeholder}
+								/>
+								<Route path="/keychain" component={Keychain} />
+							</Layout>
+						</Route>
+					</Suspense>
+				</Switch>
 			</DragEventProvider>
 		</ErrorBoundary>
 	);

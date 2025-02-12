@@ -132,7 +132,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 											wouterLocation.startsWith(
 												item.to,
 											) ||
-											(location.pathname === '/' &&
+											(location.pathname === '/app/' &&
 												itemIndex === 0 &&
 												groupIndex === 0)
 										}

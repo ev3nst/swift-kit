@@ -49,7 +49,7 @@ export const Breadcrumbs = () => {
 					);
 				})}
 
-				{location.pathname === '/' && (
+				{location.pathname === '/app/' && (
 					<BreadcrumbPage>Media</BreadcrumbPage>
 				)}
 			</BreadcrumbList>
