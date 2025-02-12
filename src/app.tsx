@@ -47,19 +47,25 @@ function App() {
 
 	useEffect(() => {
 		(async () => {
-			await dbWrapper.initialize();
+			if (location.startsWith('/app')) {
+				await dbWrapper.initialize();
+			}
 
 			setDbInitialized(true);
 		})();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
-		import('./styles/tiptap.css');
-		import('./styles/animated-bg.css');
-		import('./styles/react-color.css');
+		if (location.startsWith('/app')) {
+			import('./styles/tiptap.css');
+			import('./styles/animated-bg.css');
+			import('./styles/react-color.css');
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	if (!location.startsWith('/app')) {
+	if (location === '/') {
 		navigate('/app/media');
 	}
 
