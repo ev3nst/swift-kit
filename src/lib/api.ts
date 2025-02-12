@@ -8,6 +8,20 @@ export type IFileMeta = {
 	atime: string;
 };
 
+export type IVideoMeta = {
+	filename: string;
+	filesize: number;
+	duration: string;
+	duration_in_seconds: number;
+	width: number;
+	height: number;
+	frame_rate: number;
+	subtitles: any[];
+	defaultSubtitle: string;
+	audioTracks: any[];
+	defaultAudio: string;
+};
+
 class API {
 	async fetch_files(
 		folder_path: string,
@@ -88,7 +102,13 @@ class API {
 		});
 	}
 
-	async intro_outro_prediction(episodesFolder: string) {
+	async get_video_details(video_path: string): Promise<IVideoMeta> {
+		return invoke('get_video_details', {
+			video_path,
+		});
+	}
+
+	async intro_outro_prediction(episodes_folder: string) {
 		throw new Error('to be implemented');
 	}
 

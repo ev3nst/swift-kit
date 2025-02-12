@@ -45,7 +45,8 @@
 		"externalBin": [
 			"./binaries/jpegoptim",
 			"./binaries/cwebp",
-			"./binaries/pngquant"
+			"./binaries/pngquant",
+			"./binaries/ffprobe"
 		]
 	}
 }

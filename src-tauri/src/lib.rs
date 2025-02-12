@@ -7,6 +7,7 @@ mod image_convert;
 mod image_resize;
 mod img_compressors;
 mod rename_files;
+mod get_video_details;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -113,7 +114,8 @@ pub fn run() {
             rename_files::rename_files,
             image_convert::image_convert,
             image_compress::image_compress,
-            image_resize::image_resize
+            image_resize::image_resize,
+			get_video_details::get_video_details
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
