@@ -22,6 +22,13 @@ export type IVideoMeta = {
 	defaultAudio: string;
 };
 
+export type IAnimeMeta = {
+	intro_start: string;
+	intro_end: string;
+	outro_start: string;
+	outro_end: string;
+} & IVideoMeta;
+
 class API {
 	async fetch_files(
 		folder_path: string,
@@ -108,20 +115,15 @@ class API {
 		});
 	}
 
-	async intro_outro_prediction(episodes_folder: string) {
-		throw new Error('to be implemented');
+	async intro_outro_prediction(
+		episodes_folder: string,
+	): Promise<IAnimeMeta[]> {
+		return invoke('intro_outro_prediction', {
+			episodes_folder,
+		});
 	}
 
-	async no_intro_outro(
-		episodesFolder: string,
-		episodesData: {
-			filename: string;
-			intro_start: string;
-			intro_end: string;
-			outro_start: string;
-			outro_end: string;
-		}[],
-	) {
+	async no_intro_outro(episodesFolder: string, episodesData: IAnimeMeta[]) {
 		throw new Error('to be implemented');
 	}
 }
