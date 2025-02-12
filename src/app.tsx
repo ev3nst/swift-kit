@@ -60,7 +60,7 @@ function App() {
 	}, []);
 
 	if (!location.startsWith('/app')) {
-		navigate('/app');
+		navigate('/app/media');
 	}
 
 	if (dbInitialized === false) {
