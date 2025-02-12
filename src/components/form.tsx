@@ -63,7 +63,7 @@ FormLabel.displayName = 'FormLabel';
 const FormControl = React.forwardRef<
 	React.ElementRef<typeof Slot>,
 	React.ComponentPropsWithoutRef<typeof Slot> & {
-		error?: string[]; // Accept error array as prop
+		error?: string[];
 	}
 >(({ error, ...props }, ref) => {
 	const { formItemId, formMessageId } = useFormField();

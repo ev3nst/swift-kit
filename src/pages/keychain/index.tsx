@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	InfoIcon,
 	ClipboardIcon,
@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { buttonVariants } from '@/lib/utils';
 
 export function Keychain() {
+	const updateTimeoutRef = useRef<NodeJS.Timeout>();
 	const [_, forceRender] = useState(0);
 	const [credentials, setCredentials] = useState<
 		Pick<Credential, 'id' | 'platform' | 'username' | 'password'>[]
@@ -45,9 +46,23 @@ export function Keychain() {
 	const [platformFilter, setPlatformFilter] = useState('');
 	const [usernameFilter, setUsernameFilter] = useState('');
 
+	function debounceFetchCredentials(
+		usernameFilter?: string,
+		platformFilter?: string,
+	) {
+		if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+		updateTimeoutRef.current = setTimeout(async () => {
+			const records = await Credential.getAll(
+				usernameFilter,
+				platformFilter,
+			);
+			setCredentials(records);
+		}, 500);
+	}
+
 	useEffect(() => {
-		(async () => setCredentials(await Credential.getAll()))();
-	}, []);
+		debounceFetchCredentials(usernameFilter, platformFilter);
+	}, [usernameFilter, platformFilter]);
 
 	const renderPlatform = (platformValue: string) => {
 		const platformData = Object.values(platforms).find(

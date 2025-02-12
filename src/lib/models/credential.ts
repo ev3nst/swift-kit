@@ -52,14 +52,38 @@ export class Credential {
 		);
 	}
 
-	static async getAll(searchTerm: string = ''): Promise<Credential[]> {
-		const query = searchTerm
-			? `SELECT id, platform, username, password, created_at FROM credentials WHERE id IN (SELECT docid FROM credentials_fts WHERE credentials_fts MATCH ?) ORDER BY id ASC`
-			: 'SELECT id, platform, username, password, created_at FROM credentials ORDER BY id ASC';
+	static async getAll(
+		username?: string,
+		platform?: string,
+	): Promise<Credential[]> {
+		let queryBuild =
+			'SELECT id, platform, username, password, created_at FROM credentials';
+		let whereInit = false;
+		const whereArr: string[] = [];
+		if (username && username !== '') {
+			if (!whereInit) {
+				queryBuild += ' WHERE ';
+				whereInit = true;
+			}
+
+			queryBuild += "username LIKE '%' || ? || '%'";
+			whereArr.push(username);
+		}
+
+		if (platform && platform !== '') {
+			if (!whereInit) {
+				queryBuild += ' WHERE ';
+				whereInit = true;
+				queryBuild += "platform LIKE '%' || ? || '%'";
+			} else {
+				queryBuild += ", platform LIKE '%' || ? || '%'";
+			}
+			whereArr.push(platform);
+		}
 
 		const results = await dbWrapper.db.select<RawModel<Credential>[]>(
-			query,
-			[searchTerm],
+			queryBuild,
+			whereArr,
 		);
 		return results.map(
 			rs =>

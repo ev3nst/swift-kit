@@ -1,11 +1,10 @@
 use std::path::Path;
-use tauri::command;
 
 use super::img_compressors::jpeg;
 use super::img_compressors::png;
 use super::img_compressors::webp;
 
-#[command(rename_all = "snake_case")]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn image_compress(
     img_path: String,
     quality: Option<u8>,

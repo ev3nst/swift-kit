@@ -105,7 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			<SidebarHeader className="app-drag-region">
 				<Link className="py-1 flex items-center gap-4" to="/">
 					<img
-						src="/logo-square.svg"
+						src="/logo-square.png"
 						className={
 							state === 'expanded' ? 'h-7 ms-2' : 'h-6 ms-0.5'
 						}

@@ -1,10 +1,9 @@
 use image::{GenericImageView, ImageFormat};
 use std::fs::File;
 use std::path::Path;
-use tauri::command;
 use trash::delete;
 
-#[command(rename_all = "snake_case")]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn image_convert(
     img_path: String,
     to: String,

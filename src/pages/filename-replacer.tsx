@@ -245,12 +245,13 @@ const FilenameReplacer = () => {
 					/>
 					<Button
 						type="button"
-						variant="secondary"
+						variant="success-outline"
 						className={clsx(
 							'w-[200px]',
-							fetchLoading && 'disabled',
+							(fetchLoading || folder_path.length === 0) &&
+								'disabled',
 						)}
-						disabled={fetchLoading}
+						disabled={fetchLoading || folder_path.length === 0}
 						onClick={handleBulkRename}
 					>
 						Bulk Replace
