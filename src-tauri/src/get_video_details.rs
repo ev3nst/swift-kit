@@ -1,43 +1,31 @@
+use serde::Deserialize;
 use std::fs;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 use tauri_plugin_shell::ShellExt;
 
-#[derive(Serialize)]
-pub struct VideoDetails {
-    pub filename: String,
-    pub filesize: u64,
-    pub duration: String,
-	pub duration_in_seconds: f64,
-    pub width: u32,
-    pub height: u32,
-    pub frame_rate: f64,
-}
+use super::utils::format_duration::format_duration;
+use super::utils::file_types::VideoDetails;
+use super::utils::file_types::VideoTrackDetail;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct FFProbeStream {
     width: Option<u32>,
     height: Option<u32>,
     r_frame_rate: Option<String>,
+    codec_type: Option<String>,
+    tags: Option<std::collections::HashMap<String, String>>,
+    disposition: Option<std::collections::HashMap<String, i32>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct FFProbeFormat {
     duration: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct FFProbeOutput {
     streams: Vec<FFProbeStream>,
     format: Option<FFProbeFormat>,
-}
-
-pub fn format_duration(seconds: f64) -> String {
-    let total_seconds = seconds.round() as u64;
-    let hours = total_seconds / 3600;
-    let minutes = (total_seconds % 3600) / 60;
-    let seconds = total_seconds % 60;
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -73,12 +61,14 @@ pub async fn get_video_details(
         .map_err(|e| format!("Failed to create ffprobe sidecar: {}", e))?
         .arg("-v")
         .arg("error")
-        .arg("-select_streams")
-        .arg("v:0")
-        .arg("-show_entries")
-        .arg("stream=width,height,r_frame_rate")
         .arg("-show_entries")
         .arg("format=duration")
+        .arg("-show_entries")
+        .arg("stream=codec_type,r_frame_rate,width,height")
+        .arg("-show_entries")
+        .arg("stream_tags")
+        .arg("-show_entries")
+        .arg("stream_disposition")
         .arg("-of")
         .arg("json")
         .arg(&video_path);
@@ -92,14 +82,11 @@ pub async fn get_video_details(
     // Check if the command failed
     if !output.status.success() {
         return Err(format!(
-			"Ffprobe failed with error:\n\
-			Command: ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of json {}\n\
-			Stderr:\n{}\n\
-			Stdout:\n{}",
-			&video_path,
-			String::from_utf8_lossy(&output.stderr),
-			String::from_utf8_lossy(&output.stdout)
-		));
+            "Ffprobe failed with error:\nCommand: ffprobe -v error -show_entries stream=codec_type,tags -show_entries format=duration -of json {}\nStderr:\n{}\nStdout:\n{}",
+            &video_path,
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout)
+        ));
     }
 
     let ffprobe_json: FFProbeOutput = serde_json::from_slice(&output.stdout)
@@ -110,7 +97,7 @@ pub async fn get_video_details(
         .and_then(|f| f.duration)
         .and_then(|d| d.parse::<f64>().ok())
         .unwrap_or(0.0);
-	let duration = format_duration(duration_in_seconds);
+    let duration = format_duration(duration_in_seconds, false);
 
     let stream = ffprobe_json.streams.get(0).ok_or("No video stream found")?;
 
@@ -132,13 +119,71 @@ pub async fn get_video_details(
         })
         .unwrap_or(0.0);
 
+    let mut audio_tracks = Vec::new();
+    let mut default_audio: Option<i32> = None;
+    let mut subtitle_tracks = Vec::new();
+    let mut default_subtitle: Option<i32> = None;
+
+    for (index, stream) in ffprobe_json.streams.iter().enumerate() {
+        if let Some(codec_type) = &stream.codec_type {
+            if codec_type == "audio" {
+                let name = stream
+                    .tags
+                    .as_ref()
+                    .and_then(|tags| tags.get("language"))
+                    .cloned()
+                    .unwrap_or_else(|| "Unknown".to_string());
+                audio_tracks.push(VideoTrackDetail {
+                    name,
+                    value: index as i32,
+                });
+
+                if let Some(disposition) = &stream.disposition {
+                    if disposition.get("default") == Some(&1) {
+                        default_audio = Some(index as i32);
+                    }
+                }
+            }
+            if codec_type == "subtitle" {
+                let name = stream
+                    .tags
+                    .as_ref()
+                    .and_then(|tags| tags.get("title"))
+                    .cloned()
+                    .unwrap_or_else(|| "Unknown".to_string());
+                subtitle_tracks.push(VideoTrackDetail {
+                    name,
+                    value: index as i32,
+                });
+
+                if let Some(disposition) = &stream.disposition {
+                    if disposition.get("default") == Some(&1) {
+                        default_subtitle = Some(index as i32);
+                    }
+                }
+            }
+        }
+    }
+
+    if default_audio.is_none() && audio_tracks.len() > 0 {
+        default_audio = Some(audio_tracks[0].value.try_into().unwrap());
+    }
+
+    if default_subtitle.is_none() && subtitle_tracks.len() > 0 {
+        default_subtitle = Some(subtitle_tracks[0].value.try_into().unwrap());
+    }
+
     Ok(VideoDetails {
         filename,
         filesize,
         duration,
-		duration_in_seconds,
+        duration_in_seconds,
         width,
         height,
         frame_rate,
+        audio_tracks,
+        default_audio: default_audio.unwrap_or(0),
+        subtitle_tracks,
+        default_subtitle: default_subtitle.unwrap_or(0),
     })
 }

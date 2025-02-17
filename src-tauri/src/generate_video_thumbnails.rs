@@ -10,6 +10,8 @@ use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 use tauri_plugin_shell::ShellExt;
 use trash::delete;
 
+use super::utils::format_duration::format_duration;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VideoThumbnailResult {
     video_path: String,
@@ -132,8 +134,8 @@ pub async fn generate_video_thumbnails<'a>(
                 vtt_file,
                 "{}\n{} --> {}\nhttps://asset.localhost/{}\n",
                 thumbnail_count,
-                format_timestamp(start_seconds),
-                format_timestamp(end_seconds),
+                format_duration(start_seconds, true),
+                format_duration(end_seconds, true),
                 entry.path().to_string_lossy().replace("\\", "/")
             )
             .map_err(|e| e.to_string())?;
@@ -145,13 +147,6 @@ pub async fn generate_video_thumbnails<'a>(
         thumbnail_folder: unique_folder,
         vtt_file_path: vtt_file_path.to_string_lossy().to_string(),
     })
-}
-
-fn format_timestamp(seconds: f64) -> String {
-    let hours = (seconds / 3600.0).floor() as u32;
-    let minutes = ((seconds % 3600.0) / 60.0).floor() as u32;
-    let seconds = (seconds % 60.0).floor() as u32;
-    format!("{:02}:{:02}:{:02}.000", hours, minutes, seconds)
 }
 
 #[tauri::command(rename_all = "snake_case")]

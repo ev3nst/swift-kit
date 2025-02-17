@@ -14,8 +14,10 @@ mod image_resize;
 mod img_compressors;
 mod intro_outro_prediction;
 mod migrations;
+mod no_intro_outro;
 mod rename_files;
 mod trash_folder;
+mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -52,7 +54,8 @@ pub fn run() {
             always_on_top::always_on_top,
             generate_video_thumbnails::generate_video_thumbnails,
             generate_video_thumbnails::stop_video_thumbnail_generation,
-			trash_folder::trash_folder
+            trash_folder::trash_folder,
+            no_intro_outro::no_intro_outro
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -2,10 +2,15 @@ import { invoke } from '@tauri-apps/api/core';
 
 export type IFileMeta = {
 	filename: string;
-	size: number;
+	filesize: number;
 	birthtime: string;
 	mtime: string;
 	atime: string;
+};
+
+export type VideoMetaTrack = {
+	name: string;
+	value: number;
 };
 
 export type IVideoMeta = {
@@ -16,10 +21,10 @@ export type IVideoMeta = {
 	width: number;
 	height: number;
 	frame_rate: number;
-	subtitles: any[];
-	defaultSubtitle: string;
-	audioTracks: any[];
-	defaultAudio: string;
+	subtitle_tracks: VideoMetaTrack[];
+	default_subtitle?: number;
+	audio_tracks: VideoMetaTrack[];
+	default_audio?: number;
 	src?: string;
 };
 
@@ -163,8 +168,20 @@ class API {
 		});
 	}
 
-	async no_intro_outro(episodesFolder: string, episodesData: IAnimeMeta[]) {
-		throw new Error('to be implemented');
+	async no_intro_outro(
+		folder_path: string,
+		video: IAnimeMeta,
+		overwrite: boolean = false,
+	) {
+		return invoke('no_intro_outro', {
+			folder_path,
+			video: {
+				...video,
+				default_subtitle: Number(video.default_subtitle),
+				default_audio: Number(video.default_audio),
+			},
+			overwrite,
+		});
 	}
 }
 

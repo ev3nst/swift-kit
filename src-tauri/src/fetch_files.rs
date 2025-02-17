@@ -1,15 +1,7 @@
-use serde::Serialize;
 use std::fs;
 use std::path::Path;
 
-#[derive(Serialize)]
-pub struct FileMeta {
-    filename: String,
-    size: u64,
-    birthtime: String,
-    mtime: String,
-    atime: String,
-}
+use super::utils::file_types::FileMeta;
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn fetch_files(
@@ -62,7 +54,7 @@ pub fn fetch_files(
 
         files.push(FileMeta {
             filename,
-            size: metadata.len(),
+            filesize: metadata.len(),
             birthtime,
             mtime,
             atime,
