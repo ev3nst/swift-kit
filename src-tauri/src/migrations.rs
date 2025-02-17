@@ -86,5 +86,30 @@ pub fn get_migrations() -> Vec<Migration> {
             "#,
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "create_video_thumbnails_table",
+            sql: r#"
+            CREATE TABLE IF NOT EXISTS video_thumbnails (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                video_path TEXT NOT NULL,
+                thumbnail_folder TEXT NOT NULL CHECK(length(thumbnail_folder) <= 255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            -- Indexes for performance on commonly queried fields
+            CREATE INDEX idx_video_path ON video_thumbnails (video_path);
+
+            -- Trigger to automatically update the `updated_at` field on updates
+            CREATE TRIGGER video_thumbnails_updated_at
+            AFTER UPDATE ON video_thumbnails
+            FOR EACH ROW
+            BEGIN
+                UPDATE video_thumbnails SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            END;
+            "#,
+            kind: MigrationKind::Up,
+        },
     ]
 }

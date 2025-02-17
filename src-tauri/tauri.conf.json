@@ -21,7 +21,9 @@
 				"dragDropEnabled": true,
 				"decorations": false,
 				"shadow": false,
-				"transparent": true
+				"transparent": true,
+				"contentProtected": true,
+				"useHttpsScheme": true
 			}
 		],
 		"security": {
@@ -46,7 +48,8 @@
 			"./binaries/jpegoptim",
 			"./binaries/cwebp",
 			"./binaries/pngquant",
-			"./binaries/ffprobe"
+			"./binaries/ffprobe",
+			"./binaries/ffmpeg"
 		]
 	}
 }

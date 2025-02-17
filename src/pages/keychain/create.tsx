@@ -129,7 +129,7 @@ export function CreateForm({ currentCredId, onSubmitCb }) {
 				</Button>
 			</DialogTrigger>
 
-			<DialogContent className="sm:max-w-[800px] overflow-visible clickable-content">
+			<DialogContent className="sm:max-w-[800px] overflow-visible">
 				<DialogHeader>
 					<DialogTitle className="flex gap-2 items-center">
 						Credential Record <KeyIcon className="w-4" />

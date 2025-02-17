@@ -1,6 +1,10 @@
+use std::sync::{Arc, Mutex};
+
+mod always_on_top;
 mod bulk_rename;
 mod fetch_files;
 mod finder;
+mod generate_video_thumbnails;
 mod get_available_disks;
 mod get_video_details;
 mod highlight_file;
@@ -11,9 +15,13 @@ mod img_compressors;
 mod intro_outro_prediction;
 mod migrations;
 mod rename_files;
+mod trash_folder;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let app_window_state = Arc::new(Mutex::new(always_on_top::AppWindowState {
+        is_pinned: false,
+    }));
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -24,6 +32,11 @@ pub fn run() {
         )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
+        .manage(app_window_state.clone())
+        .manage(Arc::new(generate_video_thumbnails::FfmpegState {
+            process: Mutex::new(None),
+            output_folder: Mutex::new(None),
+        }))
         .invoke_handler(tauri::generate_handler![
             fetch_files::fetch_files,
             bulk_rename::bulk_rename,
@@ -35,7 +48,11 @@ pub fn run() {
             intro_outro_prediction::intro_outro_prediction,
             get_available_disks::get_available_disks,
             finder::finder,
-            highlight_file::highlight_file
+            highlight_file::highlight_file,
+            always_on_top::always_on_top,
+            generate_video_thumbnails::generate_video_thumbnails,
+            generate_video_thumbnails::stop_video_thumbnail_generation,
+			trash_folder::trash_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

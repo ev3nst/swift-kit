@@ -1,0 +1,32 @@
+#root:has(.video-player) {
+	overflow: hidden;
+}
+
+.video-player video {
+	height: 100%;
+}
+
+.vds-captions {
+	position: absolute;
+	top: auto;
+	bottom: 25px;
+	left: 0;
+	right: 0;
+	width: 100%;
+	text-align: center;
+
+	font-weight: 500 !important;
+	font-size: 1.5rem;
+	padding: 10px !important;
+	transform: 0px !important;
+	font-family: system-ui, 'Helvetica Neue', sans-serif !important;
+	--cue-bg-color: var(--media-cue-bg, rgba(0, 0, 0, 0.25)) !important;
+	backdrop-filter: blur(0px) !important;
+}
+
+.vds-captions div[data-part='cue-display'] {
+	display: inline-block;
+	padding: 6px 12px;
+	border-radius: 10px;
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}

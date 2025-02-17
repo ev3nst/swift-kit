@@ -25,6 +25,7 @@ const IconGenerator = lazy(
 	() => import('@/pages/image-manipulation/icon-generator'),
 );
 
+const VideoPlayer = lazy(() => import('@/pages/video-player'));
 const VideoManipulation = lazy(() => import('@/pages/video-manipulation'));
 const NoIntroOutro = lazy(
 	() => import('@/pages/video-manipulation/no-intro-outro'),
@@ -48,21 +49,26 @@ function App() {
 
 	useEffect(() => {
 		(async () => {
-			if (location.startsWith('/app')) {
-				await dbWrapper.initialize();
-			}
-
+			await dbWrapper.initialize();
 			setDbInitialized(true);
 		})();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
 
-	useEffect(() => {
 		if (location.startsWith('/app')) {
 			import('./styles/tiptap.css');
 			import('./styles/animated-bg.css');
 			import('./styles/react-color.css');
 		}
+
+		const handleKeyDown = event => {
+			if (event.ctrlKey && event.key === 'f') {
+				event.preventDefault();
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown);
+		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -88,6 +94,10 @@ function App() {
 				/>
 				<Switch>
 					<Suspense fallback={<Loading />}>
+						<Route
+							path="/video-player/:video"
+							component={VideoPlayer}
+						/>
 						<Route path="/app" nest>
 							<Layout>
 								<Route path="(media|)" nest>

@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { cva } from 'class-variance-authority';
+
 import { convertFileSrc } from '@tauri-apps/api/core';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
 import type { FileMeta } from '@/components/native-file-input';
 
@@ -162,4 +164,35 @@ export async function resolveImageDetails(
 	});
 
 	return imageFiles;
+}
+
+export async function videoPlayerWindow(url: string, title?: string) {
+	const aspectRatio = 16 / 9;
+	const initialWidth = 630;
+	const initialHeight = initialWidth / aspectRatio;
+	new WebviewWindow('video-player', {
+		url,
+		title: title ?? 'Video Player',
+		width: initialWidth,
+		height: initialHeight,
+		minWidth: 330,
+		resizable: true,
+		theme: 'dark',
+		decorations: false,
+		shadow: false,
+		transparent: true,
+		contentProtected: true,
+		useHttpsScheme: true,
+		// hacky way to disable double-click behavior
+		maximizable: false,
+	});
+}
+
+export function shuffleArray(array: Array<any>) {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+
+	return array;
 }

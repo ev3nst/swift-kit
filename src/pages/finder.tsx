@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Folder, SearchIcon } from 'lucide-react';
+import { FileIcon, SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -83,7 +83,7 @@ const Finder = () => {
 									<FormLabel className="flex gap-2 items-center">
 										File Name (Search Term)
 										<div className="relative">
-											<Folder className="w-4 h-4 bottom-[-7px] left-0 absolute" />
+											<FileIcon className="w-3.5 h-3.5 bottom-[-8px] left-0 absolute" />
 										</div>
 									</FormLabel>
 								</div>
@@ -180,8 +180,9 @@ const Finder = () => {
 											.split(
 												new RegExp(`(${search_term})`),
 											)
-											.map(rst => (
+											.map((rst, rsti) => (
 												<span
+													key={`finder_results_${ri}_${rsti}`}
 													className={
 														rst.includes(
 															search_term,

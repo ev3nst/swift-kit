@@ -20,6 +20,7 @@ export type IVideoMeta = {
 	defaultSubtitle: string;
 	audioTracks: any[];
 	defaultAudio: string;
+	src?: string;
 };
 
 export type IAnimeMeta = {
@@ -30,6 +31,12 @@ export type IAnimeMeta = {
 } & IVideoMeta;
 
 class API {
+	async always_on_top(only_state: boolean): Promise<boolean> {
+		return invoke('always_on_top', {
+			only_state,
+		});
+	}
+
 	async fetch_files(
 		folder_path: string,
 		extension_filter?: string,
@@ -130,6 +137,22 @@ class API {
 		return invoke('get_video_details', {
 			video_path,
 		});
+	}
+
+	async generate_video_thumbnails(video_path: string): Promise<{
+		video_path: string;
+		thumbnail_folder: string;
+		vtt_file_path: string;
+	}> {
+		return invoke('generate_video_thumbnails', { video_path });
+	}
+
+	async stop_video_thumbnail_generation(): Promise<void> {
+		return invoke('stop_video_thumbnail_generation');
+	}
+
+	async trash_folder(folder_path: string) {
+		return invoke('trash_folder', { folder_path });
 	}
 
 	async intro_outro_prediction(

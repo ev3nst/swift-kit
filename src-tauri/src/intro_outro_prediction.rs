@@ -2,7 +2,6 @@ use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use tauri::command;
 
 use super::get_video_details::format_duration;
 use super::get_video_details::get_video_details;
@@ -21,7 +20,7 @@ pub struct VideoDetails {
     outro_end: String,
 }
 
-#[command(rename_all = "snake_case")]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn intro_outro_prediction(
     episodes_folder: String,
     handle: tauri::AppHandle,

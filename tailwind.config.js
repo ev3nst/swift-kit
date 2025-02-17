@@ -2,6 +2,9 @@
 export default {
 	darkMode: ['class'],
 	content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
+	future: {
+		hoverOnlyWhenSupported: true,
+	},
 	theme: {
 		extend: {
 			borderRadius: {
@@ -10,6 +13,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)',
 			},
 			colors: {
+				'media-brand': 'rgb(var(--media-brand) / <alpha-value>)',
+				'media-focus': 'rgb(var(--media-focus) / <alpha-value>)',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {
@@ -65,5 +70,17 @@ export default {
 			},
 		},
 	},
-	plugins: [require('tailwindcss-animate')],
+	plugins: [
+		require('tailwindcss-animate'),
+		require('@vidstack/react/tailwind.cjs')({
+			prefix: 'media',
+		}),
+		customVariants,
+	],
 };
+
+function customVariants({ addVariant, matchVariant }) {
+	matchVariant('parent-data', value => `.parent[data-${value}] > &`);
+	addVariant('hocus', ['&:hover', '&:focus-visible']);
+	addVariant('group-hocus', ['.group:hover &', '.group:focus-visible &']);
+}
