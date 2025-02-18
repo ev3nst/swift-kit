@@ -295,7 +295,7 @@ const NoIntroOutro = () => {
 	return (
 		<Form {...form}>
 			<form
-				className="grid gap-4 overflow-hidden relative"
+				className="grid gap-4 relative pb-10"
 				onSubmit={handleSubmit(onSubmit)}
 			>
 				<div className="flex gap-4">
@@ -364,198 +364,211 @@ const NoIntroOutro = () => {
 				</Button>
 
 				{fetchedVideos.length > 0 && (
-					<div className="flex flex-wrap pb-4">
-						<div className="flex items-center gap-4 w-full mb-4">
-							<h5 className="font-bold">Episodes</h5>
-							<FormField
-								control={control}
-								name="overwrite"
-								render={({ field }) => (
-									<FormItem className="flex flex-row w-[120px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
-										<FormControl>
-											<Checkbox
-												disabled={processLoading}
-												checked={field.value}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
-										<div className="space-y-1 leading-none">
-											<FormLabel>Overwrite</FormLabel>
-										</div>
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={control}
-								name="use_cuda"
-								render={({ field }) => (
-									<FormItem className="flex flex-row w-[95px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
-										<FormControl>
-											<Checkbox
-												disabled={processLoading}
-												checked={field.value}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
-										<div className="space-y-1 leading-none">
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<FormLabel>CUDA</FormLabel>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>
-														Makes the process slower
-														but also may prevent
-														throttle of the CPU.
-													</p>
-												</TooltipContent>
-											</Tooltip>
-										</div>
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={control}
-								name="interpolate"
-								render={({ field }) => (
-									<FormItem className="flex flex-row w-[170px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
-										<FormControl>
-											<Checkbox
-												disabled={processLoading}
-												checked={field.value}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
-										<div className="space-y-1 leading-none">
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<FormLabel>
-														Interpolate 60fps
-													</FormLabel>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>
-														Requires video2x with
-														RIFE.
-													</p>
-												</TooltipContent>
-											</Tooltip>
-										</div>
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={control}
-								name="convert_to_mp4"
-								render={({ field }) => (
-									<FormItem className="flex flex-row w-[160px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
-										<FormControl>
-											<Checkbox
-												disabled={processLoading}
-												defaultChecked
-												checked={field.value}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
-										<div className="space-y-1 leading-none">
-											<FormLabel></FormLabel>
-
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<FormLabel>
-														Convert to MP4
-													</FormLabel>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>
-														Double re-encoding due
-														to limitations of
-														filter_complex.
-													</p>
-												</TooltipContent>
-											</Tooltip>
-										</div>
-									</FormItem>
-								)}
-							/>
-						</div>
-						<div className="flex flex-wrap items-center w-full gap-4">
-							{fields.map((field, index) => (
-								<VideoItem
-									key={field.id}
-									field={field}
-									index={index}
+					<div>
+						<div className="flex flex-wrap pb-4">
+							<div className="flex items-center gap-4 w-full mb-4">
+								<h5 className="font-bold">Episodes</h5>
+								<FormField
 									control={control}
-									videos={videos}
-									input_path={input_path}
-									setValue={setValue}
-									processLoading={processLoading}
+									name="overwrite"
+									render={({ field }) => (
+										<FormItem className="flex flex-row w-[120px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
+											<FormControl>
+												<Checkbox
+													disabled={processLoading}
+													checked={field.value}
+													onCheckedChange={
+														field.onChange
+													}
+												/>
+											</FormControl>
+											<div className="space-y-1 leading-none">
+												<FormLabel>Overwrite</FormLabel>
+											</div>
+										</FormItem>
+									)}
 								/>
-							))}
-						</div>
-					</div>
-				)}
+								<FormField
+									control={control}
+									name="use_cuda"
+									render={({ field }) => (
+										<FormItem className="flex flex-row w-[95px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
+											<FormControl>
+												<Checkbox
+													disabled={processLoading}
+													checked={field.value}
+													onCheckedChange={
+														field.onChange
+													}
+												/>
+											</FormControl>
+											<div className="space-y-1 leading-none">
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<FormLabel>
+															CUDA
+														</FormLabel>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>
+															Makes the process
+															slower but also may
+															prevent throttle of
+															the CPU.
+														</p>
+													</TooltipContent>
+												</Tooltip>
+											</div>
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={control}
+									name="interpolate"
+									render={({ field }) => (
+										<FormItem className="flex flex-row w-[170px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
+											<FormControl>
+												<Checkbox
+													disabled={processLoading}
+													checked={field.value}
+													onCheckedChange={
+														field.onChange
+													}
+												/>
+											</FormControl>
+											<div className="space-y-1 leading-none">
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<FormLabel>
+															Interpolate 60fps
+														</FormLabel>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>
+															Requires video2x
+															with RIFE.
+														</p>
+													</TooltipContent>
+												</Tooltip>
+											</div>
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={control}
+									name="convert_to_mp4"
+									render={({ field }) => (
+										<FormItem className="flex flex-row w-[160px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
+											<FormControl>
+												<Checkbox
+													disabled={processLoading}
+													defaultChecked
+													checked={field.value}
+													onCheckedChange={
+														field.onChange
+													}
+												/>
+											</FormControl>
+											<div className="space-y-1 leading-none">
+												<FormLabel></FormLabel>
 
-				{fetchedVideos.length > 0 && (
-					<div className="flex gap-4 sticky bottom-0 bg-background py-3">
-						<div>
-							<Button
-								type="submit"
-								variant="secondary"
-								className={
-									processLoading
-										? 'w-[100px] disabled'
-										: 'w-[100px] px-2 py-1'
-								}
-								disabled={processLoading}
-							>
-								Start
-								{processLoading && (
-									<Loading timeoutMs={250} className="mb-0" />
-								)}
-							</Button>
-							{processLoading && (
-								<Button
-									type="button"
-									variant="secondary"
-									className="w-[100px] px-2 py-1 mt-2"
-									onClick={async () => {
-										await emit('cancel_ffmpeg');
-										shouldStopRef.current = true;
-									}}
-								>
-									Stop
-								</Button>
-							)}
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<FormLabel>
+															Convert to MP4
+														</FormLabel>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>
+															Double re-encoding
+															due to limitations
+															of filter_complex.
+														</p>
+													</TooltipContent>
+												</Tooltip>
+											</div>
+										</FormItem>
+									)}
+								/>
+							</div>
+							<div className="flex flex-wrap items-center w-full gap-4">
+								{fields.map((field, index) => (
+									<VideoItem
+										key={field.id}
+										field={field}
+										index={index}
+										control={control}
+										videos={videos}
+										input_path={input_path}
+										setValue={setValue}
+										processLoading={processLoading}
+									/>
+								))}
+							</div>
 						</div>
-						<div className="flex flex-col w-full gap-2">
-							<div className="flex w-full gap-3 pe-10">
-								<div className="flex whitespace-nowrap items-baseline">
-									Progress:
-									{progress > 0 && (
-										<span className="ms-1">
-											%{progress.toFixed(2)}
-										</span>
+						<div className="flex gap-4 fixed w-full bottom-0 bg-background py-3">
+							<div>
+								<Button
+									type="submit"
+									variant="secondary"
+									className={
+										processLoading
+											? 'w-[100px] disabled'
+											: 'w-[100px] px-2 py-1'
+									}
+									disabled={processLoading}
+								>
+									Start
+									{processLoading && (
+										<Loading
+											timeoutMs={250}
+											className="mb-0"
+										/>
+									)}
+								</Button>
+								{processLoading && (
+									<Button
+										type="button"
+										variant="secondary"
+										className="w-[100px] px-2 py-1 mt-2"
+										onClick={async () => {
+											await emit('cancel_ffmpeg');
+											shouldStopRef.current = true;
+										}}
+									>
+										Stop
+									</Button>
+								)}
+							</div>
+							<div className="flex flex-col w-full gap-2">
+								<div className="flex w-full gap-3 pe-10">
+									<div className="flex whitespace-nowrap items-baseline">
+										Progress:
+										{progress > 0 && (
+											<span className="ms-1">
+												%{progress.toFixed(2)}
+											</span>
+										)}
+									</div>
+									<Progress
+										className="align-middle self-center"
+										value={progress}
+									/>
+								</div>
+								<div className="flex text-xs">
+									{processingVideo?.filename}
+									{currentProcessETA && (
+										<div className="flex">
+											<span className="mx-1">|</span>
+											<span className="text-blue-400">
+												ETA: {currentProcessETA}
+											</span>
+										</div>
 									)}
 								</div>
-								<Progress
-									className="align-middle self-center"
-									value={progress}
-								/>
-							</div>
-							<div className="flex text-xs">
-								{processingVideo?.filename}
-								{currentProcessETA && (
-									<div className="flex">
-										<span className="mx-1">|</span>
-										<span className="text-blue-400">
-											ETA: {currentProcessETA}
-										</span>
-									</div>
-								)}
-							</div>
-							<div className="rounded-md text-sm text-green-500">
-								{ffmpegStdout}
+								<div className="rounded-md text-sm text-green-500">
+									{ffmpegStdout}
+								</div>
 							</div>
 						</div>
 					</div>
