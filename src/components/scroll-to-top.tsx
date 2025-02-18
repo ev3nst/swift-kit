@@ -3,7 +3,9 @@ import { ArrowUpIcon } from 'lucide-react';
 
 import { Button } from '@/components/button';
 
-export const ScrollToTop = () => {
+import { cn } from '@/lib/utils';
+
+export const ScrollToTop = ({ className }: { className?: string }) => {
 	const [showButton, setShowButton] = useState(false);
 
 	const handleScroll = () => {
@@ -21,7 +23,7 @@ export const ScrollToTop = () => {
 
 	return showButton ? (
 		<Button
-			className="fixed bottom-5 right-5"
+			className={cn('fixed bottom-5 right-5', className)}
 			type="button"
 			variant="outline"
 			size="icon"

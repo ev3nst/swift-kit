@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
 	DownloadIcon,
@@ -29,10 +29,12 @@ import {
 import { useSidebar } from '@/hooks/use-sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+import { emitter } from '@/lib/event';
+
 import { NavUser } from './nav-user';
 
-// This is sample data.
 const data = {
+	// This is sample data.
 	user: {
 		name: 'example',
 		email: 'm@example.com',
@@ -105,24 +107,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { state } = useSidebar();
 	const [wouterLocation] = useLocation();
 	const isMobile = useIsMobile();
+	const [isTaskRunning, setIsTaskRunning] = useState(false);
+
+	useEffect(() => {
+		const handleTaskStart = () => setIsTaskRunning(true);
+		const handleTaskEnd = () => setIsTaskRunning(false);
+
+		emitter.on('taskStart', handleTaskStart);
+		emitter.on('taskEnd', handleTaskEnd);
+		return () => {
+			emitter.off('taskStart', handleTaskStart);
+			emitter.off('taskEnd', handleTaskEnd);
+		};
+	}, []);
 
 	return (
-		<Sidebar className="bg-background" collapsible="icon" {...props}>
-			<SidebarHeader className="app-drag-region">
-				<Link className="py-1 flex items-center gap-4" to="/">
-					<img
-						src="/logo-square.png"
-						className={
-							state === 'expanded' ? 'h-7 ms-2' : 'h-6 ms-0.5'
-						}
-					/>
-					{(state === 'expanded' || isMobile) && (
-						<img src="/logo.png" className="h-6" />
-					)}
-				</Link>
+		<Sidebar
+			className={`bg-background ${isTaskRunning ? 'hover:cursor-wait' : ''}`}
+			collapsible="icon"
+			{...props}
+		>
+			<SidebarHeader className="flex-row flex items-center gap-4 py-3 app-drag-region">
+				<img
+					src="/logo-square.png"
+					className={state === 'expanded' ? 'h-7 ms-2' : 'h-6 ms-0.5'}
+				/>
+				{(state === 'expanded' || isMobile) && (
+					<img src="/logo.png" className="h-6" />
+				)}
 			</SidebarHeader>
 			<SidebarSeparator className="mx-0" />
-			<SidebarContent>
+			<SidebarContent
+				className={isTaskRunning ? 'pointer-events-none' : ''}
+			>
 				{data.nav.map((group, groupIndex) => (
 					<SidebarGroup key={`sidebar-${group.groupName}`}>
 						<SidebarGroupLabel>{group.groupName}</SidebarGroupLabel>
@@ -154,7 +171,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroup>
 				))}
 			</SidebarContent>
-			<SidebarFooter>
+			<SidebarFooter
+				className={isTaskRunning ? 'pointer-events-none' : ''}
+			>
 				<NavUser user={data.user} />
 			</SidebarFooter>
 			<SidebarRail />

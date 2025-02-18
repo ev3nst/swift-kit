@@ -1,4 +1,4 @@
-import { CopyIcon, PlayIcon } from 'lucide-react';
+import { CopyIcon, PlayIcon, XIcon } from 'lucide-react';
 
 import {
 	FormControl,
@@ -27,6 +27,7 @@ export const VideoItem = ({
 	videos,
 	input_path,
 	setValue,
+	processLoading,
 }) => {
 	const isPlayable =
 		field.filename.endsWith('.mp4') || field.filename.endsWith('.webm');
@@ -58,6 +59,12 @@ export const VideoItem = ({
 		);
 	};
 
+	const handleRemoveVideo = () => {
+		const videoToRemove = videos[index].filename;
+		const newVideos = videos.filter(vid => vid.filename !== videoToRemove);
+		setValue('videos', newVideos);
+	};
+
 	function renderSelectOptions(type = 'subtitle') {
 		let items = videos[index].subtitle_tracks;
 		let keyPart = 'st';
@@ -79,9 +86,15 @@ export const VideoItem = ({
 	}
 
 	return (
-		<div className="flex flex-col flex-grow gap-2 border rounded-lg p-5">
+		<div className="flex flex-col w-full xl:w-[calc(50%-1rem)] min-w-0 gap-2 border rounded-lg p-5 py-4 relative">
+			<div
+				className="absolute right-3 top-3 hover:cursor-pointer hover:text-red-500"
+				onClick={handleRemoveVideo}
+			>
+				<XIcon className="h-4 w-4" />
+			</div>
 			<FormLabel
-				className={`text-sky-400 font-bold flex items-center gap-2 ${
+				className={`text-sky-400 font-bold flex items-center gap-2 mb-2 ${
 					isPlayable ? 'hover:cursor-pointer hover:text-sky-600' : ''
 				}`}
 				onClick={handleOpenVideo}
@@ -109,7 +122,7 @@ export const VideoItem = ({
 							<FormItem className="grid gap-1 flex-grow relative space-y-0">
 								<FormControl>
 									<TimestampInput
-										placeholder="00:00:00"
+										disabled={processLoading}
 										{...field}
 									/>
 								</FormControl>
@@ -117,7 +130,10 @@ export const VideoItem = ({
 									type="button"
 									variant="secondary"
 									size="icon"
-									className="gap-0 absolute top-0 right-0 rounded-l-none"
+									className={`gap-0 absolute top-0 right-0 rounded-l-none ${
+										processLoading ? 'disabled' : ''
+									}`}
+									disabled={processLoading}
 									onClick={handleIntroDefault}
 								>
 									<CopyIcon />
@@ -132,7 +148,10 @@ export const VideoItem = ({
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<FormControl>
-									<TimestampInput {...field} />
+									<TimestampInput
+										disabled={processLoading}
+										{...field}
+									/>
 								</FormControl>
 							</FormItem>
 						)}
@@ -158,7 +177,10 @@ export const VideoItem = ({
 						render={({ field }) => (
 							<FormItem className="grid gap-1 flex-grow">
 								<FormControl>
-									<TimestampInput {...field} />
+									<TimestampInput
+										disabled={processLoading}
+										{...field}
+									/>
 								</FormControl>
 							</FormItem>
 						)}
@@ -168,15 +190,21 @@ export const VideoItem = ({
 						control={control}
 						name={`videos.${index}.outro_end`}
 						render={({ field }) => (
-							<FormItem className="grid gap-1 flex-grow relative !space-y-0">
+							<FormItem className="grid gap-1 flex-grow relative space-y-0">
 								<FormControl>
-									<TimestampInput {...field} />
+									<TimestampInput
+										disabled={processLoading}
+										{...field}
+									/>
 								</FormControl>
 								<Button
 									type="button"
 									variant="secondary"
 									size="icon"
-									className="gap-0 absolute top-0 right-0 rounded-l-none"
+									className={`gap-0 absolute top-0 right-0 rounded-l-none ${
+										processLoading ? 'disabled' : ''
+									}`}
+									disabled={processLoading}
 									onClick={handleOutroDefault}
 								>
 									<CopyIcon />
@@ -188,78 +216,77 @@ export const VideoItem = ({
 			</div>
 
 			{/* Subtitle & Audio Selectors */}
-			<div className="flex flex-col gap-2">
-				<FormField
-					control={control}
-					name={`videos.${index}.default_subtitle`}
-					render={({ field }) => (
-						<FormItem>
-							<div className="space-y-0 w-full flex items-center">
-								<FormLabel className="w-[65px] flex-shrink-0">
-									Subtitle
-								</FormLabel>
-								<Select
-									defaultValue={
-										typeof videos[index]
-											.default_subtitle === 'number'
-											? String(
-													videos[index]
-														.default_subtitle,
-												)
-											: undefined
-									}
-									onValueChange={field.onChange}
-								>
-									<FormControl>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-									</FormControl>
-									<SelectContent>
-										{renderSelectOptions('subtitle')}
-									</SelectContent>
-								</Select>
-							</div>
+			<div className="flex items-center flex-grow w-full justify-between">
+				<FormLabel className="w-[65px] flex-shrink-0">A/S</FormLabel>
+				<div className="grid grid-cols-2 gap-4 flex-grow">
+					<FormField
+						control={control}
+						name={`videos.${index}.default_audio`}
+						render={({ field }) => (
+							<FormItem className="col-span-1 grid gap-1 flex-grow">
+								<div className="space-y-0 w-full flex items-center">
+									<Select
+										disabled={processLoading}
+										defaultValue={
+											typeof videos[index]
+												.default_audio === 'number'
+												? String(
+														videos[index]
+															.default_audio,
+													)
+												: undefined
+										}
+										onValueChange={field.onChange}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{renderSelectOptions('audio')}
+										</SelectContent>
+									</Select>
+								</div>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={control}
+						name={`videos.${index}.default_subtitle`}
+						render={({ field }) => (
+							<FormItem className="grid gap-1 flex-grow">
+								<div className="space-y-0 w-full flex items-center">
+									<Select
+										disabled={processLoading}
+										defaultValue={
+											typeof videos[index]
+												.default_subtitle === 'number'
+												? String(
+														videos[index]
+															.default_subtitle,
+													)
+												: undefined
+										}
+										onValueChange={field.onChange}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{renderSelectOptions('subtitle')}
+										</SelectContent>
+									</Select>
+								</div>
 
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={control}
-					name={`videos.${index}.default_audio`}
-					render={({ field }) => (
-						<FormItem>
-							<div className="space-y-0 w-full flex items-center">
-								<FormLabel className="w-[65px] flex-shrink-0">
-									Audio
-								</FormLabel>
-								<Select
-									defaultValue={
-										typeof videos[index].default_audio ===
-										'number'
-											? String(
-													videos[index].default_audio,
-												)
-											: undefined
-									}
-									onValueChange={field.onChange}
-								>
-									<FormControl>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-									</FormControl>
-									<SelectContent>
-										{renderSelectOptions('audio')}
-									</SelectContent>
-								</Select>
-							</div>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
 			</div>
 
 			{/* Video Info */}

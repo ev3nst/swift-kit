@@ -1,18 +1,22 @@
+use std::future::poll_fn;
+use std::task::Context;
 use std::{fs, path::Path};
-use tauri::Emitter;
-use tauri_plugin_shell::process::CommandEvent;
+use tauri::{Emitter, Listener};
+use tauri_plugin_shell::process::{CommandEvent, TerminatedPayload};
 use tauri_plugin_shell::ShellExt;
+use tokio::sync::oneshot;
 
 use super::utils::check_stream_exists::check_stream_exists;
+use super::utils::file_types::IAnimeMeta;
 use super::utils::is_valid_timestamp::is_valid_timestamp;
 use super::utils::parse_duration::parse_duration;
-use super::utils::file_types::IAnimeMeta;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn no_intro_outro(
     handle: tauri::AppHandle,
     folder_path: String,
     video: IAnimeMeta,
+    use_cuda: bool,
     overwrite: bool,
 ) -> Result<(), String> {
     let folder_path = Path::new(&folder_path);
@@ -68,7 +72,12 @@ pub async fn no_intro_outro(
         }
     }
 
-    let mut ffmpeg_args = vec!["-hwaccel".to_string(), "cuda".to_string()];
+    let mut ffmpeg_args = vec![];
+    if use_cuda {
+        ffmpeg_args.push("-hwaccel".to_string());
+        ffmpeg_args.push("cuda".to_string());
+    }
+
     let mut filter_complex_str = String::new();
     for (i, (start, end)) in segments.iter().enumerate() {
         ffmpeg_args.push("-ss".to_string());
@@ -77,7 +86,11 @@ pub async fn no_intro_outro(
         ffmpeg_args.push(end.to_string());
         ffmpeg_args.push("-i".to_string());
         ffmpeg_args.push(input_path.to_string_lossy().to_string());
-        filter_complex_str.push_str(&format!("[{}:v:0][{}:{}]", i, i, video.default_audio));
+        if result.audio_stream_index_exists {
+            filter_complex_str.push_str(&format!("[{}:v:0][{}:{}]", i, i, video.default_audio));
+        } else {
+            filter_complex_str.push_str(&format!("[{}:v:0][{}:{}]", i, i, 0));
+        }
     }
 
     let concat_str = format!("concat=n={}:v=1:a=1 [v][a]", segments.len());
@@ -94,6 +107,17 @@ pub async fn no_intro_outro(
     }
     ffmpeg_args.push("-c:v".to_string());
     ffmpeg_args.push("hevc_nvenc".to_string());
+
+    // experimental perf optimization
+    ffmpeg_args.push("-preset".to_string());
+    ffmpeg_args.push("p5".to_string());
+    ffmpeg_args.push("-tune".to_string());
+    ffmpeg_args.push("hq".to_string());
+    ffmpeg_args.push("-rc".to_string());
+    ffmpeg_args.push("vbr".to_string());
+    ffmpeg_args.push("-b:v".to_string());
+    ffmpeg_args.push("5M".to_string());
+
     ffmpeg_args.push("-c:a".to_string());
     ffmpeg_args.push("aac".to_string());
     ffmpeg_args.push("-c:s".to_string());
@@ -101,7 +125,7 @@ pub async fn no_intro_outro(
     ffmpeg_args.push("-y".to_string());
     ffmpeg_args.push(output_path.to_string_lossy().to_string());
 
-    let (mut rx, mut _child) = handle
+    let (mut rx, child) = handle
         .shell()
         .sidecar("ffmpeg")
         .map_err(|e| format!("Failed to create ffmpeg sidecar: {}", e))?
@@ -109,17 +133,59 @@ pub async fn no_intro_outro(
         .spawn()
         .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
 
-    // Handle the command output events
-	while let Some(event) = rx.recv().await {
-		match event {
-			CommandEvent::Stdout(line) | CommandEvent::Stderr(line) => {
-				if let Ok(text) = String::from_utf8(line) {
-					handle.emit("no_intro_outro_stdout", text).unwrap();
-				}
-			}
-			_ => {}
-		}
-	}
+    let (cancel_tx, mut cancel_rx) = oneshot::channel();
+    let handle_clone = handle.clone();
+    tokio::spawn(async move {
+        handle_clone.once("cancel_ffmpeg", move |_| {
+            let _ = cancel_tx.send(());
+        });
+    });
+
+    loop {
+        tokio::select! {
+            event = rx.recv() => {
+                match event {
+                    Some(CommandEvent::Stdout(line) | CommandEvent::Stderr(line)) => {
+                        if let Ok(text) = String::from_utf8(line) {
+                            if text.to_lowercase().contains("error")
+                                || text.to_lowercase().contains("failed")
+                            {
+                                handle.emit("no_intro_outro_stderr", text).unwrap();
+                            } else {
+                                handle.emit("no_intro_outro_stdout", text).unwrap();
+                            }
+                        }
+                    }
+                    Some(CommandEvent::Terminated(TerminatedPayload { code, signal })) => {
+                        if code.unwrap_or(-1) != 0 {
+                            // Clean up on error
+                            if output_path.exists() {
+                                let _ = fs::remove_file(&output_path);
+                            }
+                            return Err(format!(
+                                "FFmpeg process failed with exit code: {:?}, signal: {:?}",
+                                code, signal
+                            ));
+                        }
+                        break;
+                    }
+                    None => break,
+                    _ => {}
+                }
+            }
+            _ = poll_fn(|cx: &mut Context<'_>| Pin::new(&mut cancel_rx).poll(cx)) => {
+                // Kill the FFmpeg process
+                if let Err(e) = child.kill() {
+                    eprintln!("Failed to kill FFmpeg process: {}", e);
+                }
+                // Clean up the incomplete output file
+                if output_path.exists() {
+                    let _ = fs::remove_file(&output_path);
+                }
+                return Ok(());
+            }
+        }
+    }
 
     if overwrite {
         let _ = fs::rename(output_path, input_path);

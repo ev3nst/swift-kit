@@ -171,6 +171,7 @@ class API {
 	async no_intro_outro(
 		folder_path: string,
 		video: IAnimeMeta,
+		use_cuda: boolean = true,
 		overwrite: boolean = false,
 	) {
 		return invoke('no_intro_outro', {
@@ -180,6 +181,7 @@ class API {
 				default_subtitle: Number(video.default_subtitle),
 				default_audio: Number(video.default_audio),
 			},
+			use_cuda,
 			overwrite,
 		});
 	}

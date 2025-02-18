@@ -5,6 +5,8 @@ import { cva } from 'class-variance-authority';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
+import { type IAnimeMeta } from '@/lib/api';
+
 import type { FileMeta } from '@/components/native-file-input';
 
 export function cn(...inputs: ClassValue[]) {
@@ -106,6 +108,108 @@ export const formatFileSize = (sizeInBytes: number): string => {
 	return `${size} ${units[sizeIndex]}`;
 };
 
+type FFmpegProgress = {
+	frame: number;
+	fps: number;
+	time: string;
+	speed: number;
+};
+
+export const parseFFmpegProgress = (stdout: string): FFmpegProgress | null => {
+	try {
+		const fpsMatch = stdout.match(/fps=(\d+)/);
+		const frameMatch = stdout.match(/frame=\s*(\d+)/);
+		const timeMatch = stdout.match(/time=(\d+:\d+:\d+\.\d+)/);
+		const speedMatch = stdout.match(/speed=(\d+\.?\d*)x/);
+
+		if (!fpsMatch || !frameMatch || !timeMatch || !speedMatch) {
+			return null;
+		}
+
+		return {
+			frame: parseInt(frameMatch[1]),
+			fps: parseInt(fpsMatch[1]),
+			time: timeMatch[1],
+			speed: parseFloat(speedMatch[1]),
+		};
+	} catch (_error) {
+		return null;
+	}
+};
+
+export const timeToSeconds = (timeStr: string): number => {
+	const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+	return hours * 3600 + minutes * 60 + seconds;
+};
+
+export const formatDuration = (seconds: number): string => {
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const secs = Math.floor(seconds % 60);
+
+	return `${hours.toString().padStart(2, '0')}:${minutes
+		.toString()
+		.padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+export const calculateFFmpegETA = (
+	ffmpegOutput: string,
+	totalDuration: string,
+) => {
+	const progress = parseFFmpegProgress(ffmpegOutput);
+	if (!progress) {
+		return {
+			eta: null,
+			etaInSeconds: 0,
+			progress: 0,
+			currentTime: '00:00:00',
+			totalDuration: formatDuration(timeToSeconds(totalDuration)),
+			speed: 0,
+		};
+	}
+
+	const totalSeconds = timeToSeconds(totalDuration);
+	const processedSeconds = timeToSeconds(progress.time);
+	const remainingSeconds = totalSeconds - processedSeconds;
+
+	const estimatedSecondsRemaining = remainingSeconds / progress.speed;
+	const progressPercent = (processedSeconds / totalSeconds) * 100;
+
+	return {
+		eta: formatDuration(Math.ceil(estimatedSecondsRemaining)),
+		etaInSeconds: Math.ceil(estimatedSecondsRemaining),
+		progress: Math.min(100, Math.round(progressPercent)),
+		currentTime: formatDuration(processedSeconds),
+		totalDuration: formatDuration(totalSeconds),
+		speed: progress.speed,
+	};
+};
+
+export const calculateQueueETA = (
+	currentVideo: IAnimeMeta,
+	videoQueue: IAnimeMeta[],
+	ffmpegOutput: string,
+): string => {
+	const currentIndex = videoQueue.findIndex(
+		v => v.filename === currentVideo.filename,
+	);
+	if (currentIndex === -1) return '';
+
+	const currentETA = calculateFFmpegETA(ffmpegOutput, currentVideo.duration);
+	if (!currentETA.speed || currentETA.speed === 0) return '';
+
+	let totalETASeconds = currentETA.etaInSeconds;
+	for (let i = currentIndex + 1; i < videoQueue.length; i++) {
+		const video = videoQueue[i];
+		const videoDurationSeconds = timeToSeconds(video.duration);
+		totalETASeconds += videoDurationSeconds / currentETA.speed;
+	}
+
+	return `${currentETA.eta} | ${currentIndex + 1}/${
+		videoQueue.length
+	} ${formatDuration(Math.ceil(totalETASeconds))}`;
+};
+
 export async function getFileDetailsFromPath(path: string): Promise<FileMeta> {
 	const name = path.split('\\').pop() as string;
 	const url = convertFileSrc(path);
@@ -147,7 +251,6 @@ export async function resolveImageDetails(
 		}),
 	);
 
-	// Filter out already existing images by name
 	const currentImageNames = currentImages.map(img => img.name);
 	const newImages = rawImages.filter(
 		rff => !currentImageNames.includes(rff.name),
