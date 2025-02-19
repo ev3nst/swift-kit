@@ -23,7 +23,6 @@ import {
 	SidebarMenuItem,
 	SidebarMenuButton,
 	SidebarSeparator,
-	SidebarFooter,
 } from '@/components/sidebar';
 
 import { useSidebar } from '@/hooks/use-sidebar';
@@ -31,14 +30,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 import { emitter } from '@/lib/event';
 
-import { NavUser } from './nav-user';
-
 const data = {
-	// This is sample data.
-	user: {
-		name: 'example',
-		email: 'm@example.com',
-	},
 	nav: [
 		{
 			groupName: 'Source & Content',
@@ -171,11 +163,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroup>
 				))}
 			</SidebarContent>
-			<SidebarFooter
-				className={isTaskRunning ? 'pointer-events-none' : ''}
-			>
-				<NavUser user={data.user} />
-			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
 	);
