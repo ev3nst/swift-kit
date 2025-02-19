@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
+import { ScrollToTop } from '@/components/scroll-to-top';
 
 import api from '@/lib/api';
 
@@ -86,15 +87,26 @@ const Finder = () => {
 		}
 	}
 
+	const resultsFiltered = results.filter(rs =>
+		resultFilter.length > 0
+			? rs.toLocaleLowerCase().includes(resultFilter)
+				? rs
+				: undefined
+			: rs,
+	);
+
 	return (
 		<Form {...form}>
-			<form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-				<div className="flex items-end gap-3">
+			<form
+				className="grid gap-5 w-full"
+				onSubmit={form.handleSubmit(onSubmit)}
+			>
+				<div className="flex items-start gap-3 w-full max-w-full">
 					<FormField
 						control={form.control}
 						name="search_term"
 						render={({ field }) => (
-							<FormItem className="grid gap-1 flex-grow">
+							<FormItem className="grid gap-1 flex-grow relative">
 								<div className="flex items-center">
 									<FormLabel className="flex gap-2 items-center">
 										File Name (Search Term)
@@ -110,7 +122,7 @@ const Finder = () => {
 										{...field}
 									/>
 								</FormControl>
-								<FormMessage />
+								<FormMessage className="absolute text-xs bottom-[-16px]" />
 							</FormItem>
 						)}
 					/>
@@ -151,6 +163,7 @@ const Finder = () => {
 							type="button"
 							variant="secondary"
 							size="icon"
+							className="self-end"
 							onClick={onStopRequest}
 						>
 							<PauseIcon />
@@ -160,7 +173,9 @@ const Finder = () => {
 						type="submit"
 						variant="info"
 						size="icon"
-						className={processLoading ? 'disabled' : ''}
+						className={
+							processLoading ? 'self-end disabled' : 'self-end'
+						}
 						disabled={processLoading}
 					>
 						{processLoading ? (
@@ -172,7 +187,7 @@ const Finder = () => {
 				</div>
 
 				{results.length > 0 && (
-					<div>
+					<div className="h-full w-full">
 						<Input
 							type="text"
 							placeholder="Filter"
@@ -184,24 +199,22 @@ const Finder = () => {
 								);
 							}}
 						/>
-						<div className="flex flex-col max-h-[350px] overflow-y-scroll gap-0 mt-5">
-							<div className="font-bold mb-2 text-sm">
-								Results: ({results.length})
+						<div className="flex flex-col max-h-full w-full overflow-y-scroll gap-0 mt-5">
+							<div className="flex gap-4 items-center font-bold mb-2 text-sm">
+								<span className="text-blue-500">
+									Results: ({results.length})
+								</span>
+								<span>
+									{resultFilter.length > 0
+										? `Filtered: ${resultsFiltered.length}`
+										: ''}
+								</span>
 							</div>
-							{results
-								.filter(rs =>
-									resultFilter.length > 0
-										? rs
-												.toLocaleLowerCase()
-												.includes(resultFilter)
-											? rs
-											: undefined
-										: rs,
-								)
-								.map((r, ri) => (
+							<div className="h-full w-full">
+								{resultsFiltered.map((r, ri) => (
 									<div
 										key={`finder_result_${ri}`}
-										className="text-xs p-2 border-t hover:cursor-pointer hover:bg-secondary"
+										className="flex flex-wrap text-xs p-2 border-t hover:cursor-pointer hover:bg-secondary"
 										onClick={async () => {
 											await api.highlight_file(r);
 										}}
@@ -211,22 +224,24 @@ const Finder = () => {
 												new RegExp(`(${search_term})`),
 											)
 											.map((rst, rsti) => (
-												<span
+												<div
 													key={`finder_results_${ri}_${rsti}`}
 													className={
 														rst.includes(
 															search_term,
 														)
-															? 'text-green-300'
-															: ''
+															? 'text-green-300 text-wrap flex flex-wrap break-all'
+															: 'text-wrap flex flex-wrap break-all'
 													}
 												>
 													{rst}
-												</span>
+												</div>
 											))}
 									</div>
 								))}
+							</div>
 						</div>
+						<ScrollToTop />
 					</div>
 				)}
 			</form>
