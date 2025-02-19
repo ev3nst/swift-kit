@@ -1,29 +1,23 @@
 use std::path::Path;
-use tauri_plugin_shell::ShellExt;
+use std::{os::windows::process::CommandExt, process::Command};
 
-pub async fn compress(
-    input_path: &Path,
-    quality: u8,
-    output_path: &Path,
-    handle: tauri::AppHandle,
-) -> Result<(), String> {
-    let jpegoptim_command = handle
-        .shell()
-        .sidecar("jpegoptim")
-        .map_err(|e| format!("Failed to create jpegoptim sidecar: {}", e))?
+pub async fn compress(input_path: &Path, quality: u8, output_path: &Path) -> Result<(), String> {
+    let mut jpegoptim_command = Command::new("jpegoptim");
+    jpegoptim_command
         .arg(format!("--max={}", quality))
         .arg("--dest")
         .arg(output_path.parent().unwrap_or(Path::new(".")))
         .arg("--overwrite")
         .arg(input_path);
 
-    // Run the command
+    if cfg!(target_os = "windows") {
+        jpegoptim_command.creation_flags(0x08000000);
+    }
+
     let output = jpegoptim_command
         .output()
-        .await
-        .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
+        .map_err(|e| format!("Failed to execute jpegoptim: {}", e))?;
 
-    // Check if the command failed
     if !output.status.success() {
         return Err(format!(
             "jpegoptim failed with error:\n\

@@ -33,7 +33,6 @@ pub async fn no_intro_outro(
         &input_path,
         video.default_audio as usize,
         video.default_subtitle as usize,
-        handle.clone(),
     )
     .await?;
 

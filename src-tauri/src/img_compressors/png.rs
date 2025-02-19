@@ -1,17 +1,10 @@
 use std::path::Path;
-use tauri_plugin_shell::ShellExt;
+use std::{os::windows::process::CommandExt, process::Command};
 
-pub async fn compress(
-    input_path: &Path,
-    quality: u8,
-    output_path: &Path,
-    handle: tauri::AppHandle,
-) -> Result<(), String> {
+pub async fn compress(input_path: &Path, quality: u8, output_path: &Path) -> Result<(), String> {
     let quality_argument = format!("{}-{}", quality, quality);
-    let pngquant_command = handle
-        .shell()
-        .sidecar("pngquant")
-        .map_err(|e| format!("Failed to create pngquant sidecar: {}", e))?
+    let mut pngquant_command = Command::new("pngquant");
+    pngquant_command
         .arg("--quality")
         .arg(&quality_argument)
         .arg("--output")
@@ -19,13 +12,14 @@ pub async fn compress(
         .arg("--force")
         .arg(input_path);
 
-    // Run the command
+    if cfg!(target_os = "windows") {
+        pngquant_command.creation_flags(0x08000000);
+    }
+
     let output = pngquant_command
         .output()
-        .await
         .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
 
-    // Check if the command failed
     if !output.status.success() {
         return Err(format!(
             "pngquant failed with error:\n\

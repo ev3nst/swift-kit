@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{os::windows::process::CommandExt, process::Command};
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_available_disks() -> Result<Vec<String>, String> {
@@ -16,6 +16,7 @@ pub async fn get_available_disks() -> Result<Vec<String>, String> {
 // Get list of valid Windows drives
 pub fn get_windows_drives() -> Result<Vec<String>, String> {
     let output = Command::new("powershell")
+        .creation_flags(0x08000000)
         .args(&[
             "-Command",
             "Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root",

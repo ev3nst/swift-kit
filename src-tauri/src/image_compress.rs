@@ -9,7 +9,6 @@ pub async fn image_compress(
     img_path: String,
     quality: Option<u8>,
     output_folder: Option<String>,
-    handle: tauri::AppHandle,
 ) -> Result<(), String> {
     let input_path = Path::new(&img_path);
     if !input_path.exists() || !input_path.is_file() {
@@ -49,9 +48,9 @@ pub async fn image_compress(
         .ok_or_else(|| "Unable to determine file extension".to_string())?;
 
     match extension.as_str() {
-        "png" => png::compress(input_path, quality, &output_path, handle).await,
-        "jpg" | "jpeg" => jpeg::compress(input_path, quality, &output_path, handle).await,
-        "webp" => webp::compress(input_path, quality, &output_path, handle).await,
+        "png" => png::compress(input_path, quality, &output_path).await,
+        "jpg" | "jpeg" => jpeg::compress(input_path, quality, &output_path).await,
+        "webp" => webp::compress(input_path, quality, &output_path).await,
         _ => Err("Unsupported file format".to_string()),
     }
 }

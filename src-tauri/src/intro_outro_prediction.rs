@@ -1,16 +1,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::{os::windows::process::CommandExt, process::Command};
 
 use super::get_video_details::get_video_details;
-use super::utils::format_duration::format_duration;
 use super::utils::file_types::IAnimeMeta;
+use super::utils::format_duration::format_duration;
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn intro_outro_prediction(
-    episodes_folder: String,
-    handle: tauri::AppHandle,
-) -> Result<Vec<IAnimeMeta>, String> {
+pub async fn intro_outro_prediction(episodes_folder: String) -> Result<Vec<IAnimeMeta>, String> {
     let path = Path::new(&episodes_folder);
     if !path.exists() || !path.is_dir() {
         return Err("Invalid directory path".into());
@@ -35,8 +32,7 @@ pub async fn intro_outro_prediction(
     video_files.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
     let mut result = vec![];
     for video_path in video_files {
-        let video_details =
-            get_video_details(video_path.to_string_lossy().to_string(), handle.clone()).await?;
+        let video_details = get_video_details(video_path.to_string_lossy().to_string()).await?;
 
         // Check if there are chapters
         let chapters = get_video_chapters(&video_path)?;
@@ -66,15 +62,22 @@ pub async fn intro_outro_prediction(
 }
 
 fn get_video_chapters(video_path: &Path) -> Result<Vec<(f64, f64)>, String> {
-    let output = Command::new("ffprobe")
+    let mut ffprobe_command = Command::new("ffprobe");
+    ffprobe_command
         .arg("-loglevel")
         .arg("error")
         .arg("-print_format")
         .arg("json")
         .arg("-show_chapters")
-        .arg(video_path)
+        .arg(video_path);
+
+    if cfg!(target_os = "windows") {
+        ffprobe_command.creation_flags(0x08000000);
+    }
+
+    let output = ffprobe_command
         .output()
-        .map_err(|e| format!("Failed to run ffprobe: {}", e))?;
+        .map_err(|e| format!("Failed to execute jpegoptim: {}", e))?;
 
     if !output.status.success() {
         return Err("Failed to fetch chapters".into());

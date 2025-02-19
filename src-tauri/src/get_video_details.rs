@@ -1,11 +1,11 @@
 use serde::Deserialize;
 use std::fs;
 use std::path::Path;
-use tauri_plugin_shell::ShellExt;
+use std::{os::windows::process::CommandExt, process::Command};
 
-use super::utils::format_duration::format_duration;
 use super::utils::file_types::VideoDetails;
 use super::utils::file_types::VideoTrackDetail;
+use super::utils::format_duration::format_duration;
 
 #[derive(Debug, Deserialize)]
 struct FFProbeStream {
@@ -29,10 +29,7 @@ struct FFProbeOutput {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn get_video_details(
-    video_path: String,
-    handle: tauri::AppHandle,
-) -> Result<VideoDetails, String> {
+pub async fn get_video_details(video_path: String) -> Result<VideoDetails, String> {
     let input_path = Path::new(&video_path);
     if !input_path.exists() || !input_path.is_file() {
         return Err("Invalid video path".into());
@@ -55,10 +52,8 @@ pub async fn get_video_details(
         .to_string();
     let filesize = metadata.len();
 
-    let ffprobe_command = handle
-        .shell()
-        .sidecar("ffprobe")
-        .map_err(|e| format!("Failed to create ffprobe sidecar: {}", e))?
+    let mut ffprobe_command = Command::new("ffprobe");
+    ffprobe_command
         .arg("-v")
         .arg("error")
         .arg("-show_entries")
@@ -73,10 +68,12 @@ pub async fn get_video_details(
         .arg("json")
         .arg(&video_path);
 
-    // Run the command
+    if cfg!(target_os = "windows") {
+        ffprobe_command.creation_flags(0x08000000);
+    }
+
     let output = ffprobe_command
         .output()
-        .await
         .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
 
     // Check if the command failed

@@ -1,5 +1,5 @@
 use std::path::Path;
-use tauri_plugin_shell::ShellExt;
+use std::{os::windows::process::CommandExt, process::Command};
 
 #[derive(Debug)]
 pub struct StreamIndexExistence {
@@ -11,12 +11,9 @@ pub async fn check_stream_exists(
     input_path: &Path,
     audio_index: usize,
     subtitle_index: usize,
-    handle: tauri::AppHandle,
 ) -> Result<StreamIndexExistence, String> {
-    let ffprobe_command = handle
-        .shell()
-        .sidecar("ffprobe")
-        .map_err(|e| format!("Failed to create ffprobe sidecar: {}", e))?
+    let mut ffprobe_command = Command::new("ffprobe");
+    ffprobe_command
         .arg("-v")
         .arg("quiet")
         .arg("-print_format")
@@ -24,9 +21,12 @@ pub async fn check_stream_exists(
         .arg("-show_streams")
         .arg(input_path);
 
+    if cfg!(target_os = "windows") {
+        ffprobe_command.creation_flags(0x08000000);
+    }
+
     let output = ffprobe_command
         .output()
-        .await
         .map_err(|e| format!("Failed to execute ffprobe: {}", e))?;
 
     if !output.status.success() {

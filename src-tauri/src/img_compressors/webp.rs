@@ -1,26 +1,21 @@
 use std::path::Path;
-use tauri_plugin_shell::ShellExt;
+use std::{os::windows::process::CommandExt, process::Command};
 
-pub async fn compress(
-    input_path: &Path,
-    quality: u8,
-    output_path: &Path,
-    handle: tauri::AppHandle,
-) -> Result<(), String> {
-    let cwebp_command = handle
-        .shell()
-        .sidecar("cwebp")
-        .map_err(|e| format!("Failed to create cwebp sidecar: {}", e))?
+pub async fn compress(input_path: &Path, quality: u8, output_path: &Path) -> Result<(), String> {
+    let mut cwebp_command = Command::new("cwebp");
+    cwebp_command
         .arg(input_path)
         .arg("-o")
         .arg(&output_path)
         .arg("-q")
         .arg(quality.to_string());
 
-    // Run the command
+    if cfg!(target_os = "windows") {
+        cwebp_command.creation_flags(0x08000000);
+    }
+
     let output = cwebp_command
         .output()
-        .await
         .map_err(|e| format!("Failed to execute sidecar: {}", e))?;
 
     // Check if command failed
