@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
+import { Setting } from '@/lib/models/setting';
+
 export type IFileMeta = {
 	filename: string;
 	filesize: number;
@@ -184,6 +186,30 @@ class API {
 			use_cuda,
 			overwrite,
 		});
+	}
+
+	async interpolate(
+		video_path: string,
+		encoder: string = 'h264_nvenc',
+		rife_model: string = 'rife-v4.6',
+		multiplier: number = 2,
+		overwrite: boolean = false,
+	) {
+		const video2xPath = await Setting.get('video2x_binary_path');
+		if (
+			video2xPath &&
+			video2xPath.value !== null &&
+			video2xPath.value !== ''
+		) {
+			return invoke('interpolate', {
+				video2x_path: video2xPath.value,
+				video_path,
+				encoder,
+				rife_model,
+				multiplier,
+				overwrite,
+			});
+		}
 	}
 }
 

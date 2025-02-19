@@ -12,6 +12,7 @@ mod image_compress;
 mod image_convert;
 mod image_resize;
 mod img_compressors;
+mod interpolate;
 mod intro_outro_prediction;
 mod migrations;
 mod no_intro_outro;
@@ -55,7 +56,8 @@ pub fn run() {
             generate_video_thumbnails::generate_video_thumbnails,
             generate_video_thumbnails::stop_video_thumbnail_generation,
             trash_folder::trash_folder,
-            no_intro_outro::no_intro_outro
+            no_intro_outro::no_intro_outro,
+            interpolate::interpolate
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

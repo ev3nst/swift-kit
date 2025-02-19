@@ -15,8 +15,8 @@ pub struct VideoTrackDetail {
 	pub value: i32,
 }
 
-#[derive(Serialize)]
-pub struct VideoDetails {
+#[derive(Serialize, Deserialize)]
+pub struct IVideoMeta {
 	pub filename: String,
 	pub filesize: u64,
 	pub duration: String,

@@ -135,7 +135,7 @@ pub async fn no_intro_outro(
     let (cancel_tx, mut cancel_rx) = oneshot::channel();
     let handle_clone = handle.clone();
     tokio::spawn(async move {
-        handle_clone.once("cancel_ffmpeg", move |_| {
+        handle_clone.once("cancel_noio", move |_| {
             let _ = cancel_tx.send(());
         });
     });
@@ -149,18 +149,14 @@ pub async fn no_intro_outro(
                             if text.to_lowercase().contains("error")
                                 || text.to_lowercase().contains("failed")
                             {
-                                handle.emit("no_intro_outro_stderr", text).unwrap();
+                                handle.emit("noio_stderr", text).unwrap();
                             } else {
-                                handle.emit("no_intro_outro_stdout", text).unwrap();
+                                handle.emit("noio_stdout", text).unwrap();
                             }
                         }
                     }
                     Some(CommandEvent::Terminated(TerminatedPayload { code, signal })) => {
                         if code.unwrap_or(-1) != 0 {
-                            // Clean up on error
-                            if output_path.exists() {
-                                let _ = fs::remove_file(&output_path);
-                            }
                             return Err(format!(
                                 "FFmpeg process failed with exit code: {:?}, signal: {:?}",
                                 code, signal
@@ -173,13 +169,8 @@ pub async fn no_intro_outro(
                 }
             }
             _ = poll_fn(|cx: &mut Context<'_>| Pin::new(&mut cancel_rx).poll(cx)) => {
-                // Kill the FFmpeg process
                 if let Err(e) = child.kill() {
                     eprintln!("Failed to kill FFmpeg process: {}", e);
-                }
-                // Clean up the incomplete output file
-                if output_path.exists() {
-                    let _ = fs::remove_file(&output_path);
                 }
                 return Ok(());
             }

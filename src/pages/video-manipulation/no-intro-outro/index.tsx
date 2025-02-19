@@ -61,7 +61,6 @@ const noIntroOutroSchema = z.object({
 	output_path: z.string().optional(),
 	use_cuda: z.boolean().default(true).optional(),
 	overwrite: z.boolean().default(false).optional(),
-	interpolate: z.boolean().default(false).optional(),
 	convert_to_mp4: z.boolean().default(false).optional(),
 	videos: z.array(animeVideoObj).min(1, 'No video is provided'),
 });
@@ -78,39 +77,32 @@ const NoIntroOutro = () => {
 	>(undefined);
 	const [progress, setProgress] = useState(0);
 
-	useEffect(() => {
-		const unlisten_stdout = listen<string>(
-			'no_intro_outro_stdout',
-			event => {
-				setFfmpegStdout(event.payload);
-			},
-		);
+	const form = useForm<z.infer<typeof noIntroOutroSchema>>({
+		resolver: zodResolver(noIntroOutroSchema),
+		defaultValues: {
+			input_path: '',
+			output_path: '',
+			use_cuda: true,
+			overwrite: false,
+			convert_to_mp4: false,
+			videos: [],
+		},
+	});
 
-		const unlisten_stderr = listen<string>(
-			'no_intro_outro_stderr',
-			event => {
-				console.error(event.payload);
-				toast.error(event.payload);
-			},
-		);
+	useEffect(() => {
+		const unlisten_stdout = listen<string>('noio_stdout', event => {
+			setFfmpegStdout(event.payload);
+		});
+
+		const unlisten_stderr = listen<string>('noio_stderr', event => {
+			console.error(event.payload);
+			toast.error(event.payload);
+		});
 
 		return () => {
 			unlisten_stdout.then(f => f());
 			unlisten_stderr.then(f => f());
-		};
-	}, []);
-
-	useEffect(() => {
-		if (processingVideo) {
-			setCurrentProcessETA(
-				calculateQueueETA(processingVideo, fetchedVideos, ffmpegStdout),
-			);
-		}
-	}, [fetchedVideos, processingVideo, ffmpegStdout]);
-
-	useEffect(() => {
-		return () => {
-			emit('cancel_ffmpeg')
+			emit('cancel_noio')
 				.then(() =>
 					console.log('Cancellation request sent to backend.'),
 				)
@@ -123,18 +115,13 @@ const NoIntroOutro = () => {
 		};
 	}, []);
 
-	const form = useForm<z.infer<typeof noIntroOutroSchema>>({
-		resolver: zodResolver(noIntroOutroSchema),
-		defaultValues: {
-			input_path: '',
-			output_path: '',
-			use_cuda: true,
-			overwrite: false,
-			interpolate: false,
-			convert_to_mp4: false,
-			videos: [],
-		},
-	});
+	useEffect(() => {
+		if (processingVideo) {
+			setCurrentProcessETA(
+				calculateQueueETA(processingVideo, fetchedVideos, ffmpegStdout),
+			);
+		}
+	}, [fetchedVideos, processingVideo, ffmpegStdout]);
 
 	const { control, handleSubmit, getValues, setValue, watch } = form;
 	const { fields } = useFieldArray({ control, name: 'videos' });
@@ -210,7 +197,7 @@ const NoIntroOutro = () => {
 	};
 
 	const onStopRequest = async () => {
-		await emit('cancel_ffmpeg');
+		await emit('cancel_noio');
 		shouldStopRef.current = true;
 	};
 
@@ -226,11 +213,9 @@ const NoIntroOutro = () => {
 		try {
 			emitter.emit('taskStart');
 			setProcessLoading(true);
-			const activeProcesses = [
-				true,
-				data.interpolate,
-				data.convert_to_mp4,
-			].filter(v => v === true).length;
+			const activeProcesses = [true, data.convert_to_mp4].filter(
+				v => v === true,
+			).length;
 			const progressPart = 100 / activeProcesses;
 			const progRatePerVideo = progressPart / data.videos.length;
 			let currentProg = 0;
@@ -269,11 +254,6 @@ const NoIntroOutro = () => {
 
 			setProcessingVideo(undefined);
 			toast.info('Intro & Outro main process is complete.');
-
-			if (data.interpolate === true) {
-				console.log('should interpolate');
-				toast.info('Interpolation is complete.');
-			}
 
 			if (data.convert_to_mp4 === true) {
 				console.log('should convert to mp4');
@@ -417,38 +397,6 @@ const NoIntroOutro = () => {
 															slower but also may
 															prevent throttle of
 															the CPU.
-														</p>
-													</TooltipContent>
-												</Tooltip>
-											</div>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={control}
-									name="interpolate"
-									render={({ field }) => (
-										<FormItem className="flex flex-row w-[170px] items-start space-x-3 space-y-0 rounded-md border p-3 mt-2 shadow">
-											<FormControl>
-												<Checkbox
-													disabled={processLoading}
-													checked={field.value}
-													onCheckedChange={
-														field.onChange
-													}
-												/>
-											</FormControl>
-											<div className="space-y-1 leading-none">
-												<Tooltip>
-													<TooltipTrigger asChild>
-														<FormLabel>
-															Interpolate 60fps
-														</FormLabel>
-													</TooltipTrigger>
-													<TooltipContent>
-														<p>
-															Requires video2x
-															with RIFE.
 														</p>
 													</TooltipContent>
 												</Tooltip>

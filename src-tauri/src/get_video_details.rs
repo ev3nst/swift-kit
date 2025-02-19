@@ -3,7 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::{os::windows::process::CommandExt, process::Command};
 
-use super::utils::file_types::VideoDetails;
+use super::utils::file_types::IVideoMeta;
 use super::utils::file_types::VideoTrackDetail;
 use super::utils::format_duration::format_duration;
 
@@ -29,7 +29,7 @@ struct FFProbeOutput {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn get_video_details(video_path: String) -> Result<VideoDetails, String> {
+pub async fn get_video_details(video_path: String) -> Result<IVideoMeta, String> {
     let input_path = Path::new(&video_path);
     if !input_path.exists() || !input_path.is_file() {
         return Err("Invalid video path".into());
@@ -170,7 +170,7 @@ pub async fn get_video_details(video_path: String) -> Result<VideoDetails, Strin
         default_subtitle = Some(subtitle_tracks[0].value.try_into().unwrap());
     }
 
-    Ok(VideoDetails {
+    Ok(IVideoMeta {
         filename,
         filesize,
         duration,

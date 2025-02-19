@@ -30,46 +30,49 @@ import { Setting } from '@/lib/models/setting';
 import api from '@/lib/api';
 
 const settingsSchema = z.object({
-	ffmpeg_binary_path: z.string().optional(),
-	yt_dlp_binary_path: z.string().optional(),
+	video2x_binary_path: z.string().optional(),
 });
 
 export function Settings() {
 	const form = useForm({
 		resolver: zodResolver(settingsSchema),
 		defaultValues: {
-			ffmpeg_binary_path: '',
-			yt_dlp_binary_path: '',
+			video2x_binary_path: '',
 		},
 	});
 
 	useEffect(() => {
 		(async () => {
 			const { setValue } = form;
-			const ffmpeg_binary_path = await Setting.get('ffmpeg_binary_path');
-			if (ffmpeg_binary_path) {
-				setValue('ffmpeg_binary_path', ffmpeg_binary_path.value);
+			const video2x_binary_path = await Setting.get(
+				'video2x_binary_path',
+			);
+			if (video2x_binary_path) {
+				setValue('video2x_binary_path', video2x_binary_path.value);
 			}
 		})();
 	}, [form]);
 
 	async function onSubmit(data: z.infer<typeof settingsSchema>) {
-		if (data.ffmpeg_binary_path) {
-			const checkFFmpegPath = await api.fetch_files(
-				data.ffmpeg_binary_path,
+		if (data.video2x_binary_path) {
+			const checkVideo2xPath = await api.fetch_files(
+				data.video2x_binary_path,
 			);
 
 			if (
-				checkFFmpegPath.findIndex(
-					cfp => cfp.filename === 'ffmpeg.exe',
+				checkVideo2xPath.findIndex(
+					cfp => cfp.filename === 'video2x.exe',
 				) === -1
 			) {
-				toast.error('FFmpeg could not be found.');
+				toast.error('Video2x could not be found.');
 				return;
 			}
 		}
 
-		await Setting.save('ffmpeg_binary_path', data.ffmpeg_binary_path ?? '');
+		await Setting.save(
+			'video2x_binary_path',
+			data.video2x_binary_path ?? '',
+		);
 		toast.success('Settings are saved.');
 	}
 
@@ -96,12 +99,12 @@ export function Settings() {
 					>
 						<FormField
 							control={form.control}
-							name="ffmpeg_binary_path"
+							name="video2x_binary_path"
 							render={({ field }) => (
 								<FormItem className="grid gap-1 flex-grow">
 									<div className="flex items-center">
 										<FormLabel className="flex gap-2 items-center">
-											FFmpeg Binary Path
+											Video2x Path
 										</FormLabel>
 									</div>
 									<FormControl>
@@ -113,7 +116,7 @@ export function Settings() {
 									<FormMessage />
 									<FormDescription>
 										Only directory path, no need to specify
-										ffmpeg.exe in the input.
+										video2x.exe in the input.
 									</FormDescription>
 								</FormItem>
 							)}
