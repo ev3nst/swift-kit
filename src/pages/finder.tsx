@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { FileIcon, SearchIcon } from 'lucide-react';
+import { FileIcon, PauseIcon, SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { emit, listen } from '@tauri-apps/api/event';
 
 import {
 	Form,
@@ -51,15 +53,29 @@ const Finder = () => {
 		(async () => setDisks(await api.get_available_disks()))();
 	}, []);
 
+	useEffect(() => {
+		const unlisten = listen<string>('search-result', event => {
+			setResults(prevResults => [...prevResults, event.payload]);
+		});
+
+		return () => {
+			unlisten.then(f => f());
+		};
+	}, []);
+
+	const onStopRequest = async () => {
+		await emit('cancel_search');
+	};
+
 	async function onSubmit(data: z.infer<typeof finderSchema>) {
 		setProcessLoading(true);
+		setResults([]);
 		try {
 			const start = Date.now();
-			const tryFind = await api.finder(data.search_term, data.disk);
+			await api.finder(data.search_term, data.disk);
 			const end = Date.now();
 			const durationInSeconds = (end - start) / 1000;
 			toast.success(`Search finished in ${durationInSeconds} seconds.`);
-			setResults(tryFind);
 		} catch (error) {
 			try {
 				toast.error(String(error));
@@ -89,6 +105,7 @@ const Finder = () => {
 								</div>
 								<FormControl>
 									<Input
+										disabled={processLoading}
 										placeholder="eg. my-file.txt"
 										{...field}
 									/>
@@ -103,7 +120,10 @@ const Finder = () => {
 						render={({ field }) => (
 							<FormItem className="grid gap-1 w-[150px]">
 								<FormLabel>Disk</FormLabel>
-								<Select onValueChange={field.onChange}>
+								<Select
+									disabled={processLoading}
+									onValueChange={field.onChange}
+								>
 									<FormControl>
 										<SelectTrigger>
 											<SelectValue placeholder="All (*)" />
@@ -126,6 +146,16 @@ const Finder = () => {
 							</FormItem>
 						)}
 					/>
+					{processLoading && (
+						<Button
+							type="button"
+							variant="secondary"
+							size="icon"
+							onClick={onStopRequest}
+						>
+							<PauseIcon />
+						</Button>
+					)}
 					<Button
 						type="submit"
 						variant="info"

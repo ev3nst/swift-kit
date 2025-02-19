@@ -4733,7 +4733,6 @@ name = "swift-kit"
 version = "0.1.0"
 dependencies = [
  "image",
- "rayon",
  "serde",
  "serde_json",
  "tauri",

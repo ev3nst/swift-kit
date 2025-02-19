@@ -209,6 +209,18 @@ const NoIntroOutro = () => {
 		}
 	};
 
+	const onStopRequest = async () => {
+		await emit('cancel_ffmpeg');
+		shouldStopRef.current = true;
+	};
+
+	const processCleanup = () => {
+		setFfmpegStdout('');
+		setCurrentProcessETA('');
+		setProgress(0);
+		setProcessingVideo(undefined);
+	};
+
 	async function onSubmit(data: z.infer<typeof noIntroOutroSchema>) {
 		shouldStopRef.current = false;
 		try {
@@ -226,10 +238,7 @@ const NoIntroOutro = () => {
 			// General anime episode processing
 			for (let dvi = 0; dvi < data.videos.length; dvi++) {
 				if (shouldStopRef.current) {
-					setFfmpegStdout('');
-					setCurrentProcessETA('');
-					setProgress(0);
-					setProcessingVideo(undefined);
+					processCleanup();
 					return;
 				}
 
@@ -254,10 +263,7 @@ const NoIntroOutro = () => {
 			}
 
 			if (shouldStopRef.current) {
-				setFfmpegStdout('');
-				setCurrentProcessETA('');
-				setProgress(0);
-				setProcessingVideo(undefined);
+				processCleanup();
 				return;
 			}
 
@@ -274,11 +280,7 @@ const NoIntroOutro = () => {
 				toast.info('Conversion to mp4 is complete.');
 			}
 
-			setProgress(100);
-			setProcessLoading(false);
-			setFfmpegStdout('');
-			setCurrentProcessETA('');
-			setProgress(0);
+			processCleanup();
 			setFetchedVideos([]);
 			toast.success('Done.');
 		} catch (e) {
@@ -531,10 +533,7 @@ const NoIntroOutro = () => {
 										type="button"
 										variant="secondary"
 										className="w-[100px] px-2 py-1 mt-2"
-										onClick={async () => {
-											await emit('cancel_ffmpeg');
-											shouldStopRef.current = true;
-										}}
+										onClick={onStopRequest}
 									>
 										Stop
 									</Button>

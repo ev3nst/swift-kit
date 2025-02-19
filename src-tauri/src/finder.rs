@@ -1,12 +1,18 @@
-use rayon::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tauri::{AppHandle, Emitter, Listener};
 use walkdir::WalkDir;
 
 use super::get_available_disks::get_linux_mounts;
 use super::get_available_disks::get_windows_drives;
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn finder(search_term: String, disk: Option<String>) -> Result<Vec<String>, String> {
+pub async fn finder(
+    handle: AppHandle,
+    search_term: String,
+    disk: Option<String>,
+) -> Result<(), String> {
     if search_term.len() < 3 {
         return Err("Search term must be at least 3 characters long".to_string());
     }
@@ -19,14 +25,12 @@ pub async fn finder(search_term: String, disk: Option<String>) -> Result<Vec<Str
         return Err("Unsupported OS".to_string());
     };
 
-    // Determine the search path based on user input or default to all disks
     let search_path = match disk {
         Some(ref d) if d == "*" => available_disks
             .iter()
             .map(|d| Path::new(d))
             .collect::<Vec<_>>(),
         Some(ref d) => {
-            // Validate that the disk exists in the list of available disks
             if available_disks.contains(d) {
                 vec![Path::new(d)]
             } else {
@@ -36,36 +40,43 @@ pub async fn finder(search_term: String, disk: Option<String>) -> Result<Vec<Str
                 ));
             }
         }
-        None => {
-            // If no disk is specified, search all available disks
-            available_disks
-                .iter()
-                .map(|d| Path::new(d))
-                .collect::<Vec<_>>()
-        }
+        None => available_disks
+            .iter()
+            .map(|d| Path::new(d))
+            .collect::<Vec<_>>(),
     };
 
-    // Perform the search on each disk
-    let mut results = Vec::new();
-    for disk_path in search_path {
+    let should_cancel = Arc::new(AtomicBool::new(false));
+    let should_cancel_clone = should_cancel.clone();
+
+    handle.once("cancel_search", move |_| {
+        should_cancel_clone.store(true, Ordering::SeqCst);
+    });
+
+    for disk_path in &search_path {
+        if should_cancel.load(Ordering::SeqCst) {
+            break;
+        }
+
         let walker = WalkDir::new(disk_path)
+            .follow_links(false)
             .into_iter()
             .filter_map(Result::ok)
-            .filter(|entry| entry.file_type().is_file())
-            .collect::<Vec<_>>();
+            .filter(|entry| entry.file_type().is_file());
 
-        let found_paths: Vec<PathBuf> = walker
-            .par_iter()
-            .filter(|entry| entry.file_name().to_string_lossy().contains(&search_term))
-            .map(|entry| entry.path().to_path_buf())
-            .collect();
+        for entry in walker {
+            if should_cancel.load(Ordering::SeqCst) {
+                break;
+            }
 
-        results.extend(
-            found_paths
-                .into_iter()
-                .map(|p| p.to_string_lossy().into_owned()),
-        );
+            if entry.file_name().to_string_lossy().contains(&search_term) {
+                let path = entry.path().to_string_lossy().into_owned();
+                handle
+                    .emit("search-result", path)
+                    .map_err(|e| format!("Failed to emit result: {}", e))?;
+            }
+        }
     }
 
-    Ok(results)
+    Ok(())
 }
