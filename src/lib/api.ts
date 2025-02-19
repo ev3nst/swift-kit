@@ -211,6 +211,12 @@ class API {
 			});
 		}
 	}
+
+	async convert_to_mp4(video_path: string) {
+		return invoke('convert_to_mp4', {
+			video_path,
+		});
+	}
 }
 
 const api = new API();

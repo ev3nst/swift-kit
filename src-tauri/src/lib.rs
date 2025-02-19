@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 mod always_on_top;
 mod bulk_rename;
+mod convert_to_mp4;
 mod fetch_files;
 mod finder;
 mod generate_video_thumbnails;
@@ -57,7 +58,8 @@ pub fn run() {
             generate_video_thumbnails::stop_video_thumbnail_generation,
             trash_folder::trash_folder,
             no_intro_outro::no_intro_outro,
-            interpolate::interpolate
+            interpolate::interpolate,
+            convert_to_mp4::convert_to_mp4
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

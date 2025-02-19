@@ -33,8 +33,8 @@ const NoIntroOutro = lazy(
 const BulkInterpolation = lazy(
 	() => import('@/pages/video-manipulation/bulk-interpolation'),
 );
-const CutAndMerge = lazy(
-	() => import('@/pages/video-manipulation/cut-and-merge'),
+const ConvertToMp4 = lazy(
+	() => import('@/pages/video-manipulation/convert-to-mp4'),
 );
 const FilenameReplacer = lazy(() => import('@/pages/filename-replacer'));
 const Finder = lazy(() => import('@/pages/finder'));
@@ -153,8 +153,8 @@ function App() {
 											component={BulkInterpolation}
 										/>
 										<Route
-											path="cut-and-merge"
-											component={CutAndMerge}
+											path="convert-to-mp4"
+											component={ConvertToMp4}
 										/>
 									</VideoManipulation>
 								</Route>

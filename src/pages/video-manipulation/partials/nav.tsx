@@ -1,6 +1,10 @@
 import { Fragment } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ScissorsIcon, ClapperboardIcon, DiamondIcon } from 'lucide-react';
+import {
+	ArrowRightLeftIcon,
+	ClapperboardIcon,
+	DiamondIcon,
+} from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -16,10 +20,17 @@ const data = [
 		icon: DiamondIcon,
 	},
 	{
+		name: 'Convert to MP4',
+		href: '/convert-to-mp4',
+		icon: ArrowRightLeftIcon,
+	},
+	/*
+	{
 		name: 'Cut & Merge',
 		href: '/cut-and-merge',
 		icon: ScissorsIcon,
 	},
+	*/
 ];
 
 export function Nav() {
