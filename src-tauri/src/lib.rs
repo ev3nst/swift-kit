@@ -18,9 +18,10 @@ mod intro_outro_prediction;
 mod migrations;
 mod no_intro_outro;
 mod rename_files;
-mod scrape_movie;
 mod scrape_anime;
+mod scrape_movie;
 mod scrapers;
+mod search_anime;
 mod search_movie;
 mod trash_folder;
 mod utils;
@@ -66,6 +67,7 @@ pub fn run() {
             convert_to_mp4::convert_to_mp4,
             search_movie::search_movie,
             scrape_movie::scrape_movie,
+            search_anime::search_anime,
             scrape_anime::scrape_anime,
         ])
         .run(tauri::generate_context!())

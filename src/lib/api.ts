@@ -65,6 +65,12 @@ export type IMovieMeta = {
 	poster: string | null;
 };
 
+export type IAnimeQueryR = {
+	title: string;
+	href: string;
+	cover: string;
+};
+
 export type IAnimeMeta = {
 	scraped_url: string;
 	franchise: string | null;
@@ -92,7 +98,7 @@ class API {
 
 	async fetch_files(
 		folder_path: string,
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<IFileMeta[]> {
 		return invoke('fetch_files', {
 			folder_path,
@@ -104,7 +110,7 @@ class API {
 		folder_path: string,
 		search: string,
 		replace?: string,
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<void> {
 		await invoke('bulk_rename', {
 			folder_path,
@@ -120,7 +126,7 @@ class API {
 			old: string;
 			new: string;
 		}[],
-		extension_filter?: string,
+		extension_filter?: string
 	): Promise<void> {
 		await invoke('rename_files', {
 			folder_path,
@@ -149,7 +155,7 @@ class API {
 	async image_convert(
 		img_path: string,
 		to: string,
-		output_folder?: string,
+		output_folder?: string
 	): Promise<string> {
 		return invoke('image_convert', {
 			img_path,
@@ -161,7 +167,7 @@ class API {
 	async image_compress(
 		img_path: string,
 		quality: number,
-		output_folder?: string,
+		output_folder?: string
 	): Promise<string> {
 		return invoke('image_compress', {
 			img_path,
@@ -175,7 +181,7 @@ class API {
 		width?: number,
 		height?: number,
 		output_folder?: string,
-		file_name?: string,
+		file_name?: string
 	): Promise<string> {
 		return invoke('image_resize', {
 			img_path,
@@ -218,7 +224,7 @@ class API {
 		folder_path: string,
 		video: IVideoIO,
 		use_cuda: boolean = true,
-		overwrite: boolean = false,
+		overwrite: boolean = false
 	) {
 		return invoke('no_intro_outro', {
 			folder_path,
@@ -237,7 +243,7 @@ class API {
 		encoder: string = 'h264_nvenc',
 		rife_model: string = 'rife-v4.6',
 		multiplier: number = 2,
-		overwrite: boolean = false,
+		overwrite: boolean = false
 	) {
 		const video2xPath = await Setting.get('video2x_binary_path');
 		if (
@@ -271,6 +277,12 @@ class API {
 	async scrape_movie(url: string): Promise<IMovieMeta> {
 		return invoke('scrape_movie', {
 			url,
+		});
+	}
+
+	async search_anime(query: string): Promise<IAnimeQueryR[]> {
+		return invoke('search_anime', {
+			query,
 		});
 	}
 

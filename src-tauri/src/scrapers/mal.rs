@@ -18,7 +18,16 @@ pub struct MALData {
 }
 
 pub async fn scrape(client: &Client, url: &str) -> Result<MALData, Box<dyn Error>> {
-    let res = client.get(url).send().await?;
+    let res = client
+        .get(url)
+        .header(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        )
+        .header("Accept-Language", "en-US,en;q=0.5")
+        .header("Connection", "keep-alive")
+        .send()
+        .await?;
     let body = res.text().await?;
     let document = Html::parse_document(&body);
 
@@ -34,9 +43,8 @@ pub async fn scrape(client: &Client, url: &str) -> Result<MALData, Box<dyn Error
         .unwrap_or_default()
         .replace(".jpg", "l.jpg");
 
-    let title = get_from_border(&document, "English:").unwrap_or_else(|| {
-        "Unknown Title".to_string()
-    });
+    let title =
+        get_from_border(&document, "English:").unwrap_or_else(|| "Unknown Title".to_string());
 
     let original_title = document
         .select(&Selector::parse(".title-name").unwrap())

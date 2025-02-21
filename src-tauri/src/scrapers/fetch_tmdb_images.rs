@@ -17,7 +17,16 @@ pub async fn fetch_tmdb_images(
         cover: None,
         poster: None,
     };
-    let res = client.get(&poster_href).send().await?;
+    let res = client
+        .get(&poster_href)
+        .header(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        )
+        .header("Accept-Language", "en-US,en;q=0.5")
+        .header("Connection", "keep-alive")
+        .send()
+        .await?;
     let body = res.text().await?;
     let document = Html::parse_document(&body);
 

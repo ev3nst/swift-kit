@@ -44,7 +44,11 @@ pub async fn scrape_anime(url: String) -> Result<AnimeData, String> {
                 trailer: None,
             };
 
-            let client = Client::new();
+			let client = Client::builder()
+				.user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+				.build()
+				.map_err(|e| e.to_string())?;
+		
             let mal_data = mal::scrape(&client, &url)
                 .await
                 .map_err(|e| e.to_string())?;
