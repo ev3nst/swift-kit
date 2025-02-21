@@ -18,6 +18,9 @@ mod intro_outro_prediction;
 mod migrations;
 mod no_intro_outro;
 mod rename_files;
+mod scrape_movie;
+mod scrapers;
+mod search_movie;
 mod trash_folder;
 mod utils;
 
@@ -59,7 +62,9 @@ pub fn run() {
             trash_folder::trash_folder,
             no_intro_outro::no_intro_outro,
             interpolate::interpolate,
-            convert_to_mp4::convert_to_mp4
+            convert_to_mp4::convert_to_mp4,
+            search_movie::search_movie,
+            scrape_movie::scrape_movie
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -4,8 +4,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Listener};
 use walkdir::WalkDir;
 
-use super::get_available_disks::get_linux_mounts;
-use super::get_available_disks::get_windows_drives;
+use super::get_available_disks::get_available_disks;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn finder(
@@ -17,13 +16,9 @@ pub async fn finder(
         return Err("Search term must be at least 3 characters long".to_string());
     }
 
-    let available_disks = if cfg!(target_os = "windows") {
-        get_windows_drives().map_err(|e| format!("Failed to get available disks: {}", e))?
-    } else if cfg!(target_os = "linux") {
-        get_linux_mounts().map_err(|e| format!("Failed to get available disks: {}", e))?
-    } else {
-        return Err("Unsupported OS".to_string());
-    };
+    let available_disks = get_available_disks()
+        .await
+        .map_err(|e| format!("Failed to get available disks: {}", e))?;
 
     let search_path = match disk {
         Some(ref d) if d == "*" => available_disks

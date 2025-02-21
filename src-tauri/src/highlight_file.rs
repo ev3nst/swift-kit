@@ -9,27 +9,13 @@ pub fn highlight_file(file_path: String) -> Result<(), String> {
     }
 
     let command = if cfg!(target_os = "windows") {
-        println!("Sanitized path: {}", sanitized_path);
         format!("explorer /select,{}", sanitized_path)
-    } else if cfg!(target_os = "linux") {
-        format!("xdg-open {}", sanitized_path)
     } else {
         return Err("Unsupported OS".to_string());
     };
 
-    let shell = if cfg!(target_os = "windows") {
-        "cmd"
-    } else {
-        "sh"
-    };
-    let shell_arg = if cfg!(target_os = "windows") {
-        "/C"
-    } else {
-        "-c"
-    };
-
-    Command::new(shell)
-        .arg(shell_arg)
+    Command::new("cmd")
+        .arg("/C")
         .arg(command)
         .spawn()
         .map_err(|e| e.to_string())?;

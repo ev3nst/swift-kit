@@ -49,7 +49,7 @@ export function Create() {
 					</TabsList>
 					<TabsContent
 						value="movie"
-						className="h-[500px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
+						className="h-[400px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateMovie
 							key="create-movie-form"
