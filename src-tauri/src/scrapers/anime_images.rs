@@ -4,7 +4,7 @@ use std::error::Error as StdError;
 
 use super::fetch_tmdb_images::{fetch_tmdb_images, TMDBImageData};
 
-pub async fn movie_poster(
+pub async fn anime_images(
     client: &Client,
     title: String,
     year: Option<u16>,
@@ -13,13 +13,14 @@ pub async fn movie_poster(
         cover: None,
         poster: None,
     };
+
     let search_url = if let Some(year) = year {
         format!(
-            "https://www.themoviedb.org/search?query={} y:{}",
+            "https://www.themoviedb.org/search/tv?query={} y:{}",
             title, year
         )
     } else {
-        format!("https://www.themoviedb.org/search?query={}", title)
+        format!("https://www.themoviedb.org/search/tv?query={}", title)
     };
 
     let res = client.get(&search_url).send().await?;

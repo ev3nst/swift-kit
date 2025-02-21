@@ -16,7 +16,7 @@ pub fn get_migrations() -> Vec<Migration> {
             );
 
             -- Indexes for performance on commonly queried fields
-            CREATE INDEX idx_name ON settings (name);
+            CREATE INDEX idx_setting_name ON settings (name);
 
             -- Trigger to automatically update the `updated_at` field on updates
             CREATE TRIGGER settings_updated_at
@@ -70,8 +70,8 @@ pub fn get_migrations() -> Vec<Migration> {
             );
 
             -- Indexes for performance on commonly queried fields
-            CREATE INDEX idx_platform ON credentials (platform);
-            CREATE INDEX idx_username ON credentials (username);
+            CREATE INDEX idx_credential_platform ON credentials (platform);
+            CREATE INDEX idx_credential_username ON credentials (username);
 
             -- Full-text search for the 'note' field
             CREATE VIRTUAL TABLE credentials_fts USING fts5(note);
@@ -99,7 +99,7 @@ pub fn get_migrations() -> Vec<Migration> {
             );
 
             -- Indexes for performance on commonly queried fields
-            CREATE INDEX idx_video_path ON video_thumbnails (video_path);
+            CREATE INDEX idx_vt_video_path ON video_thumbnails (video_path);
 
             -- Trigger to automatically update the `updated_at` field on updates
             CREATE TRIGGER video_thumbnails_updated_at
@@ -119,9 +119,9 @@ pub fn get_migrations() -> Vec<Migration> {
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				scraped_url TEXT NOT NULL UNIQUE,
 				title TEXT NOT NULL CHECK(length(title) <= 255),
-				year TEXT NOT NULL CHECK(length(year) <= 10),
-				release_date DATETIME NOT NULL,
-				genre TEXT NOT NULL CHECK(length(genre) <= 255),
+				year INTEGER,
+				release_date DATETIME,
+				genre TEXT CHECK(length(genre) <= 255),
 				description TEXT,
 				keywords TEXT,
 				cover TEXT,
@@ -130,8 +130,8 @@ pub fn get_migrations() -> Vec<Migration> {
 				duration INTEGER,
 				country TEXT CHECK(length(country) <= 100),
 				language TEXT CHECK(length(language) <= 100),
-				imdb_rating TEXT CHECK(length(imdb_rating) <= 10),
-				personal_rating TEXT CHECK(length(personal_rating) <= 10),
+				imdb_rating REAL,
+				personal_rating REAL,
 				other_images TEXT,
 				director TEXT CHECK(length(director) <= 150),
 				writers TEXT,
@@ -141,12 +141,12 @@ pub fn get_migrations() -> Vec<Migration> {
 			);
 					
 			-- Indexes for performance on commonly queried fields
-			CREATE INDEX idx_scraped_url ON movies (scraped_url);
-			CREATE INDEX idx_title ON movies (title);
-			CREATE INDEX idx_year ON movies (year);
-			CREATE INDEX idx_genre ON movies (genre);
-			CREATE INDEX idx_imdb_rating ON movies (imdb_rating);
-			CREATE INDEX idx_personal_rating ON movies (personal_rating);
+			CREATE INDEX idx_movie_scraped_url ON movies (scraped_url);
+			CREATE INDEX idx_movie_title ON movies (title);
+			CREATE INDEX idx_movie_year ON movies (year);
+			CREATE INDEX idx_movie_genre ON movies (genre);
+			CREATE INDEX idx_movie_imdb_rating ON movies (imdb_rating);
+			CREATE INDEX idx_movie_personal_rating ON movies (personal_rating);
 
 			-- Full-text search for 'title', 'description', 'keywords'
 			CREATE VIRTUAL TABLE movies_fts USING fts5(title, description, keywords);
@@ -157,6 +157,53 @@ pub fn get_migrations() -> Vec<Migration> {
 			FOR EACH ROW
 			BEGIN
 				UPDATE movies SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+			END;
+			"#,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 6,
+            description: "create_animes_table",
+            sql: r#"
+			CREATE TABLE IF NOT EXISTS animes (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				scraped_url TEXT NOT NULL UNIQUE,
+				franchise TEXT NOT NULL,
+				title TEXT NOT NULL,
+				original_title TEXT NOT NULL,
+				year INTEGER,
+				genre TEXT CHECK(length(genre) <= 255),
+				description TEXT,
+				episodes INTEGER,
+				cover TEXT,
+				poster TEXT,
+				trailer TEXT,
+				duration TEXT CHECK(length(genre) <= 255),
+				studios TEXT,
+				mal_rating REAL,
+				personal_rating REAL,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			);
+					
+			-- Indexes for performance on commonly queried fields
+			CREATE INDEX idx_anime_scraped_url ON animes (scraped_url);
+			CREATE INDEX idx_anime_title ON animes (title);
+			CREATE INDEX idx_anime_original_title ON animes (original_title);
+			CREATE INDEX idx_anime_year ON animes (year);
+			CREATE INDEX idx_anime_genre ON animes (genre);
+			CREATE INDEX idx_anime_mal_rating ON animes (mal_rating);
+			CREATE INDEX idx_anime_personal_rating ON animes (personal_rating);
+
+			-- Full-text search for 'title', 'original_title', 'description'
+			CREATE VIRTUAL TABLE animes_fts USING fts5(title, original_title, description);
+		
+			-- Trigger to automatically update the `updated_at` field on updates
+			CREATE TRIGGER animes_updated_at
+			AFTER UPDATE ON animes
+			FOR EACH ROW
+			BEGIN
+				UPDATE animes SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 			END;
 			"#,
             kind: MigrationKind::Up,

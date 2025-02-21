@@ -64,18 +64,29 @@ pub async fn scrape_movie(url: String) -> Result<MovieData, String> {
             let trailer_data = yt_trailer::yt_trailer(
                 &client,
                 imdb_data.title.clone(),
-                &imdb_data.year.ok_or("Year not found")?,
+                imdb_data.year.clone().as_ref(),
             )
-            .await
-            .map_err(|e| e.to_string())?;
+            .await;
+            if let Ok(data) = trailer_data {
+                movie.trailer = data.trailer_url;
+            }
 
-            let poster_data = movie_poster::movie_poster(
+            movie.cover = imdb_data.cover;
+            let tmdb_data = movie_poster::movie_poster(
                 &client,
                 imdb_data.title.clone(),
-                imdb_data.year.ok_or("Year not found")?,
+                imdb_data.year.clone(),
             )
-            .await
-            .map_err(|e| e.to_string())?;
+            .await;
+            if let Ok(data) = tmdb_data {
+                if !data.cover.is_none() && data.cover != Some("".to_string()) {
+                    movie.cover = data.cover;
+                }
+
+                if !data.poster.is_none() && data.poster != Some("".to_string()) {
+                    movie.poster = data.poster;
+                }
+            }
 
             movie.scraped_url = url;
             movie.title = imdb_data.title;
@@ -88,13 +99,10 @@ pub async fn scrape_movie(url: String) -> Result<MovieData, String> {
             movie.actors = imdb_data.actors;
             movie.writers = imdb_data.writers;
             movie.directors = imdb_data.directors;
-            movie.cover = imdb_data.cover;
             movie.imdb_rating = imdb_data.imdb_rating;
             movie.country = imdb_data.country;
             movie.language = imdb_data.language;
             movie.other_images = imdb_data.other_images;
-            movie.trailer = trailer_data.trailer_url;
-            movie.poster = poster_data.image_link;
 
             Ok(movie)
         })

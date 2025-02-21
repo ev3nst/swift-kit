@@ -5,7 +5,7 @@ import { cva } from 'class-variance-authority';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import { type IVideoMeta, type IAnimeMeta } from '@/lib/api';
+import { type IVideoMeta, type IVideoIO } from '@/lib/api';
 
 import type { FileMeta } from '@/components/native-file-input';
 
@@ -101,8 +101,8 @@ export const calculateFFmpegETA = (
 };
 
 export const calculateQueueETA = (
-	currentVideo: IAnimeMeta | IVideoMeta,
-	videoQueue: IAnimeMeta[] | IVideoMeta[],
+	currentVideo: IVideoIO | IVideoMeta,
+	videoQueue: IVideoIO[] | IVideoMeta[],
 	ffmpegOutput: string,
 ): string => {
 	const currentIndex = videoQueue.findIndex(

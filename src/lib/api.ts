@@ -30,7 +30,7 @@ export type IVideoMeta = {
 	src?: string;
 };
 
-export type IAnimeMeta = {
+export type IVideoIO = {
 	intro_start: string;
 	intro_end: string;
 	outro_start: string;
@@ -60,9 +60,27 @@ export type IMovieMeta = {
 	country: string | null;
 	language: string | null;
 	other_images: string | null;
-	personal_rating: string | null;
+	personal_rating: number | null;
 	trailer: string | null;
 	poster: string | null;
+};
+
+export type IAnimeMeta = {
+	scraped_url: string;
+	franchise: string | null;
+	original_title: string;
+	title: string;
+	description: string | null;
+	genre: string | null;
+	year: number | null;
+	episodes: number | null;
+	cover: string | null;
+	duration: string | null;
+	studios: string | null;
+	mal_rating: number | null;
+	personal_rating: number | null;
+	poster: string | null;
+	trailer: string | null;
 };
 
 class API {
@@ -74,7 +92,7 @@ class API {
 
 	async fetch_files(
 		folder_path: string,
-		extension_filter?: string
+		extension_filter?: string,
 	): Promise<IFileMeta[]> {
 		return invoke('fetch_files', {
 			folder_path,
@@ -86,7 +104,7 @@ class API {
 		folder_path: string,
 		search: string,
 		replace?: string,
-		extension_filter?: string
+		extension_filter?: string,
 	): Promise<void> {
 		await invoke('bulk_rename', {
 			folder_path,
@@ -102,7 +120,7 @@ class API {
 			old: string;
 			new: string;
 		}[],
-		extension_filter?: string
+		extension_filter?: string,
 	): Promise<void> {
 		await invoke('rename_files', {
 			folder_path,
@@ -131,7 +149,7 @@ class API {
 	async image_convert(
 		img_path: string,
 		to: string,
-		output_folder?: string
+		output_folder?: string,
 	): Promise<string> {
 		return invoke('image_convert', {
 			img_path,
@@ -143,7 +161,7 @@ class API {
 	async image_compress(
 		img_path: string,
 		quality: number,
-		output_folder?: string
+		output_folder?: string,
 	): Promise<string> {
 		return invoke('image_compress', {
 			img_path,
@@ -157,7 +175,7 @@ class API {
 		width?: number,
 		height?: number,
 		output_folder?: string,
-		file_name?: string
+		file_name?: string,
 	): Promise<string> {
 		return invoke('image_resize', {
 			img_path,
@@ -190,9 +208,7 @@ class API {
 		return invoke('trash_folder', { folder_path });
 	}
 
-	async intro_outro_prediction(
-		episodes_folder: string
-	): Promise<IAnimeMeta[]> {
+	async intro_outro_prediction(episodes_folder: string): Promise<IVideoIO[]> {
 		return invoke('intro_outro_prediction', {
 			episodes_folder,
 		});
@@ -200,9 +216,9 @@ class API {
 
 	async no_intro_outro(
 		folder_path: string,
-		video: IAnimeMeta,
+		video: IVideoIO,
 		use_cuda: boolean = true,
-		overwrite: boolean = false
+		overwrite: boolean = false,
 	) {
 		return invoke('no_intro_outro', {
 			folder_path,
@@ -221,7 +237,7 @@ class API {
 		encoder: string = 'h264_nvenc',
 		rife_model: string = 'rife-v4.6',
 		multiplier: number = 2,
-		overwrite: boolean = false
+		overwrite: boolean = false,
 	) {
 		const video2xPath = await Setting.get('video2x_binary_path');
 		if (
@@ -254,6 +270,12 @@ class API {
 
 	async scrape_movie(url: string): Promise<IMovieMeta> {
 		return invoke('scrape_movie', {
+			url,
+		});
+	}
+
+	async scrape_anime(url: string): Promise<IAnimeMeta> {
+		return invoke('scrape_anime', {
 			url,
 		});
 	}

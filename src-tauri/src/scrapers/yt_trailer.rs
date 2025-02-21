@@ -10,13 +10,20 @@ pub struct YoutubeTrailerData {
 pub async fn yt_trailer(
     client: &Client,
     title: String,
-    year: &u16,
+    year: Option<&u16>,
 ) -> Result<YoutubeTrailerData, Box<dyn Error>> {
     let mut data = YoutubeTrailerData { trailer_url: None };
-    let search_url = format!(
-        "https://www.youtube.com/results?search_query={}+{}+trailer",
-        title, year
-    );
+    let search_url = if let Some(year) = year {
+        format!(
+            "https://www.youtube.com/results?search_query={}+{}+trailer",
+            title, year
+        )
+    } else {
+        format!(
+            "https://www.youtube.com/results?search_query={}+trailer",
+            title
+        )
+    };
 
     let res = client.get(&search_url).send().await?;
     let body = res.text().await?;

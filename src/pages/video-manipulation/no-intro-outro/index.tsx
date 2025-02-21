@@ -22,7 +22,7 @@ import { ScrollToTop } from '@/components/scroll-to-top';
 import { Progress } from '@/components/progress';
 import { Loading } from '@/components/loading';
 
-import api, { type IAnimeMeta } from '@/lib/api';
+import api, { type IVideoIO } from '@/lib/api';
 import { calculateQueueETA } from '@/lib/utils';
 import { emitter } from '@/lib/event';
 
@@ -68,12 +68,12 @@ const noIntroOutroSchema = z.object({
 const NoIntroOutro = () => {
 	const shouldStopRef = useRef(false);
 	const [processLoading, setProcessLoading] = useState(false);
-	const [fetchedVideos, setFetchedVideos] = useState<IAnimeMeta[]>([]);
+	const [fetchedVideos, setFetchedVideos] = useState<IVideoIO[]>([]);
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [ffmpegStdout, setFfmpegStdout] = useState<string>('');
 	const [currentProcessETA, setCurrentProcessETA] = useState<string>('');
 	const [processingVideo, setProcessingVideo] = useState<
-		IAnimeMeta | undefined
+		IVideoIO | undefined
 	>(undefined);
 	const [progress, setProgress] = useState(0);
 

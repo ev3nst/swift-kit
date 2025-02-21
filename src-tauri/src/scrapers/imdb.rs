@@ -5,9 +5,6 @@ use std::error::Error;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IMDBData {
-    #[serde(rename = "url")]
-    pub scraped_url: String,
-
     #[serde(rename = "name")]
     pub title: String,
 
