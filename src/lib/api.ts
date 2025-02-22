@@ -37,12 +37,6 @@ export type IVideoIO = {
 	outro_end: string;
 } & IVideoMeta;
 
-export type IMovieQueryR = {
-	title: string;
-	href: string;
-	cover: string;
-};
-
 export type IMovieMeta = {
 	scraped_url: string;
 	title: string;
@@ -65,12 +59,6 @@ export type IMovieMeta = {
 	poster: string | null;
 };
 
-export type IAnimeQueryR = {
-	title: string;
-	href: string;
-	cover: string;
-};
-
 export type IAnimeMeta = {
 	scraped_url: string;
 	franchise: string | null;
@@ -87,6 +75,12 @@ export type IAnimeMeta = {
 	personal_rating: number | null;
 	poster: string | null;
 	trailer: string | null;
+};
+
+export type MediaQueryR = {
+	title: string;
+	href: string;
+	cover: string;
 };
 
 class API {
@@ -268,7 +262,7 @@ class API {
 		});
 	}
 
-	async search_movie(query: string): Promise<IMovieQueryR[]> {
+	async search_movie(query: string): Promise<MediaQueryR[]> {
 		return invoke('search_movie', {
 			query,
 		});
@@ -280,7 +274,7 @@ class API {
 		});
 	}
 
-	async search_anime(query: string): Promise<IAnimeQueryR[]> {
+	async search_anime(query: string): Promise<MediaQueryR[]> {
 		return invoke('search_anime', {
 			query,
 		});
@@ -289,6 +283,12 @@ class API {
 	async scrape_anime(url: string): Promise<IAnimeMeta> {
 		return invoke('scrape_anime', {
 			url,
+		});
+	}
+
+	async search_game(query: string): Promise<MediaQueryR[]> {
+		return invoke('search_game', {
+			query,
 		});
 	}
 

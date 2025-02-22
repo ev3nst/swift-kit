@@ -56,8 +56,6 @@ pub async fn search_movie(query: String) -> Result<Vec<MovieSearchResult>, Strin
                 }
             }
 
-            // Limit to top 5 results
-            results = results.into_iter().take(5).collect();
             Ok(results)
         })
     })

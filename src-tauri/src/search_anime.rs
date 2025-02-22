@@ -71,7 +71,6 @@ pub async fn search_anime(query: String) -> Result<Vec<AnimeSearchResult>, Strin
                 }
             }
 
-            results = results.into_iter().take(7).collect();
             Ok(results)
         })
     })
