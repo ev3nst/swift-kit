@@ -1,9 +1,9 @@
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tokio::{runtime::Runtime, task};
 
-use super::scrapers::anime_images;
 use super::scrapers::mal;
+use super::scrapers::tmdb_assets::tmdb_assets;
+use super::utils::request_client::request_client;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AnimeData {
@@ -19,7 +19,6 @@ pub struct AnimeData {
     pub duration: Option<String>,
     pub studios: Option<String>,
     pub mal_rating: Option<f32>,
-    pub personal_rating: Option<f32>,
     pub trailer: Option<String>,
 }
 
@@ -40,23 +39,23 @@ pub async fn scrape_anime(url: String) -> Result<AnimeData, String> {
                 duration: None,
                 studios: None,
                 mal_rating: None,
-                personal_rating: None,
                 trailer: None,
             };
 
-			let client = Client::builder()
-				.user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-				.build()
-				.map_err(|e| e.to_string())?;
-		
+            let client = request_client().map_err(|e| e.to_string())?;
+
             let mal_data = mal::scrape(&client, &url)
                 .await
                 .map_err(|e| e.to_string())?;
             anime.cover = mal_data.cover;
 
-            let tmdb_data =
-                anime_images::anime_images(&client, mal_data.title.clone(), mal_data.year.clone())
-                    .await;
+            let tmdb_data = tmdb_assets(
+                &client,
+                "tv".to_string(),
+                mal_data.title.clone(),
+                mal_data.year.clone(),
+            )
+            .await;
             if let Ok(data) = tmdb_data {
                 if !data.cover.is_none() && data.cover != Some("".to_string()) {
                     anime.cover = data.cover;

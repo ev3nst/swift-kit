@@ -19,6 +19,7 @@ mod migrations;
 mod no_intro_outro;
 mod rename_files;
 mod scrape_anime;
+mod scrape_game;
 mod scrape_movie;
 mod scrapers;
 mod search_anime;
@@ -69,6 +70,7 @@ pub fn run() {
             scrape_movie::scrape_movie,
             search_anime::search_anime,
             scrape_anime::scrape_anime,
+            scrape_game::scrape_game,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

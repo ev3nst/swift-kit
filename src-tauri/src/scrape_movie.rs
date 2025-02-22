@@ -1,10 +1,9 @@
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tokio::{runtime::Runtime, task};
 
 use super::scrapers::imdb;
-use super::scrapers::movie_poster;
-use super::scrapers::yt_trailer;
+use super::scrapers::tmdb_assets::tmdb_assets;
+use super::utils::request_client::request_client;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MovieData {
@@ -24,7 +23,6 @@ pub struct MovieData {
     pub country: Option<String>,
     pub language: Option<String>,
     pub other_images: Option<String>,
-    pub personal_rating: Option<String>,
     pub trailer: Option<String>,
     pub poster: Option<String>,
 }
@@ -50,33 +48,20 @@ pub async fn scrape_movie(url: String) -> Result<MovieData, String> {
                 country: None,
                 language: None,
                 other_images: None,
-                personal_rating: None,
                 trailer: None,
                 poster: None,
             };
-	
-			let client = Client::builder()
-				.user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-				.build()
-				.map_err(|e| e.to_string())?;
-		
+
+            let client = request_client().map_err(|e| e.to_string())?;
+
             let imdb_data = imdb::scrape(&client, &url)
                 .await
                 .map_err(|e| e.to_string())?;
 
-            let trailer_data = yt_trailer::yt_trailer(
-                &client,
-                imdb_data.title.clone(),
-                imdb_data.year.clone().as_ref(),
-            )
-            .await;
-            if let Ok(data) = trailer_data {
-                movie.trailer = data.trailer_url;
-            }
-
             movie.cover = imdb_data.cover;
-            let tmdb_data = movie_poster::movie_poster(
+            let tmdb_data = tmdb_assets(
                 &client,
+                "movie".to_string(),
                 imdb_data.title.clone(),
                 imdb_data.year.clone(),
             )
@@ -88,6 +73,10 @@ pub async fn scrape_movie(url: String) -> Result<MovieData, String> {
 
                 if !data.poster.is_none() && data.poster != Some("".to_string()) {
                     movie.poster = data.poster;
+                }
+
+                if !data.trailer.is_none() && data.trailer != Some("".to_string()) {
+                    movie.trailer = data.trailer;
                 }
             }
 

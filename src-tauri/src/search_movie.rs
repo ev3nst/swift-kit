@@ -1,7 +1,9 @@
-use reqwest::Client;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use tokio::{runtime::Runtime, task};
+
+use super::utils::common_headers::common_headers;
+use super::utils::request_client::request_client;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MovieSearchResult {
@@ -16,13 +18,11 @@ pub async fn search_movie(query: String) -> Result<Vec<MovieSearchResult>, Strin
         Runtime::new().unwrap().block_on(async move {
             let mut results = Vec::new();
             let search_url = format!("https://www.imdb.com/find/?q={}", query);
-            let client = Client::builder()
-                .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .build()
-                .map_err(|e| e.to_string())?;
-			
+            let client = request_client().map_err(|e| e.to_string())?;
+
             let res = client
                 .get(&search_url)
+                .headers(common_headers())
                 .send()
                 .await
                 .map_err(|e| e.to_string())?;

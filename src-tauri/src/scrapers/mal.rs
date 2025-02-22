@@ -2,6 +2,8 @@ use reqwest::Client;
 use scraper::{ElementRef, Html, Selector};
 use std::error::Error;
 
+use crate::utils::common_headers::common_headers;
+
 #[derive(Debug)]
 pub struct MALData {
     pub original_title: String,
@@ -18,16 +20,7 @@ pub struct MALData {
 }
 
 pub async fn scrape(client: &Client, url: &str) -> Result<MALData, Box<dyn Error>> {
-    let res = client
-        .get(url)
-        .header(
-            "Accept",
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        )
-        .header("Accept-Language", "en-US,en;q=0.5")
-        .header("Connection", "keep-alive")
-        .send()
-        .await?;
+    let res = client.get(url).headers(common_headers()).send().await?;
     let body = res.text().await?;
     let document = Html::parse_document(&body);
 

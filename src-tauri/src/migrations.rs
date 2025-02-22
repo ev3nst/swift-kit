@@ -120,7 +120,7 @@ pub fn get_migrations() -> Vec<Migration> {
 				scraped_url TEXT NOT NULL UNIQUE,
 				title TEXT NOT NULL CHECK(length(title) <= 255),
 				year INTEGER,
-				release_date DATETIME,
+				release_date TEXT CHECK(length(release_date) <= 100),
 				genre TEXT CHECK(length(genre) <= 255),
 				description TEXT,
 				keywords TEXT,
@@ -168,7 +168,7 @@ pub fn get_migrations() -> Vec<Migration> {
 			CREATE TABLE IF NOT EXISTS animes (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				scraped_url TEXT NOT NULL UNIQUE,
-				franchise TEXT NOT NULL,
+				franchise TEXT,
 				title TEXT NOT NULL,
 				original_title TEXT NOT NULL,
 				year INTEGER,
@@ -204,6 +204,50 @@ pub fn get_migrations() -> Vec<Migration> {
 			FOR EACH ROW
 			BEGIN
 				UPDATE animes SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+			END;
+			"#,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 7,
+            description: "create_games_table",
+            sql: r#"
+			CREATE TABLE IF NOT EXISTS games (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				scraped_url TEXT NOT NULL UNIQUE,
+				franchise TEXT,
+				title TEXT NOT NULL,
+				genre TEXT,
+				description TEXT,
+				about TEXT,
+				release_date TEXT CHECK(length(release_date) <= 100),
+				year INTEGER,
+				developers TEXT CHECK(length(developers) <= 255),
+				publishers TEXT CHECK(length(publishers) <= 255),
+				cover TEXT,
+				poster TEXT,
+				trailer TEXT,
+				other_images TEXT,
+				personal_rating REAL,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			);
+					
+			-- Indexes for performance on commonly queried fields
+			CREATE INDEX idx_game_scraped_url ON games (scraped_url);
+			CREATE INDEX idx_game_title ON games (title);
+			CREATE INDEX idx_game_genre ON games (genre);
+			CREATE INDEX idx_game_personal_rating ON games (personal_rating);
+
+			-- Full-text search for 'title', 'description', 'about'
+			CREATE VIRTUAL TABLE games_fts USING fts5(title, description, about);
+		
+			-- Trigger to automatically update the `updated_at` field on updates
+			CREATE TRIGGER games_updated_at
+			AFTER UPDATE ON games
+			FOR EACH ROW
+			BEGIN
+				UPDATE games SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 			END;
 			"#,
             kind: MigrationKind::Up,

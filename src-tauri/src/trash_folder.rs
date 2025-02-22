@@ -1,7 +1,7 @@
 use std::path::Path;
-use trash::delete;
-use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
+use trash::delete;
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn trash_folder(folder_path: String, handle: AppHandle) -> Result<String, String> {

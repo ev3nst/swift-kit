@@ -3,6 +3,8 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::error::Error;
 
+use crate::utils::common_headers::common_headers;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IMDBData {
     #[serde(rename = "name")]
@@ -47,16 +49,7 @@ pub struct IMDBData {
 }
 
 pub async fn scrape(client: &Client, url: &str) -> Result<IMDBData, Box<dyn Error>> {
-    let res = client
-        .get(url)
-        .header(
-            "Accept",
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        )
-        .header("Accept-Language", "en-US,en;q=0.5")
-        .header("Connection", "keep-alive")
-        .send()
-        .await?;
+    let res = client.get(url).headers(common_headers()).send().await?;
     let body = res.text().await?;
     let document = Html::parse_document(&body);
     let selector = Selector::parse("script[type='application/ld+json']").unwrap();
