@@ -1,6 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import { Setting } from '@/lib/models/setting';
+import type { Movie } from '@/lib/models/movie';
+import type { Anime } from '@/lib/models/anime';
+import type { Game } from '@/lib/models/game';
 
 export type IFileMeta = {
 	filename: string;
@@ -36,46 +39,6 @@ export type IVideoIO = {
 	outro_start: string;
 	outro_end: string;
 } & IVideoMeta;
-
-export type IMovieMeta = {
-	scraped_url: string;
-	title: string;
-	description: string | null;
-	keywords: string | null;
-	release_date: string | null;
-	year: number | null;
-	duration: string | null;
-	genre: string | null;
-	actors: string | null;
-	writers: string | null;
-	directors: string | null;
-	cover: string | null;
-	imdb_rating: number | null;
-	country: string | null;
-	language: string | null;
-	other_images: string | null;
-	personal_rating: number | null;
-	trailer: string | null;
-	poster: string | null;
-};
-
-export type IAnimeMeta = {
-	scraped_url: string;
-	franchise: string | null;
-	original_title: string;
-	title: string;
-	description: string | null;
-	genre: string | null;
-	year: number | null;
-	episodes: number | null;
-	cover: string | null;
-	duration: string | null;
-	studios: string | null;
-	mal_rating: number | null;
-	personal_rating: number | null;
-	poster: string | null;
-	trailer: string | null;
-};
 
 export type MediaQueryR = {
 	title: string;
@@ -268,7 +231,7 @@ class API {
 		});
 	}
 
-	async scrape_movie(url: string): Promise<IMovieMeta> {
+	async scrape_movie(url: string): Promise<Movie> {
 		return invoke('scrape_movie', {
 			url,
 		});
@@ -280,7 +243,7 @@ class API {
 		});
 	}
 
-	async scrape_anime(url: string): Promise<IAnimeMeta> {
+	async scrape_anime(url: string): Promise<Anime> {
 		return invoke('scrape_anime', {
 			url,
 		});
@@ -292,7 +255,7 @@ class API {
 		});
 	}
 
-	async scrape_game(url: string): Promise<IMovieMeta> {
+	async scrape_game(url: string): Promise<Game> {
 		return invoke('scrape_game', {
 			url,
 		});

@@ -84,14 +84,7 @@ pub async fn scrape(client: &Client, url: &str) -> Result<IMDBData, Box<dyn Erro
     )
     .unwrap();
     if let Some(language) = document.select(&language_selector).next() {
-        imdb_data.language = Some(
-            language
-                .text()
-                .collect::<Vec<_>>()
-                .join(", ")
-                .as_str()
-                .to_owned(),
-        );
+        imdb_data.language = Some(language.text().next().unwrap_or_default().to_string());
     }
 
     // Other images
@@ -140,9 +133,13 @@ where
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IMDBRating {
+    #[serde(rename = "ratingCount")]
     pub rating_count: Option<u32>,
+    #[serde(rename = "bestRating")]
     pub best_rating: Option<u32>,
+    #[serde(rename = "worstRating")]
     pub worst_rating: Option<u32>,
+    #[serde(rename = "ratingValue")]
     pub rating_value: Option<f32>,
 }
 
