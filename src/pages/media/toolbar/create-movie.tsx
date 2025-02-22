@@ -40,110 +40,108 @@ import { Button } from '@/components/button';
 import { Textarea } from '@/components/textarea';
 import { Checkbox } from '@/components/checkbox';
 
+import { MediaCache } from '@/lib/models/media-cache';
+import api, { MediaQueryR } from '@/lib/api';
+import { Loading } from '@/components/loading';
+import { MovieModel } from '@/lib/models/movie';
+
 const createMovieSchema = z.object({
+	scraped_url: z.string().optional(),
 	title: z.string().min(1, {
 		message: 'Title is required.',
 	}),
-	year: z.string().min(4, {
-		message: 'Year is required.',
-	}),
+	franchise: z.string().optional(),
+	description: z.string().optional(),
+	keywords: z.string().optional(),
 	release_date: z.string().min(4, {
 		message: 'Release date is required.',
 	}),
-	genre: z.string().min(1, {
-		message: 'Genre is required.',
-	}),
-	description: z.string().nullable(),
-	plot: z.string().nullable(),
-	cover: z.string().nullable(),
-	poster: z.string().nullable(),
-	duration: z.string().nullable(),
-	country: z.string().nullable(),
-	imdb_rating: z.any().nullable(),
-	personal_rating: z.any().nullable(),
-	director: z.string().nullable(),
-	writers: z.string().nullable(),
-	actors: z.string().nullable(),
-	other_images: z.string().nullable(),
-	trailer: z.any().nullable(),
-	scraped_url: z.string().nullable(),
+	year: z
+		.number()
+		.min(4, {
+			message: 'Year is required.',
+		})
+		.optional(),
+	duration: z.string().optional(),
+	genre: z.string().optional(),
+	actors: z.string().optional(),
+	writers: z.string().optional(),
+	directors: z.string().optional(),
+	cover: z.string().optional(),
+	imdb_rating: z.number().optional(),
+	country: z.string().optional(),
+	language: z.string().optional(),
+	other_images: z.string().optional(),
+	personal_rating: z.number().optional(),
+	trailer: z.string().optional(),
+	poster: z.string().optional(),
 });
 
-type MovieData = {
-	title: string;
-	href: string;
-	cover: string;
-};
-
 export function CreateMovie({ closeDialog }) {
-	const [searchMovieData, setSearchMovieData] = useState<MovieData[]>([]);
+	const [searchMovieData, setSearchMovieData] = useState<MediaQueryR[]>([]);
 	const [overrideCache, setOverrideCache] = useState(false);
+	const [processLoading, setProcessLoading] = useState(false);
 	const [fetchLoading, setFetchLoading] = useState(false);
 
-	const form = useForm({
+	const form = useForm<z.infer<typeof createMovieSchema>>({
 		resolver: zodResolver(createMovieSchema),
 		defaultValues: {
 			title: '',
-			year: '',
-			release_date: '',
-			genre: '',
-			description: '',
-			plot: '',
-			cover: '',
-			poster: '',
-			duration: '',
-			country: '',
-			imdb_rating: '',
-			personal_rating: '',
-			director: '',
-			writers: '',
-			actors: '',
-			other_images: '',
-			trailer: '',
-			scraped_url: '',
 		},
 	});
 
-	const { setValue, getValues } = form;
+	const { setValue, getValues, watch } = form;
 
-	let otherImagesData = [];
+	let otherImagesData: string[] = [];
 	const otherImages = getValues('other_images');
 	if (otherImages) {
-		otherImagesData = JSON.parse(otherImages);
+		otherImagesData = otherImages.split(', ');
 	}
 
-	const title = getValues('title');
+	const title = watch('title');
 	const year = getValues('year');
 	const coverImage = getValues('cover');
 	const posterImage = getValues('poster');
 
-	function onSubmit(data: z.infer<typeof createMovieSchema>) {
-		console.log('onSubmit:', data);
-		console.log('closeDialog:', closeDialog);
-	}
-
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
+			console.log(title, 'asd');
 			setFetchLoading(true);
-			console.log('fetchWithTitle:', { title, overrideCache });
-			const resp = []; // fetch data from IMDB
-			setSearchMovieData(resp);
-			setFetchLoading(false);
+			if (!overrideCache) {
+				const cache = await MediaCache.get('movie', title);
+				if (cache) {
+					setSearchMovieData(cache.result_json);
+					setFetchLoading(false);
+					return;
+				}
+			}
+
+			const results = await api.search_movie(title);
+			if (
+				typeof results !== 'undefined' &&
+				Array.isArray(results) &&
+				results.length > 0
+			) {
+				await MediaCache.save('movie', title, JSON.stringify(results));
+				setSearchMovieData(results);
+				setFetchLoading(false);
+			}
 		}
 	}
 
-	async function onTitleSelect(movieData) {
+	async function onTitleSelect(movieQueryR: MediaQueryR) {
 		if (!fetchLoading) {
 			setFetchLoading(true);
-			console.log('onTitleSelect:', { movieData, overrideCache });
-			const fetchedData = {}; // fetch data from IMDB
+			const fetchedData = await api.scrape_movie(movieQueryR.href);
 			const fetchedKeys = Object.keys(fetchedData);
+			setValue('scraped_url', movieQueryR.href);
 			for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
 				const key = fetchedKeys[fki];
 
 				if (
 					typeof fetchedData[key] !== 'undefined' &&
-					fetchedData[key] !== null
+					fetchedData[key] !== null &&
+					fetchedData[key] !== ''
 				) {
 					setValue(key as any, fetchedData[key]);
 				}
@@ -152,6 +150,15 @@ export function CreateMovie({ closeDialog }) {
 			setFetchLoading(false);
 			setSearchMovieData([]);
 		}
+	}
+
+	async function onSubmit(data: z.infer<typeof createMovieSchema>) {
+		setProcessLoading(true);
+		data.scraped_url = data.scraped_url!.replace(/\/$/, '');
+		const newMovie = new MovieModel(data as any);
+		await newMovie.save();
+		closeDialog();
+		setProcessLoading(false);
 	}
 
 	return (
@@ -208,6 +215,7 @@ export function CreateMovie({ closeDialog }) {
 										<div className="flex items-center justify-between gap-2">
 											<Input
 												placeholder="Movie Name"
+												autoComplete="off"
 												disabled={fetchLoading}
 												{...field}
 											/>
@@ -263,12 +271,11 @@ export function CreateMovie({ closeDialog }) {
 										</h6>
 										<div
 											className="hover:text-sky-600 cursor-pointer"
-											onClick={() => {
-												console.log(
-													'openExternal:',
+											onClick={() =>
+												api.open_external_url(
 													movieData.href,
-												);
-											}}
+												)
+											}
 										>
 											<ExternalLink className="w-5" />
 										</div>
@@ -276,6 +283,24 @@ export function CreateMovie({ closeDialog }) {
 								))}
 							</div>
 						)}
+						<FormField
+							control={form.control}
+							name="franchise"
+							render={({ field }) => (
+								<FormItem className="grid gap-1 flex-grow">
+									<FormLabel className="text-sky-600">
+										<div>Franchise</div>
+									</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="eg. Marvel, LOTR"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
 						<div className="grid grid-cols-3 gap-5 items-baseline">
 							<FormField
 								control={form.control}
@@ -283,12 +308,7 @@ export function CreateMovie({ closeDialog }) {
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											<div>
-												Release Date
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
+											<div>Release Date</div>
 											<div className="relative">
 												<CalendarIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -309,12 +329,7 @@ export function CreateMovie({ closeDialog }) {
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											<div>
-												Year
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
+											<div>Year</div>
 											<div className="relative">
 												<CalendarMinus2 className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -341,8 +356,43 @@ export function CreateMovie({ closeDialog }) {
 											</div>
 										</FormLabel>
 										<FormControl>
+											<Input {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<div className="flex gap-4 items-end">
+							<FormField
+								control={form.control}
+								name="genre"
+								render={({ field }) => (
+									<FormItem className="grid gap-1 flex-grow">
+										<FormLabel className="text-sky-600">
+											<div>Genre</div>
+										</FormLabel>
+										<FormControl>
 											<Input
-												placeholder="Duration in minutes"
+												placeholder="Action, Adventure, Horror, Comedy ..."
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="keywords"
+								render={({ field }) => (
+									<FormItem className="grid gap-1 flex-grow">
+										<FormLabel className="text-sky-600">
+											<div>Keywords</div>
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="Space, Survival ..."
 												{...field}
 											/>
 										</FormControl>
@@ -351,29 +401,6 @@ export function CreateMovie({ closeDialog }) {
 								)}
 							/>
 						</div>
-						<FormField
-							control={form.control}
-							name="genre"
-							render={({ field }) => (
-								<FormItem className="grid gap-1">
-									<FormLabel className="text-sky-600">
-										<div>
-											Genre
-											<span className="ms-1 text-destructive">
-												*
-											</span>
-										</div>
-									</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="Action, Adventure, Horror, Comedy ..."
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
 						<FormField
 							control={form.control}
 							name="description"
@@ -386,25 +413,6 @@ export function CreateMovie({ closeDialog }) {
 										<Textarea
 											rows={3}
 											placeholder="Short description of the movie."
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="plot"
-							render={({ field }) => (
-								<FormItem className="grid gap-1">
-									<FormLabel className="text-sky-600">
-										Plot
-									</FormLabel>
-									<FormControl>
-										<Textarea
-											rows={5}
-											placeholder="Synopsis or plot of the movie."
 											{...field}
 										/>
 									</FormControl>
@@ -438,10 +446,7 @@ export function CreateMovie({ closeDialog }) {
 								{coverImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												coverImage,
-											)
+											api.open_external_url(coverImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={coverImage}
@@ -465,15 +470,15 @@ export function CreateMovie({ closeDialog }) {
 													<div
 														className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
 														onClick={() => {
-															console.log(
-																'openExternal:',
-																`https://www.themoviedb.org/search?query=${encodeURIComponent(
-																	`${title}${
-																		year
-																			? ` y:${year}`
-																			: ''
-																	}`,
-																)}`,
+															const poster_link = `https://www.themoviedb.org/search?query=${encodeURIComponent(
+																`${title}${
+																	year
+																		? ` y:${year}`
+																		: ''
+																}`,
+															)}`;
+															api.open_external_url(
+																poster_link,
 															);
 														}}
 													>
@@ -495,10 +500,7 @@ export function CreateMovie({ closeDialog }) {
 								{posterImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												posterImage,
-											)
+											api.open_external_url(posterImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={posterImage}
@@ -506,12 +508,12 @@ export function CreateMovie({ closeDialog }) {
 								)}
 							</div>
 						</div>
-						<div className="grid grid-cols-3 gap-5 items-baseline">
+						<div className="flex gap-5 items-baseline">
 							<FormField
 								control={form.control}
 								name="country"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
+									<FormItem className="grid gap-1 flex-grow">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
 											Country
 											<div className="relative">
@@ -527,9 +529,27 @@ export function CreateMovie({ closeDialog }) {
 							/>
 							<FormField
 								control={form.control}
+								name="language"
+								render={({ field }) => (
+									<FormItem className="grid gap-1 flex-grow">
+										<FormLabel className="flex gap-2 items-center text-sky-600">
+											Language
+											<div className="relative">
+												<StarHalfIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
+											</div>
+										</FormLabel>
+										<FormControl>
+											<Input {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
 								name="imdb_rating"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
+									<FormItem className="grid gap-1 w-[120px]">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
 											IMDB Rating
 											<div className="relative">
@@ -550,7 +570,7 @@ export function CreateMovie({ closeDialog }) {
 								control={form.control}
 								name="personal_rating"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
+									<FormItem className="grid gap-1 w-[120px]">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
 											Personal Rating
 											<div className="relative">
@@ -570,11 +590,11 @@ export function CreateMovie({ closeDialog }) {
 						</div>
 						<FormField
 							control={form.control}
-							name="director"
+							name="directors"
 							render={({ field }) => (
 								<FormItem className="grid gap-1">
 									<FormLabel className="flex gap-2 items-center text-sky-600">
-										Director
+										Director(s)
 										<div className="relative">
 											<CircleUserRoundIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 										</div>
@@ -592,7 +612,7 @@ export function CreateMovie({ closeDialog }) {
 							render={({ field }) => (
 								<FormItem className="grid gap-1">
 									<FormLabel className="flex gap-2 items-center text-sky-600">
-										Writers
+										Writer(s)
 										<div className="relative">
 											<PenToolIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 										</div>
@@ -613,7 +633,7 @@ export function CreateMovie({ closeDialog }) {
 							render={({ field }) => (
 								<FormItem className="grid gap-1">
 									<FormLabel className="flex gap-2 items-center text-sky-600">
-										Actors
+										Actor(s)
 										<div className="relative">
 											<VenetianMaskIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 										</div>
@@ -643,16 +663,16 @@ export function CreateMovie({ closeDialog }) {
 										{title && (
 											<div
 												className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
-												onClick={() =>
-													console.log(
-														'openExternal:',
-														`https://www.youtube.com/results?search_query=${encodeURIComponent(
-															`${title} ${
-																year ? year : ''
-															} trailer`,
-														)}`,
-													)
-												}
+												onClick={() => {
+													const yt_link = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+														`${title} ${
+															year ? year : ''
+														} trailer`,
+													)}`;
+													api.open_external_url(
+														yt_link,
+													);
+												}}
 											>
 												Find trailers here
 												<ExternalLink className="w-4" />
@@ -691,7 +711,7 @@ export function CreateMovie({ closeDialog }) {
 									<img
 										key={`other_images_${oid}`}
 										onClick={() =>
-											console.log('openExternal:', oid)
+											api.open_external_url(oid)
 										}
 										className="max-h-[120px] cursor-pointer hover:brightness-125 rounded-sm"
 										src={oid}
@@ -700,8 +720,20 @@ export function CreateMovie({ closeDialog }) {
 							</div>
 						)}
 					</div>
-					<Button variant="secondary" type="submit">
+					<Button
+						className={
+							processLoading
+								? 'w-full mt-3 disabled'
+								: 'w-full mt-3'
+						}
+						disabled={processLoading}
+						variant="secondary"
+						type="submit"
+					>
 						Submit
+						{processLoading && (
+							<Loading timeoutMs={250} className="mb-0" />
+						)}
 					</Button>
 				</form>
 			</Form>

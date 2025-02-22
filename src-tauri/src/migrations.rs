@@ -117,7 +117,7 @@ pub fn get_migrations() -> Vec<Migration> {
             sql: r#"
 			CREATE TABLE IF NOT EXISTS movies (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				scraped_url TEXT NOT NULL UNIQUE,
+				scraped_url TEXT UNIQUE,
 				franchise TEXT,
 				title TEXT NOT NULL CHECK(length(title) <= 255),
 				description TEXT,
@@ -168,7 +168,7 @@ pub fn get_migrations() -> Vec<Migration> {
             sql: r#"
 			CREATE TABLE IF NOT EXISTS animes (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				scraped_url TEXT NOT NULL UNIQUE,
+				scraped_url TEXT UNIQUE,
 				franchise TEXT,
 				title TEXT NOT NULL,
 				original_title TEXT NOT NULL,
@@ -215,7 +215,7 @@ pub fn get_migrations() -> Vec<Migration> {
             sql: r#"
 			CREATE TABLE IF NOT EXISTS games (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				scraped_url TEXT NOT NULL UNIQUE,
+				scraped_url TEXT UNIQUE,
 				franchise TEXT,
 				title TEXT NOT NULL,
 				genre TEXT,
@@ -250,6 +250,23 @@ pub fn get_migrations() -> Vec<Migration> {
 			BEGIN
 				UPDATE games SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 			END;
+			"#,
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 8,
+            description: "create_media_caches_table",
+            sql: r#"
+			CREATE TABLE IF NOT EXISTS media_caches (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				media_type TEXT NOT NULL CHECK(length(media_type) <= 100),
+				search_query TEXT NOT NULL,
+				search_result TEXT NOT NULL
+			);
+					
+			-- Indexes for performance on commonly queried fields
+			CREATE INDEX idxm_mc_media_type ON media_caches (media_type);
+			CREATE INDEX idx_mc_search_query ON media_caches (search_query);
 			"#,
             kind: MigrationKind::Up,
         },

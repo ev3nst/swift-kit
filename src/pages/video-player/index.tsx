@@ -11,7 +11,7 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { appConfigDir } from '@tauri-apps/api/path';
 
 import api, { IVideoMeta } from '@/lib/api';
-import { VideoThumbnails } from '@/lib/models/video_thumbnails';
+import { VideoThumbnails } from '@/lib/models/video-thumbnails';
 
 import { VideoLayout } from './layout';
 import { Playlist } from './playlist';

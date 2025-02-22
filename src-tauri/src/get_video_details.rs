@@ -54,6 +54,7 @@ pub async fn get_video_details(video_path: String) -> Result<IVideoMeta, String>
 
     let mut ffprobe_command = Command::new("ffprobe");
     ffprobe_command
+        .creation_flags(0x08000000)
         .arg("-v")
         .arg("error")
         .arg("-show_entries")
@@ -67,10 +68,6 @@ pub async fn get_video_details(video_path: String) -> Result<IVideoMeta, String>
         .arg("-of")
         .arg("json")
         .arg(&video_path);
-
-    if cfg!(target_os = "windows") {
-        ffprobe_command.creation_flags(0x08000000);
-    }
 
     let output = ffprobe_command
         .output()

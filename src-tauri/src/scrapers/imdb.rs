@@ -91,14 +91,26 @@ pub async fn scrape(client: &Client, url: &str) -> Result<IMDBData, Box<dyn Erro
     let other_images_selector = Selector::parse("section[data-testid='Photos'] img").unwrap();
     let images = document
         .select(&other_images_selector)
-        .map(|img| img.value().attr("src").unwrap_or("").to_string())
+        .filter_map(|img| img.value().attr("src"))
+        .map(|url| parse_url(url))
         .collect::<Vec<String>>()
         .join(", ");
+
     if !images.is_empty() {
         imdb_data.other_images = Some(images);
     }
 
     Ok(imdb_data)
+}
+
+fn parse_url(url: &str) -> String {
+    if let Some(start) = url.find("@.") {
+        if let Some(end) = url[start + 2..].find('.') {
+            let extension = &url[start + 2 + end..];
+            return format!("{}@{}", &url[..start], extension);
+        }
+    }
+    url.to_string()
 }
 
 fn deserialize_genre<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>

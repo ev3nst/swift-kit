@@ -64,16 +64,13 @@ pub async fn intro_outro_prediction(episodes_folder: String) -> Result<Vec<IAnim
 fn get_video_chapters(video_path: &Path) -> Result<Vec<(f64, f64)>, String> {
     let mut ffprobe_command = Command::new("ffprobe");
     ffprobe_command
+        .creation_flags(0x08000000)
         .arg("-loglevel")
         .arg("error")
         .arg("-print_format")
         .arg("json")
         .arg("-show_chapters")
         .arg(video_path);
-
-    if cfg!(target_os = "windows") {
-        ffprobe_command.creation_flags(0x08000000);
-    }
 
     let output = ffprobe_command
         .output()

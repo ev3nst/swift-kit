@@ -1,4 +1,5 @@
-use std::{path::Path, process::Command};
+use std::path::Path;
+use std::{os::windows::process::CommandExt, process::Command};
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn highlight_file(file_path: String) -> Result<(), String> {
@@ -15,6 +16,7 @@ pub fn highlight_file(file_path: String) -> Result<(), String> {
     };
 
     Command::new("cmd")
+        .creation_flags(0x08000000)
         .arg("/C")
         .arg(command)
         .spawn()

@@ -4,15 +4,12 @@ use std::{os::windows::process::CommandExt, process::Command};
 pub async fn compress(input_path: &Path, quality: u8, output_path: &Path) -> Result<(), String> {
     let mut jpegoptim_command = Command::new("jpegoptim");
     jpegoptim_command
+        .creation_flags(0x08000000)
         .arg(format!("--max={}", quality))
         .arg("--dest")
         .arg(output_path.parent().unwrap_or(Path::new(".")))
         .arg("--overwrite")
         .arg(input_path);
-
-    if cfg!(target_os = "windows") {
-        jpegoptim_command.creation_flags(0x08000000);
-    }
 
     let output = jpegoptim_command
         .output()

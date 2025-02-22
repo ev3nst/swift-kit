@@ -14,16 +14,13 @@ pub async fn check_stream_exists(
 ) -> Result<StreamIndexExistence, String> {
     let mut ffprobe_command = Command::new("ffprobe");
     ffprobe_command
+        .creation_flags(0x08000000)
         .arg("-v")
         .arg("quiet")
         .arg("-print_format")
         .arg("json")
         .arg("-show_streams")
         .arg(input_path);
-
-    if cfg!(target_os = "windows") {
-        ffprobe_command.creation_flags(0x08000000);
-    }
 
     let output = ffprobe_command
         .output()

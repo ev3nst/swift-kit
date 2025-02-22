@@ -17,6 +17,7 @@ mod interpolate;
 mod intro_outro_prediction;
 mod migrations;
 mod no_intro_outro;
+mod open_external_url;
 mod rename_files;
 mod scrape_anime;
 mod scrape_game;
@@ -73,6 +74,7 @@ pub fn run() {
             scrape_anime::scrape_anime,
             scrape_game::scrape_game,
             search_game::search_game,
+            open_external_url::open_external_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

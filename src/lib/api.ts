@@ -47,6 +47,12 @@ export type MediaQueryR = {
 };
 
 class API {
+	async open_external_url(url: string): Promise<void> {
+		return invoke('open_external_url', {
+			url,
+		});
+	}
+
 	async always_on_top(only_state: boolean): Promise<boolean> {
 		return invoke('always_on_top', {
 			only_state,

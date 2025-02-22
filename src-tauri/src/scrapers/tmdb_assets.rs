@@ -81,7 +81,7 @@ pub async fn fetch_tmdb_assets(
         images.push(element.value().attr("content").unwrap_or(""));
     }
 
-    data.cover = Some(images.get(1).cloned().unwrap_or_default().to_string());
+    data.cover = Some(images.get(0).cloned().unwrap_or_default().to_string());
     data.cover = get_original_image_sizes(data.cover);
     data.poster = Some(images.get(1).cloned().unwrap_or_default().to_string());
     data.poster = get_original_image_sizes(data.poster);

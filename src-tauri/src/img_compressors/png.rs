@@ -5,16 +5,13 @@ pub async fn compress(input_path: &Path, quality: u8, output_path: &Path) -> Res
     let quality_argument = format!("{}-{}", quality, quality);
     let mut pngquant_command = Command::new("pngquant");
     pngquant_command
+        .creation_flags(0x08000000)
         .arg("--quality")
         .arg(&quality_argument)
         .arg("--output")
         .arg(output_path)
         .arg("--force")
         .arg(input_path);
-
-    if cfg!(target_os = "windows") {
-        pngquant_command.creation_flags(0x08000000);
-    }
 
     let output = pngquant_command
         .output()
