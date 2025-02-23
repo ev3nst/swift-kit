@@ -33,7 +33,7 @@ export function Create() {
 					<PlusIcon className="w-4 h-4" />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="md:max-w-[800px]">
+			<DialogContent className="md:max-w-[800px] xl:max-w-[1200px]">
 				<DialogHeader>
 					<DialogTitle>Create Content</DialogTitle>
 					<DialogDescription>
@@ -49,7 +49,7 @@ export function Create() {
 					</TabsList>
 					<TabsContent
 						value="movie"
-						className="h-[400px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
+						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateMovie
 							key="create-movie-form"
@@ -58,13 +58,13 @@ export function Create() {
 					</TabsContent>
 					<TabsContent
 						value="anime"
-						className="h-[500px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
+						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateAnime closeDialog={closeDialog} />
 					</TabsContent>
 					<TabsContent
 						value="tv-serie"
-						className="h-[500px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
+						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateMovie
 							key="create-tv-serie-form"
@@ -73,7 +73,7 @@ export function Create() {
 					</TabsContent>
 					<TabsContent
 						value="game"
-						className="h-[500px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
+						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateGame closeDialog={closeDialog} />
 					</TabsContent>

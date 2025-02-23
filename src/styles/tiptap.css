@@ -167,7 +167,9 @@
 
 .ProseMirror {
 	padding-bottom: 150px;
-	min-height: 480px;
+	min-height: 100px;
 	padding: 20px;
 	@apply border-[1px] border-solid rounded;
+	outline: none !important;
+	box-shadow: none !important;
 }

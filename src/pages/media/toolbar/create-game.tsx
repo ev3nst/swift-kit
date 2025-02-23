@@ -35,105 +35,128 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Textarea } from '@/components/textarea';
 import { Checkbox } from '@/components/checkbox';
+import { Loading } from '@/components/loading';
+import Tiptap from '@/components/tiptap';
+
+import { MediaCache } from '@/lib/models/media-cache';
+import api, { MediaQueryR } from '@/lib/api';
+import { GameModel } from '@/lib/models/game';
 
 const createGameSchema = z.object({
+	scraped_url: z.string().optional(),
+	franchise: z.string().optional(),
 	title: z.string().min(1, {
 		message: 'Title is required.',
 	}),
-	release_date: z.string().min(4, {
-		message: 'Release date is required.',
-	}),
-	genre: z.string().min(1, {
-		message: 'Genre is required.',
-	}),
-	description: z.string().nullable(),
-	cover: z.string().nullable(),
-	poster: z.string().nullable(),
-	personal_rating: z.any().nullable(),
-	publisher: z.string().nullable(),
-	developer: z.string().nullable(),
-	other_images: z.string().nullable(),
-	trailer: z.any().nullable(),
-	scraped_url: z.string().nullable(),
+	genre: z.string().optional(),
+	description: z.string().optional(),
+	release_date: z.string().optional(),
+	year: z
+		.number()
+		.min(4, {
+			message: 'Year is required.',
+		})
+		.optional(),
+	developers: z.string().optional(),
+	publishers: z.string().optional(),
+	cover: z.string().optional(),
+	poster: z.string().optional(),
+	trailer: z.string().optional(),
+	other_images: z.string().optional(),
+	personal_rating: z.number().optional(),
 });
 
-type GameData = {
-	title: string;
-	href: string;
-	cover: string;
-};
-
 export function CreateGame({ closeDialog }) {
-	const [searchGameData, setSearchGameData] = useState<GameData[]>([]);
+	const [searchGameData, setSearchGameData] = useState<MediaQueryR[]>([]);
 	const [overrideCache, setOverrideCache] = useState(false);
 	const [fetchLoading, setFetchLoading] = useState(false);
+	const [processLoading, setProcessLoading] = useState(false);
+	const [aboutContent, setAboutContent] = useState('');
 
-	const form = useForm({
+	const form = useForm<z.infer<typeof createGameSchema>>({
 		resolver: zodResolver(createGameSchema),
 		defaultValues: {
 			title: '',
-			release_date: '',
-			genre: '',
-			description: '',
-			cover: '',
-			poster: '',
-			personal_rating: '',
-			publisher: '',
-			developer: '',
-			other_images: '',
-			trailer: '',
-			scraped_url: '',
 		},
 	});
 
-	const { setValue, getValues } = form;
+	const { setValue, getValues, watch } = form;
 
-	let otherImagesData = [];
+	let otherImagesData: string[] = [];
 	const otherImages = getValues('other_images');
 	if (otherImages) {
-		otherImagesData = JSON.parse(otherImages);
+		otherImagesData = otherImages.split(', ');
 	}
 
-	const title = getValues('title');
-	const releaseDate = getValues('release_date');
+	const title = watch('title');
 	const coverImage = getValues('cover');
 	const posterImage = getValues('poster');
-
-	function onSubmit(data: z.infer<typeof createGameSchema>) {
-		console.log('onSubmit:', data);
-		console.log('closeDialog:', closeDialog);
-	}
 
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
 			setFetchLoading(true);
-			console.log('fetchWithTitle:', { title, overrideCache });
-			const resp = []; // fetch data from STEAM
-			setSearchGameData(resp);
-			setFetchLoading(false);
+			if (!overrideCache) {
+				const cache = await MediaCache.get('game', title);
+				if (cache) {
+					setSearchGameData(cache.result_json);
+					setFetchLoading(false);
+					return;
+				}
+			}
+
+			const results = await api.search_game(title);
+			if (
+				typeof results !== 'undefined' &&
+				Array.isArray(results) &&
+				results.length > 0
+			) {
+				await MediaCache.save('game', title, JSON.stringify(results));
+				setSearchGameData(results);
+				setFetchLoading(false);
+			}
 		}
 	}
 
-	async function onTitleSelect(gameData) {
+	async function onTitleSelect(gameQueryR: MediaQueryR) {
 		if (!fetchLoading) {
 			setFetchLoading(true);
-			console.log('onTitleSelect:', { gameData, overrideCache });
-			const fetchedData = {}; // fetch data from STEAM
+			const fetchedData = await api.scrape_game(gameQueryR.href);
 			const fetchedKeys = Object.keys(fetchedData);
+			setValue('scraped_url', gameQueryR.href);
 			for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
 				const key = fetchedKeys[fki];
 
 				if (
 					typeof fetchedData[key] !== 'undefined' &&
-					fetchedData[key] !== null
+					fetchedData[key] !== null &&
+					fetchedData[key] !== ''
 				) {
 					setValue(key as any, fetchedData[key]);
 				}
 			}
 
+			if (fetchedData.about && fetchedData.about != '') {
+				console.log(fetchedData.about, 'fetchedData.about');
+				setAboutContent(fetchedData.about);
+			}
+
 			setFetchLoading(false);
 			setSearchGameData([]);
 		}
+	}
+
+	const handleEditorChange = newContent => {
+		setAboutContent(newContent);
+	};
+
+	async function onSubmit(data: any) {
+		setProcessLoading(true);
+		data.scraped_url = data.scraped_url!.replace(/\/$/, '');
+		data.about = aboutContent;
+		const newGame = new GameModel(data as any);
+		await newGame.save();
+		closeDialog();
+		setProcessLoading(false);
 	}
 
 	return (
@@ -189,7 +212,15 @@ export function CreateGame({ closeDialog }) {
 									<FormControl>
 										<div className="flex items-center justify-between gap-2">
 											<Input
+												autoFocus
+												autoComplete="off"
 												placeholder="Game Name"
+												onKeyDown={e => {
+													if (e.key === 'Enter') {
+														e.preventDefault();
+														fetchWithTitle();
+													}
+												}}
 												disabled={fetchLoading}
 												{...field}
 											/>
@@ -225,7 +256,7 @@ export function CreateGame({ closeDialog }) {
 									>
 										<img
 											className="h-5"
-											src="/steam-logo.jpg"
+											src="/steam-logo.png"
 										/>
 										<img
 											className="aspect-square object-cover h-10"
@@ -245,12 +276,11 @@ export function CreateGame({ closeDialog }) {
 										</h6>
 										<div
 											className="hover:text-sky-600 cursor-pointer"
-											onClick={() => {
-												console.log(
-													'openExternal:',
+											onClick={() =>
+												api.open_external_url(
 													gameData.href,
-												);
-											}}
+												)
+											}
 										>
 											<ExternalLink className="w-5" />
 										</div>
@@ -258,19 +288,50 @@ export function CreateGame({ closeDialog }) {
 								))}
 							</div>
 						)}
-						<div className="grid grid-cols-2 gap-5 items-baseline">
+						<FormField
+							control={form.control}
+							name="franchise"
+							render={({ field }) => (
+								<FormItem className="grid gap-1 flex-grow">
+									<FormLabel className="text-sky-600">
+										<div>Franchise</div>
+									</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="eg. FM, FIFA, Witcher"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="grid grid-cols-3 gap-5 items-baseline">
+							<FormField
+								control={form.control}
+								name="genre"
+								render={({ field }) => (
+									<FormItem className="grid gap-1">
+										<FormLabel className="text-sky-600">
+											<div>Genre</div>
+										</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="Action, Adventure, Horror, Comedy ..."
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 							<FormField
 								control={form.control}
 								name="release_date"
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											<div>
-												Release Date
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
+											<div>Release Date</div>
 											<div className="relative">
 												<CalendarIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -285,23 +346,17 @@ export function CreateGame({ closeDialog }) {
 									</FormItem>
 								)}
 							/>
-
 							<FormField
 								control={form.control}
-								name="genre"
+								name="year"
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="text-sky-600">
-											<div>
-												Genre
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
+											<div>Year</div>
 										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="Action, Adventure, Horror, Comedy ..."
+												placeholder="----"
 												{...field}
 											/>
 										</FormControl>
@@ -329,6 +384,13 @@ export function CreateGame({ closeDialog }) {
 								</FormItem>
 							)}
 						/>
+
+						<FormLabel className="text-sky-600">About</FormLabel>
+						<Tiptap
+							value={aboutContent}
+							onChange={handleEditorChange}
+						/>
+
 						<div className="grid grid-cols-2 gap-5 items-baseline">
 							<div>
 								<FormField
@@ -355,10 +417,7 @@ export function CreateGame({ closeDialog }) {
 								{coverImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												coverImage,
-											)
+											api.open_external_url(coverImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={coverImage}
@@ -379,14 +438,7 @@ export function CreateGame({ closeDialog }) {
 													</div>
 												</div>
 												{title && (
-													<div
-														className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
-														onClick={() => {
-															console.log(
-																'openExternal: poster',
-															);
-														}}
-													>
+													<div className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary">
 														Find posters here
 														<ExternalLink className="w-4" />
 													</div>
@@ -405,10 +457,7 @@ export function CreateGame({ closeDialog }) {
 								{posterImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												posterImage,
-											)
+											api.open_external_url(posterImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={posterImage}
@@ -440,11 +489,11 @@ export function CreateGame({ closeDialog }) {
 							/>
 							<FormField
 								control={form.control}
-								name="publisher"
+								name="publishers"
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											Publisher
+											Publishers
 											<div className="relative">
 												<CircleUserRoundIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -461,11 +510,11 @@ export function CreateGame({ closeDialog }) {
 							/>
 							<FormField
 								control={form.control}
-								name="developer"
+								name="developers"
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											Developer
+											Developers
 											<div className="relative">
 												<PenToolIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -496,18 +545,14 @@ export function CreateGame({ closeDialog }) {
 										{title && (
 											<div
 												className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
-												onClick={() =>
-													console.log(
-														'openExternal:',
-														`https://www.youtube.com/results?search_query=${encodeURIComponent(
-															`${title} ${
-																releaseDate
-																	? releaseDate
-																	: ''
-															} trailer`,
-														)}`,
-													)
-												}
+												onClick={() => {
+													const yt_link = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+														`${title} trailer`,
+													)}`;
+													api.open_external_url(
+														yt_link,
+													);
+												}}
 											>
 												Find trailers here
 												<ExternalLink className="w-4" />
@@ -546,7 +591,7 @@ export function CreateGame({ closeDialog }) {
 									<img
 										key={`other_images_${oid}`}
 										onClick={() =>
-											console.log('openExternal:', oid)
+											api.open_external_url(oid)
 										}
 										className="max-h-[120px] cursor-pointer hover:brightness-125 rounded-sm"
 										src={oid}
@@ -555,8 +600,20 @@ export function CreateGame({ closeDialog }) {
 							</div>
 						)}
 					</div>
-					<Button variant="secondary" type="submit">
+					<Button
+						className={
+							processLoading
+								? 'w-full mt-3 disabled'
+								: 'w-full mt-3'
+						}
+						disabled={processLoading}
+						variant="secondary"
+						type="submit"
+					>
 						Submit
+						{processLoading && (
+							<Loading timeoutMs={250} className="mb-0" />
+						)}
 					</Button>
 				</form>
 			</Form>

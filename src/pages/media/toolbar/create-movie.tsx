@@ -39,10 +39,10 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Textarea } from '@/components/textarea';
 import { Checkbox } from '@/components/checkbox';
+import { Loading } from '@/components/loading';
 
 import { MediaCache } from '@/lib/models/media-cache';
 import api, { MediaQueryR } from '@/lib/api';
-import { Loading } from '@/components/loading';
 import { MovieModel } from '@/lib/models/movie';
 
 const createMovieSchema = z.object({
@@ -105,7 +105,6 @@ export function CreateMovie({ closeDialog }) {
 
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
-			console.log(title, 'asd');
 			setFetchLoading(true);
 			if (!overrideCache) {
 				const cache = await MediaCache.get('movie', title);
@@ -214,8 +213,15 @@ export function CreateMovie({ closeDialog }) {
 									<FormControl>
 										<div className="flex items-center justify-between gap-2">
 											<Input
+												autoFocus
 												placeholder="Movie Name"
 												autoComplete="off"
+												onKeyDown={e => {
+													if (e.key === 'Enter') {
+														e.preventDefault();
+														fetchWithTitle();
+													}
+												}}
 												disabled={fetchLoading}
 												{...field}
 											/>

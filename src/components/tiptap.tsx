@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Editor, EditorContent, useEditor } from '@tiptap/react';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
@@ -7,6 +7,7 @@ import Table from '@tiptap/extension-table';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
+import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
 import { Sketch } from '@uiw/react-color';
 
@@ -42,7 +43,6 @@ function MenuBar({ editor }: { editor: Editor }) {
 		}
 
 		timeoutRef.current = setTimeout(() => {
-			console.log('color changed', color.hex);
 			editor.chain().setColor(color.hex).run();
 		}, 400);
 	};
@@ -279,6 +279,9 @@ const extensions = [
 	TableRow,
 	TableHeader,
 	TableCell,
+	Image.configure({
+		inline: true,
+	}),
 	StarterKit.configure({
 		bulletList: {
 			keepMarks: true,
@@ -296,14 +299,21 @@ export default function Tiptap({ value, onChange }) {
 		extensions,
 		content: value,
 		onUpdate: ({ editor }) => {
-			const html = editor.getHTML();
-			onChange(html);
+			onChange(editor.getHTML());
 		},
 	});
 
+	useEffect(() => {
+		if (editor && editor.getHTML() !== value) {
+			editor.commands.setContent(value);
+		}
+	}, [value, editor]);
+
+	if (!editor) return;
+
 	return (
 		<div>
-			<MenuBar editor={editor as Editor} />
+			<MenuBar editor={editor} />
 			<EditorContent editor={editor} />
 		</div>
 	);

@@ -3,20 +3,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import {
-	CalendarIcon,
 	CalendarMinus2,
 	CircleUserRoundIcon,
 	ExternalLink,
 	FileImageIcon,
 	ImageIcon,
 	LoaderCircleIcon,
-	PenToolIcon,
 	SearchIcon,
 	SparklesIcon,
 	StarHalfIcon,
 	StarIcon,
 	TimerIcon,
-	VenetianMaskIcon,
 	VideoIcon,
 } from 'lucide-react';
 
@@ -38,105 +35,95 @@ import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 import { Textarea } from '@/components/textarea';
 import { Checkbox } from '@/components/checkbox';
+import { Loading } from '@/components/loading';
+
+import { MediaCache } from '@/lib/models/media-cache';
+import api, { MediaQueryR } from '@/lib/api';
+import { AnimeModel } from '@/lib/models/anime';
 
 const createAnimeSchema = z.object({
+	scraped_url: z.string().optional(),
+	franchise: z.string().optional(),
 	title: z.string().min(1, {
 		message: 'Title is required.',
 	}),
-	original_title: z.string().min(1, {
-		message: 'Original Title is required.',
-	}),
-	year: z.string().min(4, {
-		message: 'Year is required.',
-	}),
-	release_date: z.string().min(4, {
-		message: 'Release date is required.',
-	}),
-	genre: z.string().min(1, {
-		message: 'Genre is required.',
-	}),
-	description: z.string().nullable(),
-	cover: z.string().nullable(),
-	poster: z.string().nullable(),
-	duration: z.string().nullable(),
-	country: z.string().nullable(),
-	mal_rating: z.any().nullable(),
-	personal_rating: z.any().nullable(),
-	producers: z.string().nullable(),
-	studios: z.string().nullable(),
-	actors: z.string().nullable(),
-	trailer: z.any().nullable(),
-	scraped_url: z.string().nullable(),
+	original_title: z.string().optional(),
+	year: z
+		.number()
+		.min(4, {
+			message: 'Year is required.',
+		})
+		.optional(),
+	genre: z.string().optional(),
+	description: z.string().optional(),
+	episodes: z.number().optional(),
+	cover: z.string().optional(),
+	poster: z.string().optional(),
+	trailer: z.string().optional(),
+	duration: z.string().optional(),
+	studios: z.string().optional(),
+	mal_rating: z.number().optional(),
+	personal_rating: z.number().optional(),
 });
 
-type AnimeData = {
-	title: string;
-	href: string;
-	cover: string;
-};
-
 export function CreateAnime({ closeDialog }) {
-	const [searchAnimeData, setSearchAnimeData] = useState<AnimeData[]>([]);
+	const [searchAnimeData, setSearchAnimeData] = useState<MediaQueryR[]>([]);
 	const [overrideCache, setOverrideCache] = useState(false);
 	const [fetchLoading, setFetchLoading] = useState(false);
+	const [processLoading, setProcessLoading] = useState(false);
 
-	const form = useForm({
+	const form = useForm<z.infer<typeof createAnimeSchema>>({
 		resolver: zodResolver(createAnimeSchema),
 		defaultValues: {
 			title: '',
-			original_title: '',
-			year: '',
-			release_date: '',
-			genre: '',
-			description: '',
-			cover: '',
-			poster: '',
-			duration: '',
-			country: '',
-			mal_rating: '',
-			personal_rating: '',
-			producers: '',
-			studios: '',
-			actors: '',
-			trailer: '',
-			scraped_url: '',
 		},
 	});
 
-	const { setValue, getValues } = form;
+	const { setValue, getValues, watch } = form;
 
-	const title = getValues('title');
+	const title = watch('title');
 	const year = getValues('year');
 	const coverImage = getValues('cover');
 	const posterImage = getValues('poster');
 
-	function onSubmit(data: z.infer<typeof createAnimeSchema>) {
-		console.log('onSubmit:', data);
-		console.log('closeDialog:', closeDialog);
-	}
-
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
 			setFetchLoading(true);
-			console.log('fetchWithTitle:', { title, overrideCache });
-			const resp = []; // fetch data from MAL
-			setSearchAnimeData(resp);
-			setFetchLoading(false);
+			if (!overrideCache) {
+				const cache = await MediaCache.get('anime', title);
+				if (cache) {
+					setSearchAnimeData(cache.result_json);
+					setFetchLoading(false);
+					return;
+				}
+			}
+
+			const results = await api.search_anime(title);
+			if (
+				typeof results !== 'undefined' &&
+				Array.isArray(results) &&
+				results.length > 0
+			) {
+				await MediaCache.save('anime', title, JSON.stringify(results));
+				setSearchAnimeData(results);
+				setFetchLoading(false);
+			}
 		}
 	}
 
-	async function onTitleSelect(animeData) {
+	async function onTitleSelect(animeQueryR: MediaQueryR) {
 		if (!fetchLoading) {
 			setFetchLoading(true);
-			console.log('onTitleSelect:', { animeData, overrideCache });
-			const fetchedData = {}; // fetch data from MAL
+			const fetchedData = await api.scrape_anime(animeQueryR.href);
 			const fetchedKeys = Object.keys(fetchedData);
+			setValue('scraped_url', animeQueryR.href);
 			for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
 				const key = fetchedKeys[fki];
 
 				if (
 					typeof fetchedData[key] !== 'undefined' &&
-					fetchedData[key] !== null
+					fetchedData[key] !== null &&
+					fetchedData[key] !== ''
 				) {
 					setValue(key as any, fetchedData[key]);
 				}
@@ -145,6 +132,15 @@ export function CreateAnime({ closeDialog }) {
 			setFetchLoading(false);
 			setSearchAnimeData([]);
 		}
+	}
+
+	async function onSubmit(data: z.infer<typeof createAnimeSchema>) {
+		setProcessLoading(true);
+		data.scraped_url = data.scraped_url!.replace(/\/$/, '');
+		const newMovie = new AnimeModel(data as any);
+		await newMovie.save();
+		closeDialog();
+		setProcessLoading(false);
 	}
 
 	return (
@@ -200,7 +196,15 @@ export function CreateAnime({ closeDialog }) {
 									<FormControl>
 										<div className="flex items-center justify-between gap-2">
 											<Input
+												autoFocus
+												autoComplete="off"
 												placeholder="Anime Name"
+												onKeyDown={e => {
+													if (e.key === 'Enter') {
+														e.preventDefault();
+														fetchWithTitle();
+													}
+												}}
 												disabled={fetchLoading}
 												{...field}
 											/>
@@ -256,12 +260,11 @@ export function CreateAnime({ closeDialog }) {
 										</h6>
 										<div
 											className="hover:text-sky-600 cursor-pointer"
-											onClick={() => {
-												console.log(
-													'openExternal:',
+											onClick={() =>
+												api.open_external_url(
 													animeData.href,
-												);
-											}}
+												)
+											}
 										>
 											<ExternalLink className="w-5" />
 										</div>
@@ -276,12 +279,7 @@ export function CreateAnime({ closeDialog }) {
 							render={({ field }) => (
 								<FormItem className="grid gap-1">
 									<FormLabel className="text-sky-600">
-										<div>
-											Original Title
-											<span className="ms-1 text-destructive">
-												*
-											</span>
-										</div>
+										<div>Original Title</div>
 									</FormLabel>
 									<FormControl>
 										<Input
@@ -293,26 +291,38 @@ export function CreateAnime({ closeDialog }) {
 								</FormItem>
 							)}
 						/>
-						<div className="grid grid-cols-3 gap-5 items-baseline">
+
+						<FormField
+							control={form.control}
+							name="franchise"
+							render={({ field }) => (
+								<FormItem className="grid gap-1">
+									<FormLabel className="text-sky-600">
+										<div>Franchise</div>
+									</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="Base name to group seasons"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<div className="flex gap-5 items-baseline">
 							<FormField
 								control={form.control}
-								name="release_date"
+								name="genre"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
-										<FormLabel className="flex gap-2 items-center text-sky-600">
-											<div>
-												Release Date
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
-											<div className="relative">
-												<CalendarIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
-											</div>
+									<FormItem className="grid gap-1 flex-grow">
+										<FormLabel className="text-sky-600">
+											<div>Genre</div>
 										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="dd/mm/YYYY"
+												placeholder="Action, Adventure, Horror, Comedy ..."
 												{...field}
 											/>
 										</FormControl>
@@ -324,14 +334,9 @@ export function CreateAnime({ closeDialog }) {
 								control={form.control}
 								name="year"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
+									<FormItem className="grid gap-1 w-[150px]">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											<div>
-												Year
-												<span className="ms-1 text-destructive">
-													*
-												</span>
-											</div>
+											<div>Year</div>
 											<div className="relative">
 												<CalendarMinus2 className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
@@ -350,7 +355,7 @@ export function CreateAnime({ closeDialog }) {
 								control={form.control}
 								name="duration"
 								render={({ field }) => (
-									<FormItem className="grid gap-1">
+									<FormItem className="grid gap-1 w-[150px]">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
 											Duration
 											<div className="relative">
@@ -358,39 +363,14 @@ export function CreateAnime({ closeDialog }) {
 											</div>
 										</FormLabel>
 										<FormControl>
-											<Input
-												placeholder="Duration in minutes"
-												{...field}
-											/>
+											<Input {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
 						</div>
-						<FormField
-							control={form.control}
-							name="genre"
-							render={({ field }) => (
-								<FormItem className="grid gap-1">
-									<FormLabel className="text-sky-600">
-										<div>
-											Genre
-											<span className="ms-1 text-destructive">
-												*
-											</span>
-										</div>
-									</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="Action, Adventure, Horror, Comedy ..."
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+
 						<FormField
 							control={form.control}
 							name="description"
@@ -436,10 +416,7 @@ export function CreateAnime({ closeDialog }) {
 								{coverImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												coverImage,
-											)
+											api.open_external_url(coverImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={coverImage}
@@ -463,15 +440,15 @@ export function CreateAnime({ closeDialog }) {
 													<div
 														className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
 														onClick={() => {
-															console.log(
-																'openExternal:',
-																`https://www.theanimedb.org/search?query=${encodeURIComponent(
-																	`${title}${
-																		year
-																			? ` y:${year}`
-																			: ''
-																	}`,
-																)}`,
+															const poster_link = `https://www.theanimedb.org/search?query=${encodeURIComponent(
+																`${title}${
+																	year
+																		? ` y:${year}`
+																		: ''
+																}`,
+															)}`;
+															api.open_external_url(
+																poster_link,
 															);
 														}}
 													>
@@ -493,10 +470,7 @@ export function CreateAnime({ closeDialog }) {
 								{posterImage && (
 									<img
 										onClick={() =>
-											console.log(
-												'openExternal:',
-												posterImage,
-											)
+											api.open_external_url(posterImage)
 										}
 										className="max-h-[100px] cursor-pointer hover:brightness-125 mt-2"
 										src={posterImage}
@@ -507,20 +481,17 @@ export function CreateAnime({ closeDialog }) {
 						<div className="grid grid-cols-3 gap-5 items-baseline">
 							<FormField
 								control={form.control}
-								name="country"
+								name="episodes"
 								render={({ field }) => (
 									<FormItem className="grid gap-1">
 										<FormLabel className="flex gap-2 items-center text-sky-600">
-											Country
+											Episodes (Number)
 											<div className="relative">
 												<StarHalfIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 											</div>
 										</FormLabel>
 										<FormControl>
-											<Input
-												placeholder="Japan"
-												{...field}
-											/>
+											<Input {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -571,59 +542,17 @@ export function CreateAnime({ closeDialog }) {
 						</div>
 						<FormField
 							control={form.control}
-							name="producers"
-							render={({ field }) => (
-								<FormItem className="grid gap-1">
-									<FormLabel className="flex gap-2 items-center text-sky-600">
-										Producers
-										<div className="relative">
-											<CircleUserRoundIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
-										</div>
-									</FormLabel>
-									<FormControl>
-										<Input {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
 							name="studios"
 							render={({ field }) => (
 								<FormItem className="grid gap-1">
 									<FormLabel className="flex gap-2 items-center text-sky-600">
 										Studios
 										<div className="relative">
-											<PenToolIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
+											<CircleUserRoundIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
 										</div>
 									</FormLabel>
 									<FormControl>
-										<Input
-											placeholder="John Doe, Michael Smith ..."
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="actors"
-							render={({ field }) => (
-								<FormItem className="grid gap-1">
-									<FormLabel className="flex gap-2 items-center text-sky-600">
-										Actors
-										<div className="relative">
-											<VenetianMaskIcon className="w-4 h-4 bottom-[-8px] left-0 absolute" />
-										</div>
-									</FormLabel>
-									<FormControl>
-										<Input
-											placeholder="Emily Doe, Jane Smith ..."
-											{...field}
-										/>
+										<Input {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -644,16 +573,16 @@ export function CreateAnime({ closeDialog }) {
 										{title && (
 											<div
 												className="flex items-center gap-3 cursor-pointer hover:underline absolute right-0 text-primary"
-												onClick={() =>
-													console.log(
-														'openExternal:',
-														`https://www.youtube.com/results?search_query=${encodeURIComponent(
-															`${title} ${
-																year ? year : ''
-															} trailer`,
-														)}`,
-													)
-												}
+												onClick={() => {
+													const yt_link = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+														`${title} ${
+															year ? year : ''
+														} trailer`,
+													)}`;
+													api.open_external_url(
+														yt_link,
+													);
+												}}
 											>
 												Find trailers here
 												<ExternalLink className="w-4" />
@@ -669,8 +598,20 @@ export function CreateAnime({ closeDialog }) {
 							)}
 						/>
 					</div>
-					<Button variant="secondary" type="submit">
+					<Button
+						className={
+							processLoading
+								? 'w-full mt-3 disabled'
+								: 'w-full mt-3'
+						}
+						disabled={processLoading}
+						variant="secondary"
+						type="submit"
+					>
 						Submit
+						{processLoading && (
+							<Loading timeoutMs={250} className="mb-0" />
+						)}
 					</Button>
 				</form>
 			</Form>

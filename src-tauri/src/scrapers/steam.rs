@@ -63,7 +63,7 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
     let about: Option<String> = document
         .select(&selector)
         .next()
-        .map(|element| element.inner_html());
+        .map(|element| element.inner_html().replace("<h2>About This Game</h2>", ""));
 
     // RELEASE DATE
     let selector = Selector::parse(".date").unwrap();
