@@ -261,7 +261,8 @@ pub fn get_migrations() -> Vec<Migration> {
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				media_type TEXT NOT NULL CHECK(length(media_type) <= 100),
 				search_query TEXT NOT NULL,
-				search_result TEXT NOT NULL
+				search_result TEXT NOT NULL,
+        		UNIQUE(media_type, search_query)
 			);
 					
 			-- Indexes for performance on commonly queried fields
