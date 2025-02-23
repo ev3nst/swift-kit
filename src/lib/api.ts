@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import type { Crop } from 'react-image-crop';
 
 import { Setting } from '@/lib/models/setting';
 import type { Movie } from '@/lib/models/movie';
@@ -150,6 +151,20 @@ class API {
 			img_path,
 			width: String(width),
 			height: String(height),
+			output_folder,
+			file_name,
+		});
+	}
+
+	async image_crop(
+		img_path: string,
+		crop_details: Crop,
+		output_folder?: string,
+		file_name?: string,
+	): Promise<string> {
+		return invoke('image_crop', {
+			img_path,
+			crop_details,
 			output_folder,
 			file_name,
 		});

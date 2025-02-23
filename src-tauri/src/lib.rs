@@ -11,6 +11,7 @@ mod get_video_details;
 mod highlight_file;
 mod image_compress;
 mod image_convert;
+mod image_crop;
 mod image_resize;
 mod img_compressors;
 mod interpolate;
@@ -75,6 +76,7 @@ pub fn run() {
             scrape_game::scrape_game,
             search_game::search_game,
             open_external_url::open_external_url,
+            image_crop::image_crop,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

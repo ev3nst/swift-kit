@@ -111,14 +111,14 @@ const IconGenerator = () => {
 				}
 			}
 
-			setProcessLoading(false);
 			toast.success('Icon generation is complete.');
 		} catch (error) {
-			setProcessLoading(false);
 			try {
 				toast.error(String(error));
 			} catch (_e) {}
 			console.error(error);
+		} finally {
+			setProcessLoading(false);
 		}
 	}
 

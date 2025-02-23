@@ -21,6 +21,9 @@ const ImageManipulation = lazy(() => import('@/pages/image-manipulation'));
 const ImageManipulator = lazy(
 	() => import('@/pages/image-manipulation/image-manipulator'),
 );
+const ImageCropper = lazy(
+	() => import('@/pages/image-manipulation/image-cropper'),
+);
 const IconGenerator = lazy(
 	() => import('@/pages/image-manipulation/icon-generator'),
 );
@@ -135,6 +138,10 @@ function App() {
 										<Route
 											path="(manipulator|)"
 											component={ImageManipulator}
+										/>
+										<Route
+											path="/cropper"
+											component={ImageCropper}
 										/>
 										<Route
 											path="/icon-generator"

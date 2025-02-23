@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Link, useLocation } from 'wouter';
-import { DiamondIcon, ImageOffIcon } from 'lucide-react';
+import { CropIcon, DiamondIcon, ImageOffIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -9,6 +9,11 @@ const data = [
 		name: 'Manipulator',
 		href: '/manipulator',
 		icon: ImageOffIcon,
+	},
+	{
+		name: 'Cropper',
+		href: '/cropper',
+		icon: CropIcon,
 	},
 	{
 		name: 'Icon Generator',
