@@ -1,5 +1,6 @@
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
+use tauri::Url;
 use tokio::{runtime::Runtime, task};
 
 use super::utils::request_client::request_client;
@@ -37,24 +38,26 @@ pub async fn search_game(query: String) -> Result<Vec<GameSearchResult>, String>
 				let title = if let Some(title_el) = row.select(&title_selector).next() {
 					title_el.text().collect::<String>().trim().to_string()
 				} else {
-					"".to_string()
+					String::new()
 				};
 
-				let cover_raw = if let Some(cover_el) = row.select(&cover_selector).next() {
-					cover_el.attr("src").unwrap_or_default().to_string()
-				} else {
-					"".to_string()
-				};
-				let cover = cover_raw.split('?')
-					.next()
-					.unwrap_or(&cover_raw)
-					.to_string();
+				if !title.is_empty() && !title.chars().all(char::is_whitespace) && Url::parse(&href).is_ok() {
+					let cover_raw = if let Some(cover_el) = row.select(&cover_selector).next() {
+						cover_el.attr("src").unwrap_or_default().to_string()
+					} else {
+						String::new()
+					};
+					let cover = cover_raw.split('?')
+						.next()
+						.unwrap_or(&cover_raw)
+						.to_string();
 
-				results.push(GameSearchResult {
-					href,
-					title,
-					cover: Some(cover),
-				});
+					results.push(GameSearchResult {
+						href,
+						title,
+						cover: Some(cover),
+					});
+				}
             }
 
             Ok(results)
