@@ -172,9 +172,31 @@ const ImageManipulator = () => {
 					/>
 					<FormField
 						control={form.control}
-						name="convert_to"
+						name="quality"
 						render={({ field }) => (
 							<FormItem className="grid gap-1 w-[200px]">
+								<div className="flex items-center">
+									<FormLabel>Quality (Compression)</FormLabel>
+								</div>
+								<FormControl>
+									<Input
+										type="number"
+										placeholder="Quality (0-100)"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+
+				<div className="grid grid-cols-3 gap-4">
+					<FormField
+						control={form.control}
+						name="convert_to"
+						render={({ field }) => (
+							<FormItem className="grid gap-1">
 								<FormLabel>Convert To</FormLabel>
 								<Select
 									onValueChange={field.onChange}
@@ -212,31 +234,9 @@ const ImageManipulator = () => {
 					/>
 					<FormField
 						control={form.control}
-						name="quality"
-						render={({ field }) => (
-							<FormItem className="grid gap-1 w-[200px]">
-								<div className="flex items-center">
-									<FormLabel>Quality (Compression)</FormLabel>
-								</div>
-								<FormControl>
-									<Input
-										type="number"
-										placeholder="Quality (0-100)"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-				</div>
-
-				<div className="flex justify-between gap-4">
-					<FormField
-						control={form.control}
 						name="width"
 						render={({ field }) => (
-							<FormItem className="grid gap-1 flex-grow">
+							<FormItem className="grid gap-1">
 								<div className="flex items-center">
 									<FormLabel>Width</FormLabel>
 								</div>
@@ -251,7 +251,7 @@ const ImageManipulator = () => {
 						control={form.control}
 						name="height"
 						render={({ field }) => (
-							<FormItem className="grid gap-1 flex-grow">
+							<FormItem className="grid gap-1">
 								<div className="flex items-center">
 									<FormLabel>Height</FormLabel>
 								</div>
