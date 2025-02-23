@@ -31,8 +31,14 @@ pub async fn image_resize(
 
     let (new_width, new_height) = match (width, height) {
         (Some(Ok(w)), Some(Ok(h))) => (w, h),
-        (Some(Ok(w)), None) => (w, (orig_height * w) / orig_width),
-        (None, Some(Ok(h))) => ((orig_width * h) / orig_height, h),
+        (Some(Ok(w)), None) => (
+            w,
+            ((orig_height as f64 * w as f64) / orig_width as f64).round() as u32,
+        ),
+        (None, Some(Ok(h))) => (
+            ((orig_width as f64 * h as f64) / orig_height as f64).round() as u32,
+            h,
+        ),
         (Some(Err(_)), _) | (_, Some(Err(_))) => return Err("Invalid width or height".into()),
         _ => return Err("Invalid width or height".into()),
     };
