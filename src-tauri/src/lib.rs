@@ -1,8 +1,10 @@
 use std::sync::{Arc, Mutex};
 
+mod abort_download;
 mod always_on_top;
 mod bulk_rename;
 mod convert_to_mp4;
+mod download_file;
 mod fetch_files;
 mod finder;
 mod generate_video_thumbnails;
@@ -50,6 +52,9 @@ pub fn run() {
             process: Mutex::new(None),
             output_folder: Mutex::new(None),
         }))
+        .manage(Arc::new(
+            Mutex::new(download_file::DownloadState::default()),
+        ))
         .invoke_handler(tauri::generate_handler![
             fetch_files::fetch_files,
             bulk_rename::bulk_rename,
@@ -77,6 +82,8 @@ pub fn run() {
             search_game::search_game,
             open_external_url::open_external_url,
             image_crop::image_crop,
+            download_file::download_file,
+            abort_download::abort_download,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

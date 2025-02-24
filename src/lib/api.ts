@@ -281,6 +281,22 @@ class API {
 			url,
 		});
 	}
+
+	async download_file(
+		url: string,
+		destination: string,
+		rate_limit_kb: number = 20000,
+	): Promise<string> {
+		return invoke('download_file', {
+			url,
+			destination,
+			rate_limit_kb,
+		});
+	}
+
+	async abort_download(): Promise<void> {
+		return invoke('abort_download');
+	}
 }
 
 const api = new API();
