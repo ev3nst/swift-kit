@@ -14,19 +14,19 @@ pub async fn image_compress(
     if !input_path.exists() || !input_path.is_file() {
         return Err("Invalid image path".into());
     }
-    let output_folder = if output_folder.as_deref().unwrap_or("").is_empty() {
+    let output_folder_pathbuf = if output_folder.as_deref().unwrap_or("").is_empty() {
         input_path.parent().unwrap_or_else(|| Path::new("."))
     } else {
         Path::new(output_folder.as_deref().unwrap())
     };
 
     // Ensure the output directory exists and is writable
-    if !output_folder.exists() {
+    if !output_folder_pathbuf.exists() {
         return Err("Output path could not be resolved.".to_string());
     }
 
     // Create the output file path
-    let output_path = Path::new(&output_folder).join(
+    let output_path = Path::new(&output_folder_pathbuf).join(
         input_path
             .file_stem()
             .ok_or("Invalid file name")?
