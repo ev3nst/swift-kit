@@ -3,7 +3,7 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::error::Error;
 
-use crate::utils::common_headers::common_headers;
+use crate::utils::{common_headers::common_headers, decode_html_entities::decode_html_entities};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IMDBData {
@@ -100,6 +100,10 @@ pub async fn scrape(client: &Client, url: &str) -> Result<IMDBData, Box<dyn Erro
         imdb_data.other_images = Some(images);
     }
 
+    imdb_data.title = decode_html_entities(&imdb_data.title);
+    imdb_data.description = imdb_data.description.as_deref().map(decode_html_entities);
+    imdb_data.keywords = imdb_data.keywords.as_deref().map(decode_html_entities);
+
     Ok(imdb_data)
 }
 
@@ -192,8 +196,7 @@ where
         if hours == 0 && minutes == 0 {
             "00:00".to_string()
         } else {
-            // Format hours and minutes, handling minutes in two digits
-            format!("{:02}:{:02}", hours, minutes)
+            format!("{:02}h {:02}m", hours, minutes)
         }
     }))
 }

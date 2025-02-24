@@ -2,7 +2,7 @@ use reqwest::Client;
 use scraper::{Html, Selector};
 use std::error::Error;
 
-use crate::utils::common_headers::common_headers;
+use crate::utils::{common_headers::common_headers, decode_html_entities::decode_html_entities};
 
 #[derive(Debug)]
 pub struct SteamData {
@@ -31,6 +31,8 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
         .select(&selector)
         .next()
         .map(|el| el.text().collect::<Vec<_>>().concat().trim().to_string())
+        .as_deref()
+        .map(decode_html_entities)
         .unwrap_or_default();
 
     // GENRE
@@ -54,6 +56,8 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
             .unwrap()
             .value()
             .attr("content")
+            .as_deref()
+            .map(decode_html_entities)
             .unwrap_or_default()
             .to_string(),
     );
@@ -63,7 +67,9 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
     let about: Option<String> = document
         .select(&selector)
         .next()
-        .map(|element| element.inner_html().replace("<h2>About This Game</h2>", ""));
+        .map(|element| element.inner_html().replace("<h2>About This Game</h2>", ""))
+        .as_deref()
+        .map(decode_html_entities);
 
     // RELEASE DATE
     let selector = Selector::parse(".date").unwrap();

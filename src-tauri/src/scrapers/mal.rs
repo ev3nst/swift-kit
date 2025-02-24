@@ -2,7 +2,7 @@ use reqwest::Client;
 use scraper::{ElementRef, Html, Selector};
 use std::error::Error;
 
-use crate::utils::common_headers::common_headers;
+use crate::utils::{common_headers::common_headers, decode_html_entities::decode_html_entities};
 
 #[derive(Debug)]
 pub struct MALData {
@@ -27,7 +27,9 @@ pub async fn scrape(client: &Client, url: &str) -> Result<MALData, Box<dyn Error
     let description = document
         .select(&Selector::parse(".js-scrollfix-bottom-rel [itemprop='description']").unwrap())
         .next()
-        .map(|el| el.text().collect::<String>());
+        .map(|el| el.text().collect::<String>())
+        .as_deref()
+        .map(decode_html_entities);
 
     let cover = document
         .select(&Selector::parse("img[itemprop='image']").unwrap())
@@ -36,13 +38,16 @@ pub async fn scrape(client: &Client, url: &str) -> Result<MALData, Box<dyn Error
         .unwrap_or_default()
         .replace(".jpg", "l.jpg");
 
-    let title =
-        get_from_border(&document, "English:").unwrap_or_else(|| "Unknown Title".to_string());
+    let title = decode_html_entities(
+        &get_from_border(&document, "English:").unwrap_or_else(|| "Unknown Title".to_string()),
+    );
 
     let original_title = document
         .select(&Selector::parse(".title-name").unwrap())
         .next()
         .map(|el| el.text().collect::<String>())
+        .as_deref()
+        .map(decode_html_entities)
         .unwrap_or_default()
         .replace("[Written by MAL Rewrite]", "");
 
