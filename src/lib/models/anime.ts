@@ -1,3 +1,5 @@
+import { convertFileSrc } from '@tauri-apps/api/core';
+
 import { dbWrapper } from '@/lib/db';
 
 import { BaseModel, BaseModelProps } from './base';
@@ -64,24 +66,6 @@ export class AnimeModel extends BaseModel<Anime> {
 	get episodes(): number | null {
 		return this.props.episodes;
 	}
-	get cover(): string | null {
-		return this.props.cover;
-	}
-	get cover_local(): string | null {
-		return this.props.cover_local;
-	}
-	get poster(): string | null {
-		return this.props.poster;
-	}
-	get poster_local(): string | null {
-		return this.props.poster_local;
-	}
-	get trailer(): string | null {
-		return this.props.trailer;
-	}
-	get trailer_local(): string | null {
-		return this.props.trailer_local;
-	}
 	get duration(): string | null {
 		return this.props.duration;
 	}
@@ -93,6 +77,33 @@ export class AnimeModel extends BaseModel<Anime> {
 	}
 	get personal_rating(): number | null {
 		return this.props.personal_rating;
+	}
+	get cover(): string | null {
+		if (this.props.cover_local) {
+			return convertFileSrc(this.props.cover_local);
+		}
+		return this.props.cover;
+	}
+	get cover_local(): string | null {
+		return this.props.cover_local;
+	}
+	get poster(): string | null {
+		if (this.props.poster_local) {
+			return convertFileSrc(this.props.poster_local);
+		}
+		return this.props.poster;
+	}
+	get poster_local(): string | null {
+		return this.props.poster_local;
+	}
+	get trailer(): string | null {
+		if (this.props.trailer_local) {
+			return convertFileSrc(this.props.trailer_local);
+		}
+		return this.props.trailer;
+	}
+	get trailer_local(): string | null {
+		return this.props.trailer_local;
 	}
 	get approved(): number {
 		return this.props.approved;

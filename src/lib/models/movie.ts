@@ -1,3 +1,5 @@
+import { convertFileSrc } from '@tauri-apps/api/core';
+
 import { dbWrapper } from '@/lib/db';
 
 import { BaseModel, BaseModelProps } from './base';
@@ -82,12 +84,6 @@ export class MovieModel extends BaseModel<Movie> {
 	get directors(): string | null {
 		return this.props.directors;
 	}
-	get cover(): string | null {
-		return this.props.cover;
-	}
-	get cover_local(): string | null {
-		return this.props.cover_local;
-	}
 	get imdb_rating(): number | null {
 		return this.props.imdb_rating;
 	}
@@ -97,26 +93,44 @@ export class MovieModel extends BaseModel<Movie> {
 	get language(): string | null {
 		return this.props.language;
 	}
+	get personal_rating(): number | null {
+		return this.props.personal_rating;
+	}
+	get cover(): string | null {
+		if (this.props.cover_local) {
+			return convertFileSrc(this.props.cover_local);
+		}
+		return this.props.cover;
+	}
+	get cover_local(): string | null {
+		return this.props.cover_local;
+	}
+	get poster(): string | null {
+		if (this.props.poster_local) {
+			return convertFileSrc(this.props.poster_local);
+		}
+		return this.props.poster;
+	}
+	get poster_local(): string | null {
+		return this.props.poster_local;
+	}
 	get other_images(): string | null {
+		if (this.props.other_images_local) {
+			return convertFileSrc(this.props.other_images_local);
+		}
 		return this.props.other_images;
 	}
 	get other_images_local(): string | null {
 		return this.props.other_images_local;
 	}
-	get personal_rating(): number | null {
-		return this.props.personal_rating;
-	}
 	get trailer(): string | null {
+		if (this.props.trailer_local) {
+			return convertFileSrc(this.props.trailer_local);
+		}
 		return this.props.trailer;
 	}
 	get trailer_local(): string | null {
 		return this.props.trailer_local;
-	}
-	get poster(): string | null {
-		return this.props.poster;
-	}
-	get poster_local(): string | null {
-		return this.props.poster_local;
 	}
 	get approved(): number {
 		return this.props.approved;
