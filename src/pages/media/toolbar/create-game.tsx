@@ -16,6 +16,7 @@ import {
 	StarIcon,
 	VideoIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import {
 	DialogDescription,
@@ -69,6 +70,7 @@ const createGameSchema = z.object({
 export function CreateGame({ closeDialog }) {
 	const [searchGameData, setSearchGameData] = useState<MediaQueryR[]>([]);
 	const [overrideCache, setOverrideCache] = useState(false);
+	const [approved, setApproved] = useState(false);
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [processLoading, setProcessLoading] = useState(false);
 	const [aboutContent, setAboutContent] = useState('');
@@ -95,23 +97,34 @@ export function CreateGame({ closeDialog }) {
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
 			setFetchLoading(true);
-			if (!overrideCache) {
-				const cache = await MediaCache.get('game', title);
-				if (cache) {
-					setSearchGameData(cache.result_json);
-					setFetchLoading(false);
-					return;
+			try {
+				if (!overrideCache) {
+					const cache = await MediaCache.get('game', title);
+					if (cache) {
+						setSearchGameData(cache.result_json);
+						setFetchLoading(false);
+						return;
+					}
 				}
-			}
 
-			const results = await api.search_game(title);
-			if (
-				typeof results !== 'undefined' &&
-				Array.isArray(results) &&
-				results.length > 0
-			) {
-				await MediaCache.save('game', title, JSON.stringify(results));
-				setSearchGameData(results);
+				const results = await api.search_game(title);
+				if (
+					typeof results !== 'undefined' &&
+					Array.isArray(results) &&
+					results.length > 0
+				) {
+					await MediaCache.save(
+						'game',
+						title,
+						JSON.stringify(results),
+					);
+					setSearchGameData(results);
+				}
+			} catch (error) {
+				try {
+					toast.error(String(error));
+				} catch (_e) {}
+			} finally {
 				setFetchLoading(false);
 			}
 		}
@@ -120,28 +133,34 @@ export function CreateGame({ closeDialog }) {
 	async function onTitleSelect(gameQueryR: MediaQueryR) {
 		if (!fetchLoading) {
 			setFetchLoading(true);
-			const fetchedData = await api.scrape_game(gameQueryR.href);
-			const fetchedKeys = Object.keys(fetchedData);
-			setValue('scraped_url', gameQueryR.href);
-			for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
-				const key = fetchedKeys[fki];
+			try {
+				const fetchedData = await api.scrape_game(gameQueryR.href);
+				const fetchedKeys = Object.keys(fetchedData);
+				setValue('scraped_url', gameQueryR.href);
+				for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
+					const key = fetchedKeys[fki];
 
-				if (
-					typeof fetchedData[key] !== 'undefined' &&
-					fetchedData[key] !== null &&
-					fetchedData[key] !== ''
-				) {
-					setValue(key as any, fetchedData[key]);
+					if (
+						typeof fetchedData[key] !== 'undefined' &&
+						fetchedData[key] !== null &&
+						fetchedData[key] !== ''
+					) {
+						setValue(key as any, fetchedData[key]);
+					}
 				}
-			}
 
-			if (fetchedData.about && fetchedData.about != '') {
-				console.log(fetchedData.about, 'fetchedData.about');
-				setAboutContent(fetchedData.about);
-			}
+				if (fetchedData.about && fetchedData.about != '') {
+					setAboutContent(fetchedData.about);
+				}
 
-			setFetchLoading(false);
-			setSearchGameData([]);
+				setSearchGameData([]);
+			} catch (error) {
+				try {
+					toast.error(String(error));
+				} catch (_e) {}
+			} finally {
+				setFetchLoading(false);
+			}
 		}
 	}
 
@@ -151,12 +170,20 @@ export function CreateGame({ closeDialog }) {
 
 	async function onSubmit(data: any) {
 		setProcessLoading(true);
-		data.scraped_url = data.scraped_url!.replace(/\/$/, '');
-		data.about = aboutContent;
-		const newGame = new GameModel(data as any);
-		await newGame.save();
-		closeDialog();
-		setProcessLoading(false);
+		try {
+			data.scraped_url = data.scraped_url!.replace(/\/$/, '');
+			data.about = aboutContent;
+			data.approved = approved ? 1 : 0;
+			const newGame = new GameModel(data as any);
+			await newGame.save();
+			closeDialog();
+		} catch (error) {
+			try {
+				toast.error(String(error));
+			} catch (_e) {}
+		} finally {
+			setProcessLoading(false);
+		}
 	}
 
 	return (
@@ -600,21 +627,42 @@ export function CreateGame({ closeDialog }) {
 							</div>
 						)}
 					</div>
-					<Button
-						className={
-							processLoading
-								? 'w-full mt-3 disabled'
-								: 'w-full mt-3'
-						}
-						disabled={processLoading}
-						variant="secondary"
-						type="submit"
-					>
-						Submit
-						{processLoading && (
-							<Loading timeoutMs={250} className="mb-0" />
-						)}
-					</Button>
+
+					<div className="flex items-center justify-between gap-5 mt-3">
+						<Button
+							className={
+								processLoading ? 'w-full disabled' : 'w-full'
+							}
+							disabled={processLoading}
+							variant="secondary"
+							type="submit"
+						>
+							Submit
+							{processLoading && (
+								<Loading timeoutMs={250} className="mb-0" />
+							)}
+						</Button>
+						<div>
+							<div className="flex gap-3 w-[200px]">
+								<label
+									htmlFor="approved"
+									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-primary"
+								>
+									Approved
+								</label>
+								<Checkbox
+									id="approved"
+									checked={approved}
+									onCheckedChange={checkedValue => {
+										setApproved(checkedValue as any);
+									}}
+								/>
+							</div>
+							<p className="text-xs">
+								Marks the data as valid for personal tracking.
+							</p>
+						</div>
+					</div>
 				</form>
 			</Form>
 		</>

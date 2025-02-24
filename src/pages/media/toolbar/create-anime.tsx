@@ -16,6 +16,7 @@ import {
 	TimerIcon,
 	VideoIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import {
 	DialogDescription,
@@ -69,6 +70,7 @@ const createAnimeSchema = z.object({
 export function CreateAnime({ closeDialog }) {
 	const [searchAnimeData, setSearchAnimeData] = useState<MediaQueryR[]>([]);
 	const [overrideCache, setOverrideCache] = useState(false);
+	const [approved, setApproved] = useState(false);
 	const [fetchLoading, setFetchLoading] = useState(false);
 	const [processLoading, setProcessLoading] = useState(false);
 
@@ -89,23 +91,35 @@ export function CreateAnime({ closeDialog }) {
 	async function fetchWithTitle() {
 		if (title !== null && title.length > 0) {
 			setFetchLoading(true);
-			if (!overrideCache) {
-				const cache = await MediaCache.get('anime', title);
-				if (cache) {
-					setSearchAnimeData(cache.result_json);
-					setFetchLoading(false);
-					return;
-				}
-			}
 
-			const results = await api.search_anime(title);
-			if (
-				typeof results !== 'undefined' &&
-				Array.isArray(results) &&
-				results.length > 0
-			) {
-				await MediaCache.save('anime', title, JSON.stringify(results));
-				setSearchAnimeData(results);
+			try {
+				if (!overrideCache) {
+					const cache = await MediaCache.get('anime', title);
+					if (cache) {
+						setSearchAnimeData(cache.result_json);
+						setFetchLoading(false);
+						return;
+					}
+				}
+
+				const results = await api.search_anime(title);
+				if (
+					typeof results !== 'undefined' &&
+					Array.isArray(results) &&
+					results.length > 0
+				) {
+					await MediaCache.save(
+						'anime',
+						title,
+						JSON.stringify(results),
+					);
+					setSearchAnimeData(results);
+				}
+			} catch (error) {
+				try {
+					toast.error(String(error));
+				} catch (_e) {}
+			} finally {
 				setFetchLoading(false);
 			}
 		}
@@ -114,33 +128,48 @@ export function CreateAnime({ closeDialog }) {
 	async function onTitleSelect(animeQueryR: MediaQueryR) {
 		if (!fetchLoading) {
 			setFetchLoading(true);
-			const fetchedData = await api.scrape_anime(animeQueryR.href);
-			const fetchedKeys = Object.keys(fetchedData);
-			setValue('scraped_url', animeQueryR.href);
-			for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
-				const key = fetchedKeys[fki];
+			try {
+				const fetchedData = await api.scrape_anime(animeQueryR.href);
+				const fetchedKeys = Object.keys(fetchedData);
+				setValue('scraped_url', animeQueryR.href);
+				for (let fki = 0; fki < fetchedKeys.length; fki += 1) {
+					const key = fetchedKeys[fki];
 
-				if (
-					typeof fetchedData[key] !== 'undefined' &&
-					fetchedData[key] !== null &&
-					fetchedData[key] !== ''
-				) {
-					setValue(key as any, fetchedData[key]);
+					if (
+						typeof fetchedData[key] !== 'undefined' &&
+						fetchedData[key] !== null &&
+						fetchedData[key] !== ''
+					) {
+						setValue(key as any, fetchedData[key]);
+					}
 				}
-			}
 
-			setFetchLoading(false);
-			setSearchAnimeData([]);
+				setSearchAnimeData([]);
+			} catch (error) {
+				try {
+					toast.error(String(error));
+				} catch (_e) {}
+			} finally {
+				setFetchLoading(false);
+			}
 		}
 	}
 
-	async function onSubmit(data: z.infer<typeof createAnimeSchema>) {
+	async function onSubmit(data: any) {
 		setProcessLoading(true);
-		data.scraped_url = data.scraped_url!.replace(/\/$/, '');
-		const newMovie = new AnimeModel(data as any);
-		await newMovie.save();
-		closeDialog();
-		setProcessLoading(false);
+		try {
+			data.scraped_url = data.scraped_url!.replace(/\/$/, '');
+			data.approved = approved ? 1 : 0;
+			const newMovie = new AnimeModel(data as any);
+			await newMovie.save();
+			closeDialog();
+		} catch (error) {
+			try {
+				toast.error(String(error));
+			} catch (_e) {}
+		} finally {
+			setProcessLoading(false);
+		}
 	}
 
 	return (
@@ -598,21 +627,41 @@ export function CreateAnime({ closeDialog }) {
 							)}
 						/>
 					</div>
-					<Button
-						className={
-							processLoading
-								? 'w-full mt-3 disabled'
-								: 'w-full mt-3'
-						}
-						disabled={processLoading}
-						variant="secondary"
-						type="submit"
-					>
-						Submit
-						{processLoading && (
-							<Loading timeoutMs={250} className="mb-0" />
-						)}
-					</Button>
+					<div className="flex items-center justify-between gap-5 mt-3">
+						<Button
+							className={
+								processLoading ? 'w-full disabled' : 'w-full'
+							}
+							disabled={processLoading}
+							variant="secondary"
+							type="submit"
+						>
+							Submit
+							{processLoading && (
+								<Loading timeoutMs={250} className="mb-0" />
+							)}
+						</Button>
+						<div>
+							<div className="flex gap-3 w-[200px]">
+								<label
+									htmlFor="approved"
+									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-primary"
+								>
+									Approved
+								</label>
+								<Checkbox
+									id="approved"
+									checked={approved}
+									onCheckedChange={checkedValue => {
+										setApproved(checkedValue as any);
+									}}
+								/>
+							</div>
+							<p className="text-xs">
+								Marks the data as valid for personal tracking.
+							</p>
+						</div>
+					</div>
 				</form>
 			</Form>
 		</>
