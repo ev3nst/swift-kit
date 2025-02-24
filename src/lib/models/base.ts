@@ -9,6 +9,10 @@ export interface BaseModelProps {
 export abstract class BaseModel<T extends BaseModelProps> {
 	protected constructor(protected props: T) {}
 
+	setProperty<K extends keyof T>(key: K, value: T[K]): void {
+		this.props[key] = value;
+	}
+
 	get id(): number {
 		return this.props.id;
 	}
@@ -60,10 +64,15 @@ export abstract class BaseModel<T extends BaseModelProps> {
 			.replace('model', 's');
 
 		if (this.id) {
+			const columns = Object.keys(this.props)
+				.map(key => `${key} = ?`)
+				.join(', ');
+			const values = Object.values(this.props);
 			const result = await dbWrapper.db.execute(
-				`UPDATE ${tableName} SET ? WHERE id = ?`,
-				[this.props, this.id],
+				`UPDATE ${tableName} SET ${columns} WHERE id = ?`,
+				[...values, this.id], // Append id to the end
 			);
+
 			if (result.rowsAffected > 0) {
 				const updated = await this.constructor['get'](this.id);
 				return updated as this;
@@ -81,6 +90,7 @@ export abstract class BaseModel<T extends BaseModelProps> {
 					.join(', ')})`,
 				values,
 			);
+
 			if (result.lastInsertId) {
 				this.props.id = result.lastInsertId;
 				return this;

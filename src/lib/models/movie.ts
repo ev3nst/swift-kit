@@ -1,3 +1,5 @@
+import { dbWrapper } from '@/lib/db';
+
 import { BaseModel, BaseModelProps } from './base';
 
 export interface Movie extends BaseModelProps {
@@ -14,18 +16,34 @@ export interface Movie extends BaseModelProps {
 	writers: string | null;
 	directors: string | null;
 	cover: string | null;
+	cover_local: string | null;
 	imdb_rating: number | null;
 	country: string | null;
 	language: string | null;
 	other_images: string | null;
+	other_images_local: string | null;
 	personal_rating: number | null;
 	trailer: string | null;
+	trailer_local: string | null;
 	poster: string | null;
+	poster_local: string | null;
+	approved: number;
 }
 
 export class MovieModel extends BaseModel<Movie> {
 	constructor(props: Movie) {
 		super(props);
+	}
+
+	static async getByScrapedUrl(
+		scraped_url: string,
+	): Promise<Movie | undefined> {
+		const result = await dbWrapper.db.select(
+			`SELECT * FROM movies WHERE scraped_url = ?`,
+			[scraped_url],
+		);
+
+		return result && result[0] ? result[0] : undefined;
 	}
 
 	get scraped_url(): string {
@@ -67,6 +85,9 @@ export class MovieModel extends BaseModel<Movie> {
 	get cover(): string | null {
 		return this.props.cover;
 	}
+	get cover_local(): string | null {
+		return this.props.cover_local;
+	}
 	get imdb_rating(): number | null {
 		return this.props.imdb_rating;
 	}
@@ -79,13 +100,25 @@ export class MovieModel extends BaseModel<Movie> {
 	get other_images(): string | null {
 		return this.props.other_images;
 	}
+	get other_images_local(): string | null {
+		return this.props.other_images_local;
+	}
 	get personal_rating(): number | null {
 		return this.props.personal_rating;
 	}
 	get trailer(): string | null {
 		return this.props.trailer;
 	}
+	get trailer_local(): string | null {
+		return this.props.trailer_local;
+	}
 	get poster(): string | null {
 		return this.props.poster;
+	}
+	get poster_local(): string | null {
+		return this.props.poster_local;
+	}
+	get approved(): number {
+		return this.props.approved;
 	}
 }
