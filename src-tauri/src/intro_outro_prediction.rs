@@ -74,7 +74,7 @@ fn get_video_chapters(video_path: &Path) -> Result<Vec<(f64, f64)>, String> {
 
     let output = ffprobe_command
         .output()
-        .map_err(|e| format!("Failed to execute jpegoptim: {}", e))?;
+        .map_err(|e| format!("Failed to execute ffprobe: {}", e))?;
 
     if !output.status.success() {
         return Err("Failed to fetch chapters".into());
