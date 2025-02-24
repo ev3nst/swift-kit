@@ -41,10 +41,9 @@ export function Create() {
 					</DialogDescription>
 				</DialogHeader>
 				<Tabs defaultValue="movie">
-					<TabsList className="grid w-full grid-cols-4">
+					<TabsList className="grid w-full grid-cols-3">
 						<TabsTrigger value="movie">Movie</TabsTrigger>
 						<TabsTrigger value="anime">Anime</TabsTrigger>
-						<TabsTrigger value="tv-serie">TV Serie</TabsTrigger>
 						<TabsTrigger value="game">Game</TabsTrigger>
 					</TabsList>
 					<TabsContent
@@ -61,15 +60,6 @@ export function Create() {
 						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
 					>
 						<CreateAnime closeDialog={closeDialog} />
-					</TabsContent>
-					<TabsContent
-						value="tv-serie"
-						className="h-[400px] xl:h-[600px] overflow-hidden overflow-y-scroll scrollbar-hide pt-2"
-					>
-						<CreateMovie
-							key="create-tv-serie-form"
-							closeDialog={closeDialog}
-						/>
 					</TabsContent>
 					<TabsContent
 						value="game"
