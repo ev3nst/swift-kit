@@ -13,6 +13,8 @@ const Layout = lazy(() => import('@/layout'));
 // Source & Content
 const Media = lazy(() => import('@/pages/media'));
 const Movie = lazy(() => import('@/pages/media/movie'));
+const Anime = lazy(() => import('@/pages/media/anime'));
+const Game = lazy(() => import('@/pages/media/game'));
 const Downloader = lazy(() => import('@/pages/downloader'));
 const Notes = lazy(() => import('@/pages/notes'));
 
@@ -111,16 +113,9 @@ function App() {
 										/>
 										<Route
 											path="animes"
-											component={Placeholder}
+											component={Anime}
 										/>
-										<Route
-											path="tv-series"
-											component={Placeholder}
-										/>
-										<Route
-											path="games"
-											component={Placeholder}
-										/>
+										<Route path="games" component={Game} />
 									</Media>
 								</Route>
 								<Route

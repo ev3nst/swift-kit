@@ -16,11 +16,13 @@ import { Button } from '@/components/button';
 import { Loading } from '@/components/loading';
 import { Checkbox } from '@/components/checkbox';
 import { Progress } from '@/components/progress';
+import { Input } from '@/components/input';
 
 import api from '@/lib/api';
 import { dbWrapper } from '@/lib/db';
 import { MovieModel } from '@/lib/models/movie';
-import { Input } from '@/components/input';
+import { AnimeModel } from '@/lib/models/anime';
+import { GameModel } from '@/lib/models/game';
 import { sleep } from '@/lib/utils';
 
 async function checkTotalAsset(
@@ -60,7 +62,7 @@ export function OfflineAssets() {
 		let totalAsset = 0;
 		const mediaTableNames = ['movies', 'games'];
 		if (columnName !== 'other_images') {
-			mediaTableNames.push();
+			mediaTableNames.push('animes');
 		}
 
 		for (let mi = 0; mi < mediaTableNames.length; mi++) {
@@ -113,97 +115,17 @@ export function OfflineAssets() {
 		setProcessLoading(true);
 		try {
 			toast.info('Movie: Cover image process started...');
-			const movies = await MovieModel.paginate(1, 999999999);
-			const appConfigPath = await appConfigDir();
-			for (let mi = 0; mi < movies.data.length; mi++) {
-				const movie = movies.data[mi];
-				const singleImageTypes = ['cover', 'poster'];
-				for (let sti = 0; sti < singleImageTypes.length; sti++) {
-					const stiType = singleImageTypes[sti];
-					if (
-						movie[stiType] !== null &&
-						movie[stiType] !== '' &&
-						(movie[`${stiType}_local`] === null ||
-							movie[`${stiType}_local`] === '')
-					) {
-						try {
-							if (!throttle) await sleep(500);
-							const timestamp = Date.now();
-							const extension =
-								movie[stiType].split('.').pop() ?? 'jpg';
-							const downloadedFilePath = await api.download_file(
-								movie[stiType],
-								`${appConfigPath}\\movies\\${stiType}\\${movie.id}_${timestamp}.${extension}`,
-								Number(kbLimit),
-							);
-							await api.image_compress(downloadedFilePath, 75);
-							movie.setProperty(
-								`${stiType}_local` as any,
-								downloadedFilePath,
-							);
-							await movie.save();
-
-							if (stiType === 'cover') {
-								setCoverProgress(prevState => ({
-									...prevState,
-									completed: prevState.completed + 1,
-								}));
-							} else {
-								setPosterProgress(prevState => ({
-									...prevState,
-									completed: prevState.completed + 1,
-								}));
-							}
-						} catch (error) {
-							toast.error(
-								`Movie: ${movie.title} has encountered an error. Skipping...`,
-							);
-							console.error(error);
-						}
-					}
-				}
-
-				if (
-					movie.other_images !== null &&
-					movie.other_images !== '' &&
-					(movie.other_images_local === null ||
-						movie.other_images_local === '')
-				) {
-					const otherImagesArr = movie.other_images.split(',');
-					const local_otherImages: string[] = [];
-					for (let oia = 0; oia < otherImagesArr.length; oia++) {
-						const imgEl = otherImagesArr[oia];
-						try {
-							if (!throttle) await sleep(500);
-							const timestamp = Date.now();
-							const extension = imgEl.split('.').pop() ?? 'jpg';
-							const downloadedFilePath = await api.download_file(
-								imgEl,
-								`${appConfigPath}\\movies\\other_images\\${movie.id}_${oia}_${timestamp}.${extension}`,
-								Number(kbLimit),
-							);
-							await api.image_compress(downloadedFilePath, 75);
-							local_otherImages.push(downloadedFilePath);
-						} catch (error) {
-							toast.error(
-								`Movie: ${movie.title} has encountered an error for other_images. Skipping...`,
-							);
-							console.error(error);
-						}
-					}
-					movie.setProperty(
-						'other_images_local',
-						local_otherImages.join(','),
-					);
-					await movie.save();
-					setOtherImagesProgress(prevState => ({
-						...prevState,
-						completed: prevState.completed + 1,
-					}));
-				}
-			}
-
+			await processMedia(MovieModel, 'movies');
 			toast.success('Movie: assets are complete.');
+
+			toast.info('Anime: Cover image process started...');
+			await processMedia(AnimeModel, 'animes');
+			toast.success('Anime: assets are complete.');
+
+			toast.info('Game: Cover image process started...');
+			await processMedia(GameModel, 'games');
+			toast.success('Game: assets are complete.');
+
 			setCover(false);
 			setPoster(false);
 			setOtherImages(false);
@@ -215,6 +137,99 @@ export function OfflineAssets() {
 			setProcessLoading(false);
 		}
 	};
+
+	async function processMedia(model: any, folderPrefix: string) {
+		const data = await model.paginate(1, 999999999);
+		const appConfigPath = await appConfigDir();
+		for (let mi = 0; mi < data.data.length; mi++) {
+			const media = data.data[mi];
+			const singleImageTypes = ['cover', 'poster'];
+			for (let sti = 0; sti < singleImageTypes.length; sti++) {
+				const stiType = singleImageTypes[sti];
+				if (
+					media[stiType] !== null &&
+					media[stiType] !== '' &&
+					(media[`${stiType}_local`] === null ||
+						media[`${stiType}_local`] === '')
+				) {
+					try {
+						if (!throttle) await sleep(500);
+						const timestamp = Date.now();
+						const extension =
+							media[stiType].split('.').pop() ?? 'jpg';
+						const downloadedFilePath = await api.download_file(
+							media[stiType],
+							`${appConfigPath}\\${folderPrefix}\\${stiType}\\${media.id}_${timestamp}.${extension}`,
+							Number(kbLimit),
+						);
+						await api.image_compress(downloadedFilePath, 75);
+						media.setProperty(
+							`${stiType}_local` as any,
+							downloadedFilePath,
+						);
+						await media.save();
+
+						if (stiType === 'cover') {
+							setCoverProgress(prevState => ({
+								...prevState,
+								completed: prevState.completed + 1,
+							}));
+						} else {
+							setPosterProgress(prevState => ({
+								...prevState,
+								completed: prevState.completed + 1,
+							}));
+						}
+					} catch (error) {
+						toast.error(
+							`Media: ${media.title} has encountered an error. Skipping...`,
+						);
+						console.error(error);
+					}
+				}
+			}
+
+			if (
+				folderPrefix !== 'animes' &&
+				media.other_images !== null &&
+				media.other_images !== '' &&
+				(media.other_images_local === null ||
+					media.other_images_local === '')
+			) {
+				const otherImagesArr = media.other_images.split(',');
+				const local_otherImages: string[] = [];
+				for (let oia = 0; oia < otherImagesArr.length; oia++) {
+					const imgEl = otherImagesArr[oia];
+					try {
+						if (!throttle) await sleep(500);
+						const timestamp = Date.now();
+						const extension = imgEl.split('.').pop() ?? 'jpg';
+						const downloadedFilePath = await api.download_file(
+							imgEl,
+							`${appConfigPath}\\${folderPrefix}\\other_images\\${media.id}_${oia}_${timestamp}.${extension}`,
+							Number(kbLimit),
+						);
+						await api.image_compress(downloadedFilePath, 75);
+						local_otherImages.push(downloadedFilePath);
+					} catch (error) {
+						toast.error(
+							`Media: ${media.title} has encountered an error for other_images. Skipping...`,
+						);
+						console.error(error);
+					}
+				}
+				media.setProperty(
+					'other_images_local',
+					local_otherImages.join(','),
+				);
+				await media.save();
+				setOtherImagesProgress(prevState => ({
+					...prevState,
+					completed: prevState.completed + 1,
+				}));
+			}
+		}
+	}
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>

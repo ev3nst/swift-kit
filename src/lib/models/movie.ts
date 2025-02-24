@@ -116,7 +116,7 @@ export class MovieModel extends BaseModel<Movie> {
 	}
 	get other_images(): string | null {
 		if (this.props.other_images_local) {
-			return convertFileSrc(this.props.other_images_local);
+			return this.props.other_images_local;
 		}
 		return this.props.other_images;
 	}

@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Link, useLocation } from 'wouter';
-import { FilmIcon, Gamepad2Icon, SparklesIcon, TvIcon } from 'lucide-react';
+import { FilmIcon, Gamepad2Icon, SparklesIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -14,11 +14,6 @@ const data = [
 		name: 'Animes',
 		href: '/animes',
 		icon: SparklesIcon,
-	},
-	{
-		name: 'TV Series',
-		href: '/tv-series',
-		icon: TvIcon,
 	},
 	{
 		name: 'Games',

@@ -18,7 +18,6 @@ import {
 	SidebarGroupLabel,
 	SidebarContent,
 	SidebarHeader,
-	SidebarRail,
 	SidebarMenu,
 	SidebarMenuItem,
 	SidebarMenuButton,
@@ -163,7 +162,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroup>
 				))}
 			</SidebarContent>
-			<SidebarRail />
 		</Sidebar>
 	);
 }

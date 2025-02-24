@@ -121,7 +121,8 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
     let url = url.trim_end_matches('/');
     let url_parts: Vec<&str> = url.split('/').collect();
     let app_id: u32 = match url_parts.len() {
-        len if len > 1 => url_parts[url_parts.len() - 2].parse().unwrap_or(0),
+        len if len == 6 => url_parts[url_parts.len() - 2].parse().unwrap_or(0),
+        len if len == 5 => url_parts[url_parts.len() - 1].parse().unwrap_or(0),
         _ => 0,
     };
 

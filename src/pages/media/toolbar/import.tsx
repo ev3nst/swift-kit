@@ -21,12 +21,15 @@ import { GameModel } from '@/lib/models/game';
 import { hasNewLines, sleep } from '@/lib/utils';
 
 function determineLinkType(
-	link: string,
+	link: string
 ): ('movie' | 'game' | 'anime') | undefined {
 	if (link.startsWith('https://www.imdb.com')) {
 		return 'movie';
 	}
 	if (link.startsWith('https://store.steampowered.com')) {
+		return 'game';
+	}
+	if (link.startsWith('https://steamdb.info')) {
 		return 'game';
 	}
 	if (link.startsWith('https://myanimelist.net')) {
@@ -68,6 +71,12 @@ export function Import() {
 		pastedText = pastedText.replace(/\/$/, '').trim();
 		if (determineLinkType(pastedText) !== undefined) {
 			if (!links.includes(pastedText)) {
+				if (pastedText.startsWith('https://steamdb.info')) {
+					pastedText = pastedText.replace(
+						'https://steamdb.info',
+						'https://store.steampowered.com'
+					);
+				}
 				setLinks(prevState => [...prevState, pastedText]);
 			}
 		}
@@ -83,45 +92,64 @@ export function Import() {
 			for (let li = 0; li < links.length; li++) {
 				const link = links[li];
 				toast.info(`Link: ${link} process started.`);
-				if (determineLinkType(link) === 'movie') {
-					const checkIfExists =
-						await MovieModel.getByScrapedUrl(link);
-					if (!checkIfExists) {
-						const data = await api.scrape_movie(link);
-						if (data.title && data.title !== '') {
-							const newMovie = new MovieModel(data);
-							await newMovie.save();
-							toast.info(`Movie: ${data.title} has been saved.`);
+
+				try {
+					if (determineLinkType(link) === 'movie') {
+						const checkIfExists = await MovieModel.getByScrapedUrl(
+							link
+						);
+						if (!checkIfExists) {
+							const data = await api.scrape_movie(link);
+							if (data.title && data.title !== '') {
+								const newMovie = new MovieModel(data);
+								await newMovie.save();
+								toast.success(
+									`Movie: ${data.title} has been saved.`
+								);
+								await sleep(2000);
+							}
 						}
 					}
-				}
 
-				if (determineLinkType(link) === 'anime') {
-					const checkIfExists =
-						await AnimeModel.getByScrapedUrl(link);
-					if (!checkIfExists) {
-						const data = await api.scrape_anime(link);
-						if (data.title && data.title !== '') {
-							const newAnime = new AnimeModel(data);
-							await newAnime.save();
-							toast.info(`Anime: ${data.title} has been saved.`);
+					if (determineLinkType(link) === 'anime') {
+						const checkIfExists = await AnimeModel.getByScrapedUrl(
+							link
+						);
+						if (!checkIfExists) {
+							const data = await api.scrape_anime(link);
+							if (data.title && data.title !== '') {
+								const newAnime = new AnimeModel(data);
+								await newAnime.save();
+								toast.success(
+									`Anime: ${data.title} has been saved.`
+								);
+								await sleep(2000);
+							}
 						}
 					}
-				}
 
-				if (determineLinkType(link) === 'game') {
-					const checkIfExists = await GameModel.getByScrapedUrl(link);
-					if (!checkIfExists) {
-						const data = await api.scrape_game(link);
-						if (data.title && data.title !== '') {
-							const newGame = new GameModel(data);
-							await newGame.save();
-							toast.info(`Game: ${data.title} has been saved.`);
+					if (determineLinkType(link) === 'game') {
+						const checkIfExists = await GameModel.getByScrapedUrl(
+							link
+						);
+						if (!checkIfExists) {
+							const data = await api.scrape_game(link);
+							if (data.title && data.title !== '') {
+								const newGame = new GameModel(data);
+								await newGame.save();
+								toast.success(
+									`Game: ${data.title} has been saved.`
+								);
+								await sleep(2000);
+							}
 						}
 					}
+				} catch (e) {
+					console.error(e);
+					toast.error('Error while parsing: ' + link);
 				}
 
-				await sleep(5000);
+				setLinks(prevState => prevState.filter(f => f !== link));
 			}
 
 			setLinks([]);
@@ -146,7 +174,15 @@ export function Import() {
 					<DownloadIcon className="w-4 h-4" />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="md:max-w-[800px] xl:max-w-[1200px]">
+			<DialogContent
+				className="md:max-w-[800px] xl:max-w-[1200px]"
+				// @ts-ignore
+				closeDisabled={processLoading}
+				onEscapeKeyDown={e => e.preventDefault()}
+				onInteractOutside={e => {
+					e.preventDefault();
+				}}
+			>
 				<DialogHeader>
 					<DialogTitle>Bulk Import Content</DialogTitle>
 					<DialogDescription className="flex gap-1">
@@ -161,6 +197,8 @@ export function Import() {
 					placeholder="Paste link here..."
 					onPaste={handlePaste}
 					onChange={preventTyping}
+					className={processLoading ? 'disabled' : ''}
+					disabled={processLoading}
 				/>
 				<div>Links: {links.length}</div>
 				<div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto">
@@ -179,16 +217,18 @@ export function Import() {
 								<img className="h-4" src="/mal-logo.png" />
 							)}
 							<span>{l}</span>
-							<div
-								className="text-red-500 hover:cursor-pointer hover:text-red-600"
-								onClick={() =>
-									setLinks(links =>
-										links.filter((_, i) => i !== li),
-									)
-								}
-							>
-								<XIcon className="w-4 h-4" />
-							</div>
+							{!processLoading && (
+								<div
+									className="text-red-500 hover:cursor-pointer hover:text-red-600"
+									onClick={() =>
+										setLinks(links =>
+											links.filter((_, i) => i !== li)
+										)
+									}
+								>
+									<XIcon className="w-4 h-4" />
+								</div>
+							)}
 						</div>
 					))}
 				</div>
