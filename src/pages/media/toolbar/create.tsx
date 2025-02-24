@@ -33,7 +33,14 @@ export function Create() {
 					<PlusIcon className="w-4 h-4" />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="md:max-w-[800px] xl:max-w-[1200px]">
+			<DialogContent
+				className="md:max-w-[800px] xl:max-w-[1200px]"
+				// @ts-ignore
+				onEscapeKeyDown={e => e.preventDefault()}
+				onInteractOutside={e => {
+					e.preventDefault();
+				}}
+			>
 				<DialogHeader>
 					<DialogTitle>Create Content</DialogTitle>
 					<DialogDescription>
