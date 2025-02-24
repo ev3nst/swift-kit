@@ -215,6 +215,10 @@ export function shuffleArray(array: Array<any>) {
 	return array;
 }
 
+export const hasNewLines = (str: string) => /\r?\n/.test(str);
+
+export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 export const buttonVariants = cva(
 	'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
 	{
