@@ -297,6 +297,18 @@ class API {
 	async abort_download(): Promise<void> {
 		return invoke('abort_download');
 	}
+
+	async yt_download(
+		url: string,
+		output_path: string,
+		download_rate: number = 20000,
+	): Promise<string> {
+		return invoke('yt_download', {
+			url,
+			output_path,
+			download_rate,
+		});
+	}
 }
 
 const api = new API();

@@ -27,6 +27,7 @@ mod scrape_game;
 mod scrape_movie;
 mod scrapers;
 mod search_anime;
+mod yt_download;
 mod search_game;
 mod search_movie;
 mod trash_folder;
@@ -84,6 +85,7 @@ pub fn run() {
             image_crop::image_crop,
             download_file::download_file,
             abort_download::abort_download,
+            yt_download::yt_download,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
