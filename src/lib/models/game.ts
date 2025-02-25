@@ -92,8 +92,11 @@ export class GameModel extends BaseModel<Game> {
 		return this.props.poster_local;
 	}
 	get other_images(): string | null {
-		if (this.props.other_images_local) {
-			return convertFileSrc(this.props.other_images_local);
+		if (
+			this.props.other_images_local !== null &&
+			this.props.other_images_local !== ''
+		) {
+			return this.props.other_images_local;
 		}
 		return this.props.other_images;
 	}

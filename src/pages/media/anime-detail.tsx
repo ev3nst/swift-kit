@@ -2,24 +2,8 @@ import { Star } from 'lucide-react';
 
 import { Dialog, DialogTitle, DialogContent } from '@/components/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/tabs';
-import { convertFileSrc } from '@tauri-apps/api/core';
 
-export const MediaDetail = ({ isOpen, setIsOpen, currentMedia }) => {
-	const renderOtherImages = () => {
-		const otherImagesArr = currentMedia.other_images
-			.split(',')
-			.map(i => convertFileSrc(i));
-		return otherImagesArr.map((oi, ii) => (
-			<img
-				key={`oi_${currentMedia.id}_${ii}`}
-				className="h-[150px]"
-				src={oi}
-			/>
-		));
-	};
-
-	console.log(currentMedia, 'v');
-
+export const AnimeDetail = ({ isOpen, setIsOpen, currentMedia }) => {
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogTitle className="hidden">Media Details</DialogTitle>
@@ -45,29 +29,24 @@ export const MediaDetail = ({ isOpen, setIsOpen, currentMedia }) => {
 							</h1>
 						</div>
 
-						<p className="flex gap-2 text-sm text-muted-foreground mb-3">
+						<p className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+							{currentMedia.original_title && (
+								<>
+									<span>{currentMedia.original_title}</span>
+								</>
+							)}
+						</p>
+
+						<p className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
 							{currentMedia.year && (
 								<>
 									<span>{currentMedia.year}</span>
 								</>
 							)}
-							{currentMedia.year && (
+							{currentMedia.duration && (
 								<>
 									<span>|</span>
 									<span>{currentMedia.duration}</span>
-								</>
-							)}
-							{currentMedia.country && (
-								<>
-									<span>|</span>
-									<span>{currentMedia.country}</span>
-								</>
-							)}
-
-							{currentMedia.country && (
-								<>
-									<span>|</span>
-									<span>{currentMedia.language}</span>
 								</>
 							)}
 						</p>
@@ -78,9 +57,6 @@ export const MediaDetail = ({ isOpen, setIsOpen, currentMedia }) => {
 									<TabsTrigger value="overview">
 										Overview
 									</TabsTrigger>
-									<TabsTrigger value="other_images">
-										Images
-									</TabsTrigger>
 									<TabsTrigger value="trailer">
 										Trailer
 									</TabsTrigger>
@@ -88,19 +64,16 @@ export const MediaDetail = ({ isOpen, setIsOpen, currentMedia }) => {
 								<div className="flex items-center text-yellow-400">
 									<Star className="w-5 h-5" />
 									<span className="ml-1 text-lg">
-										{currentMedia.imdb_rating}
+										{currentMedia.mal_rating}
 									</span>
 								</div>
 							</div>
-							<TabsContent value="other_images">
-								<div className="flex flex-wrap gap-4 max-h-[200px] overflow-y-auto">
-									{currentMedia.other_images &&
-										renderOtherImages()}
-								</div>
-							</TabsContent>
-							<TabsContent value="overview">
+							<TabsContent
+								className="h-[250px] overflow-y-auto overflow-x-hidden"
+								value="overview"
+							>
 								{currentMedia.description && (
-									<p className="text-sm mb-4">
+									<p className="text-sm mb-4 line-clamp-4">
 										{currentMedia.description}
 									</p>
 								)}
@@ -115,32 +88,27 @@ export const MediaDetail = ({ isOpen, setIsOpen, currentMedia }) => {
 									</div>
 									<div className="flex">
 										<div className="font-semibold w-[100px]">
-											Director:
+											Episodes:
 										</div>
 										<div className="text-gray-300 flex-grow">
-											{currentMedia.directors}
+											{currentMedia.episodes}
 										</div>
 									</div>
 									<div className="flex">
 										<div className="font-semibold w-[100px]">
-											Writers:
+											Studios:
 										</div>
 										<div className="text-gray-300 flex-grow">
-											{currentMedia.writers}
-										</div>
-									</div>
-									<div className="flex">
-										<div className="font-semibold w-[100px]">
-											Starring:
-										</div>
-										<div className="text-gray-300 flex-grow">
-											{currentMedia.actors}
+											{currentMedia.studios}
 										</div>
 									</div>
 								</div>
 							</TabsContent>
-							<TabsContent value="trailer" className="">
-								<div className="aspect-video flex-shrink-0 h-[220px]">
+							<TabsContent
+								className="h-[250px] overflow-y-auto overflow-x-hidden"
+								value="trailer"
+							>
+								<div className="aspect-video flex-shrink-0">
 									{currentMedia.trailer && (
 										<iframe
 											className="w-full h-full"

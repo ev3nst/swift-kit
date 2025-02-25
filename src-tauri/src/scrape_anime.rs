@@ -57,10 +57,6 @@ pub async fn scrape_anime(url: String) -> Result<AnimeData, String> {
             )
             .await;
             if let Ok(data) = tmdb_data {
-                if !data.cover.is_none() && data.cover != Some("".to_string()) {
-                    anime.cover = data.cover;
-                }
-
                 if !data.poster.is_none() && data.poster != Some("".to_string()) {
                     anime.poster = data.poster;
                 }

@@ -3,7 +3,7 @@ pub mod common_headers;
 pub mod decode_html_entities;
 pub mod file_types;
 pub mod format_duration;
+pub mod get_default_browser;
 pub mod is_valid_timestamp;
 pub mod parse_duration;
 pub mod request_client;
-pub mod get_default_browser;

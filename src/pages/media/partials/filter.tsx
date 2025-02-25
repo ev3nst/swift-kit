@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMaskito } from '@maskito/react';
 import { maskitoDateRangeOptionsGenerator } from '@maskito/kit';
 
@@ -18,14 +18,23 @@ const dateRangeMaskOptions = maskitoDateRangeOptionsGenerator({
 	dateSeparator: '/',
 });
 
-export function Filter() {
+export function Filter({ mediaStore }) {
 	const [genres, setGenres] = useState([]);
-	const [persons, setPersons] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [date, setDate] = useState<string>();
 	const maskedInputRef = useMaskito({
 		options: dateRangeMaskOptions,
 	});
+
+	const { setFilters } = mediaStore();
+
+	useEffect(() => {
+		setFilters(prevState => ({
+			...prevState,
+			search: searchQuery,
+		}));
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchQuery]);
 
 	return (
 		<div className="flex flex-col gap-3 mb-5">
@@ -53,26 +62,14 @@ export function Filter() {
 						</SelectGroup>
 					</SelectContent>
 				</Select>
+			</div>
+			<div className="flex flex-1 items-center space-x-2">
 				<Input
 					ref={maskedInputRef}
 					value={date}
 					onChange={event => setDate(event.target.value)}
-					placeholder="Date Range"
-					className="h-8 w-[185px]"
-				/>
-			</div>
-			<div className="flex flex-1 items-center space-x-2">
-				<MultiSelect
-					title="Persons"
-					selectedValues={persons}
-					options={[
-						{ label: 'Jason Stathom', value: 'jason-stathom' },
-						{ label: 'Brad Pitt', value: 'brad-pitt' },
-						{ label: 'Margot Robbie', value: 'margot-robbie' },
-					]}
-					onChange={newValues => {
-						setPersons(newValues);
-					}}
+					placeholder="Year"
+					className="h-8 w-[150px]"
 				/>
 				<MultiSelect
 					title="Genre"

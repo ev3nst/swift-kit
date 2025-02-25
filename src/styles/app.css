@@ -150,3 +150,7 @@ select:focus {
 .ReactCrop__child-wrapper {
 	display: flex !important;
 }
+
+.webkit-box {
+	display: -webkit-box;
+}

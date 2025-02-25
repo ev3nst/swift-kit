@@ -115,7 +115,7 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
             );
         }
     }
-    let publishers = Some(tags.join(", "));
+    let publishers = Some(publishers.join(", "));
 
     // ASSETS
     let url = url.trim_end_matches('/');
@@ -152,7 +152,7 @@ pub async fn scrape(client: &Client, url: &str) -> Result<SteamData, Box<dyn Err
     let mut trailer: Option<String> = Some("".to_string());
     if let Some(id) = video_id {
         trailer = format!(
-            "https://video.cloudflare.steamstatic.com/store_trailers/{}/movie_max_vp9.webm",
+            "https://video.cloudflare.steamstatic.com/store_trailers/{}/movie_max.webm",
             id
         )
         .into();

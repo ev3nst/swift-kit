@@ -42,18 +42,36 @@ export abstract class BaseModel<T extends BaseModelProps> {
 		this: { new (props: any): M },
 		page: number,
 		limit: number,
+		filter?: string,
 	): Promise<{ data: M[]; total: number }> {
 		const tableName = this.name.toLowerCase().replace('model', 's');
 		const offset = (page - 1) * limit;
+
+		const totalQuery = filter
+			? `SELECT COUNT(*) AS total FROM ${tableName}_fts WHERE ${tableName}_fts MATCH ?`
+			: `SELECT COUNT(*) AS total FROM ${tableName}`;
+
+		const dataQuery = filter
+			? `
+				SELECT *
+				FROM ${tableName}
+				WHERE id IN (
+					SELECT rowid FROM ${tableName}_fts WHERE ${tableName}_fts MATCH ?
+				)
+				LIMIT ? OFFSET ?
+			`
+			: `SELECT * FROM ${tableName} LIMIT ? OFFSET ?`;
+
 		const totalResult: any = await dbWrapper.db.select(
-			`SELECT COUNT(*) AS total FROM ${tableName}`,
+			totalQuery,
+			filter ? [filter] : [],
 		);
 		const total = totalResult[0]?.total ?? 0;
-		const result: any = await dbWrapper.db.select(
-			`SELECT * FROM ${tableName} LIMIT ? OFFSET ?`,
-			[limit, offset],
-		);
 
+		const params: any[] = filter
+			? [filter, limit, offset]
+			: [limit, offset];
+		const result: any = await dbWrapper.db.select(dataQuery, params);
 		const data = result.map((item: any) => new this(item));
 		return { data, total };
 	}

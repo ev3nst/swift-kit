@@ -77,11 +77,15 @@ pub async fn yt_download(
         }
 
         let mut child = command.spawn().map_err(|e| e.to_string())?;
-        
-        let stdout = child.stdout.take()
+
+        let stdout = child
+            .stdout
+            .take()
             .ok_or("Failed to capture stdout".to_string())?;
-        
-        let stderr = child.stderr.take()
+
+        let stderr = child
+            .stderr
+            .take()
             .ok_or("Failed to capture stderr".to_string())?;
 
         let (tx, _rx) = mpsc::channel(CHANNEL_BUFFER_SIZE);
@@ -93,7 +97,7 @@ pub async fn yt_download(
         task::spawn(async move {
             let mut reader = BufReader::new(stdout);
             let mut buffer = vec![0u8; BUFFER_SIZE];
-            
+
             while let Ok(read) = reader.read(&mut buffer) {
                 if read == 0 {
                     break;
@@ -106,7 +110,7 @@ pub async fn yt_download(
                             .unwrap_or_default()
                             .as_secs(),
                     };
-                    
+
                     if tx_stdout.send(progress.clone()).await.is_ok() {
                         handle_clone_stdout
                             .emit("yt-download-progress", Some(progress))
@@ -121,7 +125,7 @@ pub async fn yt_download(
         task::spawn(async move {
             let mut reader = BufReader::new(stderr);
             let mut buffer = vec![0u8; BUFFER_SIZE];
-            
+
             while let Ok(read) = reader.read(&mut buffer) {
                 if read == 0 {
                     break;
@@ -134,7 +138,7 @@ pub async fn yt_download(
                             .unwrap_or_default()
                             .as_secs(),
                     };
-                    
+
                     if tx_stderr.send(progress.clone()).await.is_ok() {
                         handle_clone_stderr
                             .emit("yt-download-progress", Some(progress))
@@ -145,7 +149,7 @@ pub async fn yt_download(
         });
 
         let output = child.wait_with_output().map_err(|e| e.to_string())?;
-        
+
         if output.status.success() {
             Ok(DownloadResponse {
                 success: true,

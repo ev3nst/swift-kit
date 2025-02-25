@@ -21,7 +21,7 @@ import { GameModel } from '@/lib/models/game';
 import { hasNewLines, sleep } from '@/lib/utils';
 
 function determineLinkType(
-	link: string
+	link: string,
 ): ('movie' | 'game' | 'anime') | undefined {
 	if (link.startsWith('https://www.imdb.com')) {
 		return 'movie';
@@ -74,7 +74,7 @@ export function Import() {
 				if (pastedText.startsWith('https://steamdb.info')) {
 					pastedText = pastedText.replace(
 						'https://steamdb.info',
-						'https://store.steampowered.com'
+						'https://store.steampowered.com',
 					);
 				}
 				setLinks(prevState => [...prevState, pastedText]);
@@ -95,16 +95,15 @@ export function Import() {
 
 				try {
 					if (determineLinkType(link) === 'movie') {
-						const checkIfExists = await MovieModel.getByScrapedUrl(
-							link
-						);
+						const checkIfExists =
+							await MovieModel.getByScrapedUrl(link);
 						if (!checkIfExists) {
 							const data = await api.scrape_movie(link);
 							if (data.title && data.title !== '') {
 								const newMovie = new MovieModel(data);
 								await newMovie.save();
 								toast.success(
-									`Movie: ${data.title} has been saved.`
+									`Movie: ${data.title} has been saved.`,
 								);
 								await sleep(2000);
 							}
@@ -112,16 +111,15 @@ export function Import() {
 					}
 
 					if (determineLinkType(link) === 'anime') {
-						const checkIfExists = await AnimeModel.getByScrapedUrl(
-							link
-						);
+						const checkIfExists =
+							await AnimeModel.getByScrapedUrl(link);
 						if (!checkIfExists) {
 							const data = await api.scrape_anime(link);
 							if (data.title && data.title !== '') {
 								const newAnime = new AnimeModel(data);
 								await newAnime.save();
 								toast.success(
-									`Anime: ${data.title} has been saved.`
+									`Anime: ${data.title} has been saved.`,
 								);
 								await sleep(2000);
 							}
@@ -129,16 +127,15 @@ export function Import() {
 					}
 
 					if (determineLinkType(link) === 'game') {
-						const checkIfExists = await GameModel.getByScrapedUrl(
-							link
-						);
+						const checkIfExists =
+							await GameModel.getByScrapedUrl(link);
 						if (!checkIfExists) {
 							const data = await api.scrape_game(link);
 							if (data.title && data.title !== '') {
 								const newGame = new GameModel(data);
 								await newGame.save();
 								toast.success(
-									`Game: ${data.title} has been saved.`
+									`Game: ${data.title} has been saved.`,
 								);
 								await sleep(2000);
 							}
@@ -222,7 +219,7 @@ export function Import() {
 									className="text-red-500 hover:cursor-pointer hover:text-red-600"
 									onClick={() =>
 										setLinks(links =>
-											links.filter((_, i) => i !== li)
+											links.filter((_, i) => i !== li),
 										)
 									}
 								>

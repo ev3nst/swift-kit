@@ -27,11 +27,11 @@ mod scrape_game;
 mod scrape_movie;
 mod scrapers;
 mod search_anime;
-mod yt_download;
 mod search_game;
 mod search_movie;
 mod trash_folder;
 mod utils;
+mod yt_download;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

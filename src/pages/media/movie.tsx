@@ -3,7 +3,11 @@ import { MovieModel } from '@/lib/models/movie';
 
 import createMediaComponent from './media';
 
-const MovieComponent = createMediaComponent<MovieModel>(movieStore, MovieModel);
+const MovieComponent = createMediaComponent<MovieModel>(
+	'movie',
+	movieStore,
+	MovieModel,
+);
 
 export const MovieWrapper = () => {
 	return <MovieComponent />;

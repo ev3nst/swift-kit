@@ -41,7 +41,12 @@ pub fn get_migrations() -> Vec<Migration> {
             );
 
             -- Full-text search for the 'content' field
-            CREATE VIRTUAL TABLE notes_fts USING fts5(title, content);
+			CREATE VIRTUAL TABLE notes_fts USING fts5(
+				title,
+				content,
+				content='notes',
+				content_rowid='id'
+			);
 
             -- Trigger to automatically update the `updated_at` field on updates
             CREATE TRIGGER notes_updated_at
@@ -74,7 +79,11 @@ pub fn get_migrations() -> Vec<Migration> {
             CREATE INDEX idx_credential_username ON credentials (username);
 
             -- Full-text search for the 'note' field
-            CREATE VIRTUAL TABLE credentials_fts USING fts5(note);
+			CREATE VIRTUAL TABLE credentials_fts USING fts5(
+				note,
+				content='credentials',
+				content_rowid='id'
+			);
 
             -- Trigger to automatically update the `updated_at` field on updates
             CREATE TRIGGER credentials_updated_at
@@ -155,7 +164,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			CREATE INDEX idx_movie_personal_rating ON movies (personal_rating);
 
 			-- Full-text search for 'title', 'description', 'keywords'
-			CREATE VIRTUAL TABLE movies_fts USING fts5(title, description, keywords);
+			CREATE VIRTUAL TABLE movies_fts USING fts5(
+				title,
+				description,
+				keywords,
+				content='movies',
+				content_rowid='id'
+			);
 		
 			-- Trigger to automatically update the `updated_at` field on updates
 			CREATE TRIGGER movies_updated_at
@@ -206,7 +221,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			CREATE INDEX idx_anime_personal_rating ON animes (personal_rating);
 
 			-- Full-text search for 'title', 'original_title', 'description'
-			CREATE VIRTUAL TABLE animes_fts USING fts5(title, original_title, description);
+			CREATE VIRTUAL TABLE animes_fts USING fts5(
+				title,
+				original_title,
+				description,
+				content='animes',
+				content_rowid='id'
+			);
 		
 			-- Trigger to automatically update the `updated_at` field on updates
 			CREATE TRIGGER animes_updated_at
@@ -255,7 +276,13 @@ pub fn get_migrations() -> Vec<Migration> {
 			CREATE INDEX idx_game_personal_rating ON games (personal_rating);
 
 			-- Full-text search for 'title', 'description', 'about'
-			CREATE VIRTUAL TABLE games_fts USING fts5(title, description, about);
+			CREATE VIRTUAL TABLE games_fts USING fts5(
+				title,
+				description,
+				about,
+				content='games',
+				content_rowid='id'
+			);
 		
 			-- Trigger to automatically update the `updated_at` field on updates
 			CREATE TRIGGER games_updated_at

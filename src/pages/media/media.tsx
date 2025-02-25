@@ -1,20 +1,46 @@
 import { useEffect, useState, ComponentType } from 'react';
 
-import { MediaGridItem } from '@/components/media-grid-item';
 import { PaginationControls } from '@/components/pagination-controls';
 
 import { ModelStore } from '@/lib/store/generic';
 
-import { MediaDetail } from './detail';
+import { MediaGridItem } from './partials/media-grid-item';
 import { Filter } from './partials/filter';
+import { MovieDetail } from './movie-detail';
+import { AnimeDetail } from './anime-detail';
+import { GameDetail } from './game-detail';
 
 function createMediaComponent<T>(
+	mediaType: string,
 	mediaStore: () => ModelStore<T>,
 	MediaModel: any,
 ): ComponentType {
+	let MediaDetail;
+	switch (mediaType) {
+		case 'movie':
+			MediaDetail = MovieDetail;
+			break;
+		case 'anime':
+			MediaDetail = AnimeDetail;
+			break;
+		case 'game':
+			MediaDetail = GameDetail;
+			break;
+		default:
+			throw new Error('Media type not supported.');
+			break;
+	}
+
 	return function MediaComponent() {
-		const { data, pagination, total, setData, setTotal, setPagination } =
-			mediaStore();
+		const {
+			data,
+			pagination,
+			total,
+			filters,
+			setData,
+			setTotal,
+			setPagination,
+		} = mediaStore();
 
 		const [isOpen, setIsOpen] = useState(false);
 		const [currentMedia, setCurrentMedia] = useState<T | null>(null);
@@ -32,6 +58,7 @@ function createMediaComponent<T>(
 				const result = await (MediaModel as any).paginate(
 					pagination.page,
 					pagination.perPage,
+					filters.search,
 				);
 				setData(result.data);
 				setTotal(result.total);
@@ -39,11 +66,11 @@ function createMediaComponent<T>(
 
 			fetchData();
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [pagination.page, pagination.perPage]);
+		}, [pagination.page, pagination.perPage, filters.search]);
 
 		return (
 			<>
-				<Filter />
+				<Filter mediaStore={mediaStore} />
 				<div className="flex flex-col mt-5">
 					<div className="flex gap-3 flex-wrap">
 						{data.map(media => (

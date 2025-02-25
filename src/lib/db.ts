@@ -6,6 +6,7 @@ class DbWrapper {
 	async initialize() {
 		if (!this.db) {
 			this.db = await Database.load(sqliteDbName);
+			await this.db.execute('PRAGMA journal_mode = WAL;');
 		}
 	}
 }
