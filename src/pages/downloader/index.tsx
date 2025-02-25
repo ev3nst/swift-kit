@@ -30,11 +30,11 @@ import AddToQueue from './add-to-queue';
 
 const queueData = [
 	{
-		source_url: 'https://www.youtube.com/watch?v=6ZfuNTqbHE8',
+		source_url: 'https://www.youtube.com/watch?v=123123',
 		source_type: 'Youtube',
 	},
 	{
-		source_url: 'https://www.youtube.com/watch?v=TcMBFSGVi1c',
+		source_url: 'https://www.youtube.com/watch?v=123123',
 		source_type: 'Youtube',
 	},
 ];

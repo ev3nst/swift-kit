@@ -120,7 +120,7 @@ function App() {
 								</Route>
 								<Route
 									path="/downloader"
-									component={Downloader}
+									component={Placeholder}
 								/>
 								<Route path="/notes" component={Notes} />
 								<Route

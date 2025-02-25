@@ -80,8 +80,8 @@ const data = {
 			groupName: 'Authorization',
 			items: [
 				{
-					name: 'Security',
-					to: '/security',
+					name: 'VeraCrypt',
+					to: '/vera-crypt',
 					icon: ShieldPlusIcon,
 				},
 				{
